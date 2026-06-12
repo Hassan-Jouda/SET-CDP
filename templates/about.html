@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>من نحن | SET-CDP</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+        }
+
+        .about-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 15px 50px;
+        }
+
+        .about-hero {
+            background: linear-gradient(135deg, #0f172a, #1e293b, #0f766e);
+            color: white;
+            border-radius: 20px;
+            padding: 45px 25px;
+            text-align: center;
+            box-shadow: 0 14px 35px rgba(15, 23, 42, 0.25);
+            margin-bottom: 28px;
+        }
+
+        .about-hero h1 {
+            color: #38bdf8;
+            font-size: 34px;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .about-hero p {
+            color: #cbd5e1;
+            max-width: 850px;
+            margin: auto;
+            line-height: 1.9;
+        }
+
+        .section-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 22px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+
+        .section-title {
+            color: #0f172a;
+            font-weight: 900;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #0ea5e9;
+        }
+
+        .text-block {
+            color: #475569;
+            line-height: 2;
+            font-size: 15px;
+        }
+
+        .team-grid,
+        .values-grid,
+        .tech-grid,
+        .roadmap-grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        .team-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .values-grid,
+        .roadmap-grid {
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .tech-grid {
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        }
+
+        .member-card,
+        .value-card,
+        .tech-card,
+        .roadmap-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 18px;
+            transition: 0.25s;
+        }
+
+        .member-card:hover,
+        .value-card:hover,
+        .tech-card:hover,
+        .roadmap-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+        }
+
+        .member-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: #0f172a;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 23px;
+            margin-bottom: 12px;
+        }
+
+        .member-card h3 {
+            margin: 0;
+            font-size: 20px;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .member-role {
+            color: #0ea5e9;
+            font-weight: 700;
+            margin: 6px 0 10px;
+        }
+
+        .member-card p,
+        .value-card p,
+        .roadmap-card p {
+            color: #64748b;
+            line-height: 1.8;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .value-card h4,
+        .roadmap-card h4 {
+            color: #0f172a;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .tech-card {
+            text-align: center;
+        }
+
+        .tech-card i {
+            font-size: 28px;
+            color: #0ea5e9;
+            margin-bottom: 10px;
+        }
+
+        .tech-card h4 {
+            color: #0f172a;
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .tech-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.9;
+        }
+
+        .problem-solution {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px;
+        }
+
+        .problem-box {
+            border-right: 5px solid #ef4444;
+        }
+
+        .solution-box {
+            border-right: 5px solid #22c55e;
+        }
+
+        .notice-box {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-right: 5px solid #f97316;
+            border-radius: 15px;
+            padding: 18px;
+            color: #7c2d12;
+            line-height: 1.9;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: #64748b;
+            margin-top: 25px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .about-hero h1 {
+                font-size: 25px;
+            }
+
+            .section-card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+{% include 'base_nav.html' %}
+
+<main class="about-container">
+
+    <section class="about-hero">
+        <h1><i class="fas fa-shield-halved"></i> من نحن</h1>
+        <p>
+            منصة SET-CDP هي مشروع تخرج أكاديمي متكامل في مجال الأمن السيبراني،
+            تجمع بين أدوات الفحص الدفاعي، ومحاكاة التهديدات، والتوعية الأمنية،
+            والاختبارات التعليمية ضمن بيئة آمنة وأخلاقية.
+        </p>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-lightbulb"></i>
+            فكرة المشروع
+        </h2>
+        <p class="text-block">
+            يقوم مشروع SET-CDP على بناء منصة تعليمية أمنية تجمع بين منظور المهاجم
+            ومنظور المدافع. فمن خلال أدوات الفحص والتحليل، يستطيع المستخدم تقييم
+            أمان المواقع والروابط والملفات وكلمات المرور. ومن خلال المحاكاة
+            التعليمية، يتعرف المستخدم على مخاطر الهندسة الاجتماعية والتصيد
+            الإلكتروني بطريقة عملية وآمنة.
+        </p>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-users"></i>
+            فريق العمل
+        </h2>
+
+        <div class="team-grid">
+            <div class="member-card">
+                <div class="member-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3>حسن جودة</h3>
+                <div class="member-role">المؤسس وصاحب الفكرة</div>
+                <p>
+                    مسؤول عن بناء فكرة المشروع، تحليل المتطلبات، هندسة النظام،
+                    تطوير الرؤية الأمنية، وتجميع مكونات المنصة في نظام متكامل.
+                </p>
+            </div>
+
+            <div class="member-card">
+                <div class="member-icon">
+                    <i class="fas fa-pen-nib"></i>
+                </div>
+                <h3>إسماعيل النحال</h3>
+                <div class="member-role">مصمم واجهات المستخدم</div>
+                <p>
+                    مسؤول عن تصميم واجهات المستخدم وتجربة الاستخدام، وتحسين الشكل
+                    البصري والتفاعل داخل المنصة.
+                </p>
+            </div>
+
+            <div class="member-card">
+                <div class="member-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>بلال</h3>
+                <div class="member-role">المبرمج</div>
+                <p>
+                    مسؤول عن تطوير أجزاء النظام البرمجية، ربط الصفحات، تحسين
+                    الوظائف، وتكامل الأدوات مع قاعدة البيانات.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-bullseye"></i>
+            هدف المشروع
+        </h2>
+        <p class="text-block">
+            يهدف المشروع إلى رفع مستوى الوعي الأمني لدى المستخدمين، وتوفير بيئة
+            تعليمية عملية تساعد الطلاب والباحثين على فهم التهديدات السيبرانية
+            الحديثة، وتحليل المخاطر، واستخدام أدوات دفاعية بطريقة سهلة وآمنة.
+        </p>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-eye"></i>
+            الرؤية والرسالة
+        </h2>
+
+        <div class="problem-solution">
+            <div class="section-card" style="margin:0;">
+                <h3 class="section-title">
+                    <i class="fas fa-eye"></i>
+                    الرؤية
+                </h3>
+                <p class="text-block">
+                    أن تكون SET-CDP منصة أكاديمية رائدة تكسر الحاجز بين تعقيدات
+                    الأمن السيبراني ووعي المستخدم، وتساهم في خلق بيئة رقمية أكثر
+                    أماناً.
+                </p>
+            </div>
+
+            <div class="section-card" style="margin:0;">
+                <h3 class="section-title">
+                    <i class="fas fa-message"></i>
+                    الرسالة
+                </h3>
+                <p class="text-block">
+                    تطوير أدوات أمنية تعليمية سهلة الاستخدام، تمكن الطلاب
+                    والمؤسسات من فهم الثغرات من منظور المهاجم والمدافع في آن واحد.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-scale-balanced"></i>
+            القيم الأساسية
+        </h2>
+
+        <div class="values-grid">
+            <div class="value-card">
+                <h4><i class="fas fa-handshake"></i> الأخلاقيات السيبرانية</h4>
+                <p>
+                    نؤمن بأن المعرفة الأمنية قوة يجب أن توجه للحماية والتدريب لا للإضرار.
+                </p>
+            </div>
+
+            <div class="value-card">
+                <h4><i class="fas fa-bell"></i> التوعية الاستباقية</h4>
+                <p>
+                    الوعي هو خط الدفاع الأول، لذلك ترتبط أدوات المنصة برسائل تعليمية وتوصيات أمنية.
+                </p>
+            </div>
+
+            <div class="value-card">
+                <h4><i class="fas fa-gauge-high"></i> البساطة والفعالية</h4>
+                <p>
+                    الأمن لا يجب أن يكون معقداً؛ هدفنا تقديم أدوات قوية بواجهة واضحة وسهلة.
+                </p>
+            </div>
+
+            <div class="value-card">
+                <h4><i class="fas fa-book-open"></i> التعلم المستمر</h4>
+                <p>
+                    الأمن السيبراني مجال متغير، لذلك صممت المنصة لتكون قابلة للتطوير والإضافة.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-triangle-exclamation"></i>
+            المشكلة والحل
+        </h2>
+
+        <div class="problem-solution">
+            <div class="section-card problem-box" style="margin:0;">
+                <h3>المشكلة</h3>
+                <p class="text-block">
+                    مع تزايد هجمات التصيد والاحتيال الرقمي، أصبح العنصر البشري
+                    الحلقة الأضعف في أمن المعلومات. كثير من المستخدمين يفتقرون
+                    إلى تدريب عملي يوضح لهم كيف تبدو الهجمات في الواقع.
+                </p>
+            </div>
+
+            <div class="section-card solution-box" style="margin:0;">
+                <h3>الحل</h3>
+                <p class="text-block">
+                    تقدم SET-CDP بيئة تعليمية تجمع بين الفحص، المحاكاة، التوعية،
+                    والاختبار، بحيث يتعلم المستخدم من التجربة العملية دون تعريض
+                    بياناته أو الآخرين للخطر.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-screwdriver-wrench"></i>
+            اللغات والتقنيات والبرامج المستخدمة
+        </h2>
+
+        <div class="tech-grid">
+            <div class="tech-card">
+                <i class="fas fa-code"></i>
+                <h4>لغات البرمجة</h4>
+                <ul>
+                    <li>Python</li>
+                    <li>JavaScript</li>
+                    <li>HTML5</li>
+                    <li>CSS3</li>
+                    <li>SQL</li>
+                </ul>
+            </div>
+
+            <div class="tech-card">
+                <i class="fas fa-layer-group"></i>
+                <h4>أطر العمل والمكتبات</h4>
+                <ul>
+                    <li>Flask</li>
+                    <li>Jinja2</li>
+                    <li>Bootstrap</li>
+                    <li>Chart.js</li>
+                    <li>Font Awesome</li>
+                </ul>
+            </div>
+
+            <div class="tech-card">
+                <i class="fas fa-database"></i>
+                <h4>قواعد البيانات</h4>
+                <ul>
+                    <li>SQLite</li>
+                    <li>DB Browser for SQLite</li>
+                </ul>
+            </div>
+
+            <div class="tech-card">
+                <i class="fas fa-toolbox"></i>
+                <h4>أدوات التطوير</h4>
+                <ul>
+                    <li>Visual Studio Code</li>
+                    <li>Git</li>
+                    <li>Python Environment</li>
+                    <li>Browser DevTools</li>
+                </ul>
+            </div>
+
+            <div class="tech-card">
+                <i class="fas fa-shield-virus"></i>
+                <h4>أدوات الأمن والتحليل</h4>
+                <ul>
+                    <li>SSL Analysis</li>
+                    <li>Header Analyzer</li>
+                    <li>URL Expander</li>
+                    <li>Password Analyzer</li>
+                    <li>File Metadata Analyzer</li>
+                </ul>
+            </div>
+
+            <div class="tech-card">
+                <i class="fas fa-chart-line"></i>
+                <h4>العرض والتقارير</h4>
+                <ul>
+                    <li>Dashboard Charts</li>
+                    <li>Reports Center</li>
+                    <li>Quiz Results</li>
+                    <li>Export PDF</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-road"></i>
+            خارطة الطريق المستقبلية
+        </h2>
+
+        <div class="roadmap-grid">
+            <div class="roadmap-card">
+                <h4>تحليل تهديدات بالذكاء الاصطناعي</h4>
+                <p>
+                    إضافة وحدة تعتمد على الذكاء الاصطناعي لتقييم مستوى الخطورة واقتراح توصيات أمنية أكثر دقة.
+                </p>
+            </div>
+
+            <div class="roadmap-card">
+                <h4>نظام شهادات إلكترونية</h4>
+                <p>
+                    تطوير شهادات رقمية للطلاب بعد اجتياز اختبارات التوعية الأمنية.
+                </p>
+            </div>
+
+            <div class="roadmap-card">
+                <h4>لوحة ترتيب تعليمية</h4>
+                <p>
+                    إضافة Leaderboard لقياس تقدم الطلاب في التدريب والاختبارات.
+                </p>
+            </div>
+
+            <div class="roadmap-card">
+                <h4>تكامل مع أنظمة SIEM</h4>
+                <p>
+                    إمكانية ربط المنصة مستقبلاً بأنظمة مراقبة وتحليل السجلات الأمنية.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-user-shield"></i>
+            سياسة الخصوصية والأخلاقيات
+        </h2>
+
+        <div class="notice-box">
+            تم تصميم منصة SET-CDP للأغراض الأكاديمية والتدريبية فقط. تلتزم المنصة
+            بمبادئ الاستخدام المسؤول للأمن السيبراني، ولا تهدف إلى جمع كلمات مرور
+            حقيقية أو استهداف أي شخص أو مؤسسة دون تصريح. يتم التعامل مع البيانات
+            التدريبية ضمن بيئة محلية وآمنة، ويُعد الالتزام بالأخلاقيات الأمنية
+            جزءاً أساسياً من هوية المشروع.
+        </div>
+    </section>
+
+    <section class="section-card">
+        <h2 class="section-title">
+            <i class="fas fa-heart"></i>
+            شكر وتقدير
+        </h2>
+        <p class="text-block">
+            يتقدم فريق SET-CDP بالشكر والتقدير لكل من ساهم في دعم هذا المشروع
+            وتقديم الملاحظات والتوجيهات الأكاديمية والتقنية التي ساعدت في تطويره
+            وتحسينه.
+        </p>
+    </section>
+
+    <div class="footer-note">
+        © SET-CDP — Security Education, Testing & Cyber Defense Platform
+    </div>
+
+</main>
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>

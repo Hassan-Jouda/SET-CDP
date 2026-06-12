@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>Reports Center | SET-CDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    .report-hero {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      padding: 35px;
+      border-radius: 18px;
+      margin-bottom: 25px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+
+    .report-stat {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 5px 16px rgba(0,0,0,0.06);
+      height: 100%;
+    }
+
+    .report-stat h2 {
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 5px;
+    }
+
+    .report-stat span {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      padding: 20px;
+      box-shadow: 0 5px 16px rgba(0,0,0,0.06);
+      height: 100%;
+    }
+
+    .executive-box {
+      background: #f8fafc;
+      border-right: 5px solid #0ea5e9;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 25px;
+      color: #334155;
+    }
+
+    @media print {
+      nav,
+      .no-print {
+        display: none !important;
+      }
+
+      body {
+        background: white !important;
+      }
+
+      .report-hero,
+      .report-stat,
+      .chart-card {
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+{% include 'base_nav.html' %}
+
+<main class="container py-5">
+
+  <section class="report-hero">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1 class="fw-bold mb-2">Reports Center</h1>
+        <p class="mb-0 text-light">تقرير شامل عن نشاط منصة SET-CDP: الفحوصات، المحاكاة، الامتحانات، والنسخ التدريبية.</p>
+      </div>
+
+      <button class="btn btn-danger no-print" onclick="window.print()">Export PDF</button>
+    </div>
+  </section>
+
+  <section class="executive-box">
+    <h5 class="fw-bold">Executive Summary</h5>
+    <p class="mb-0">
+      نفذت المنصة {{ stats.scans }} عملية فحص أمني، منها {{ stats.files }} تحليل ملفات،
+      و {{ stats.ssl }} فحص SSL، إضافة إلى {{ stats.training }} محاولة تدريبية
+      و {{ stats.quiz }} نتيجة امتحان توعوي. هذا يعكس دمج الجانب الدفاعي والتحليلي والتوعوي في منصة واحدة.
+    </p>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="report-stat">
+        <h2>{{ stats.scans }}</h2>
+        <span>عدد الفحوصات</span>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-6">
+      <div class="report-stat">
+        <h2>{{ stats.files }}</h2>
+        <span>تحليل الملفات</span>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-6">
+      <div class="report-stat">
+        <h2>{{ stats.training }}</h2>
+        <span>محاولات تدريب</span>
+      </div>
+    </div>
+
+    <div class="col-md-3 col-6">
+      <div class="report-stat">
+        <h2>{{ stats.quiz }}</h2>
+        <span>نتائج الامتحان</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <h5 class="fw-bold">Scans per Day</h5>
+        <canvas id="scansChart"></canvas>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <h5 class="fw-bold">Training Attempts</h5>
+        <canvas id="attemptsChart"></canvas>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <h5 class="fw-bold">Scan Types Distribution</h5>
+        <canvas id="typesChart"></canvas>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="chart-card">
+        <h5 class="fw-bold">Platform Modules</h5>
+        <canvas id="modulesChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h4 class="fw-bold mb-3">آخر الفحوصات</h4>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-primary">
+            <tr>
+              <th>النوع</th>
+              <th>الهدف</th>
+              <th>النتيجة</th>
+              <th>المستوى</th>
+              <th>الوقت</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in recent_scans %}
+            <tr>
+              <td>{{ s.scan_type }}</td>
+              <td class="text-break">{{ s.target }}</td>
+              <td>{{ s.result_summary }}</td>
+              <td>{{ s.risk_level }}</td>
+              <td>{{ s.timestamp }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">لا توجد فحوصات حتى الآن.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="card shadow-sm">
+    <div class="card-body">
+      <h4 class="fw-bold mb-3">آخر نتائج الامتحان</h4>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-success">
+            <tr>
+              <th>الاسم</th>
+              <th>العلامة</th>
+              <th>النسبة</th>
+              <th>الحالة</th>
+              <th>الوقت</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for q in recent_quiz %}
+            <tr>
+              <td>{{ q.student_name }}</td>
+              <td>{{ q.score }}/{{ q.total }}</td>
+              <td>{{ q.percentage }}%</td>
+              <td>{{ q.status }}</td>
+              <td>{{ q.timestamp }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">لا توجد نتائج امتحان حتى الآن.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+fetch("/api/chart-data")
+.then(r => r.json())
+.then(data => {
+  new Chart(document.getElementById("scansChart"), {
+    type: "line",
+    data: {
+      labels: data.scans_per_day.map(x => x.day),
+      datasets: [{
+        label: "Scans per Day",
+        data: data.scans_per_day.map(x => x.count),
+        tension: 0.35
+      }]
+    }
+  });
+
+  new Chart(document.getElementById("attemptsChart"), {
+    type: "bar",
+    data: {
+      labels: data.attempts_per_day.map(x => x.day),
+      datasets: [{
+        label: "Training Attempts",
+        data: data.attempts_per_day.map(x => x.count)
+      }]
+    }
+  });
+
+  new Chart(document.getElementById("typesChart"), {
+    type: "doughnut",
+    data: {
+      labels: ["Website", "SSL", "File", "Email", "URL"],
+      datasets: [{
+        data: [
+          {{ stats.website }},
+          {{ stats.ssl }},
+          {{ stats.files }},
+          {{ stats.email }},
+          {{ stats.url }}
+        ]
+      }]
+    }
+  });
+
+  new Chart(document.getElementById("modulesChart"), {
+    type: "polarArea",
+    data: {
+      labels: ["Scans", "Files", "Training", "Clones", "Quiz"],
+      datasets: [{
+        data: [
+          {{ stats.scans }},
+          {{ stats.files }},
+          {{ stats.training }},
+          {{ stats.clones }},
+          {{ stats.quiz }}
+        ]
+      }]
+    }
+  });
+});
+</script>
+
+</body>
+</html>

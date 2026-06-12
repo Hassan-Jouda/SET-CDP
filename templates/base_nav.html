@@ -1,0 +1,52 @@
+<nav class="top-navbar">
+  <div class="top-navbar-wrap">
+
+    <a class="top-brand" href="/">🛡️ SET-CDP</a>
+
+    <button class="nav-toggle" type="button" onclick="toggleNavMenu()">
+      ☰
+    </button>
+
+    <div class="top-nav-links" id="topNavLinks">
+      <a href="/">أدوات الفحص</a>
+      <a href="/attack">الاختبار التعليمي</a>
+      <a href="/ready_templates">القوالب</a>
+      <a href="/dashboard">لوحة التحكم</a>
+      <a href="/threat-library">مكتبة التهديدات</a>
+
+      <div class="nav-dropdown">
+        <button class="dropdown-btn" type="button" onclick="toggleQuizDropdown(event)">
+          الامتحان ▾
+        </button>
+
+        <div class="dropdown-menu-custom" id="quizDropdown">
+          <a href="/quiz">تقديم الامتحان</a>
+          <a href="/quiz-admin">نتائج الامتحان</a>
+          <a href="/reports">التقارير</a>
+          <a href="/quiz-builder">إدارة الامتحان</a>
+        </div>
+      </div>
+
+      <a href="/about">من نحن</a>
+    </div>
+
+  </div>
+</nav>
+
+<script>
+function toggleNavMenu() {
+  const nav = document.getElementById("topNavLinks");
+  nav.classList.toggle("show");
+}
+
+function toggleQuizDropdown(event) {
+  event.stopPropagation();
+  const menu = document.getElementById("quizDropdown");
+  menu.classList.toggle("show");
+}
+
+document.addEventListener("click", function () {
+  const menu = document.getElementById("quizDropdown");
+  if (menu) menu.classList.remove("show");
+});
+</script>
