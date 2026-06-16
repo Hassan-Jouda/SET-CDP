@@ -2,95 +2,168 @@
 
 ## Security Education, Testing & Cyber Defense Platform
 
-SET-CDP is an academic cybersecurity platform designed to combine security awareness, defensive security testing, cyber threat education, and assessment tools within a unified environment.
+SET-CDP is a comprehensive cybersecurity education and training platform designed to combine security awareness, defensive security assessment, threat simulation, and cyber defense practices within a unified environment.
 
-The platform aims to help students, researchers, and organizations understand modern cyber threats through practical learning, security analysis tools, awareness modules, and educational simulations.
-
----
-
-# 📌 Project Overview
-
-SET-CDP integrates three main cybersecurity domains:
-
-### 🔵 Blue Teaming
-
-Defensive security tools used to assess and improve security posture.
-
-### 🔴 Red Teaming (Educational Simulation)
-
-Controlled academic simulations designed to demonstrate common cyberattack techniques in a safe learning environment.
-
-### 🟢 Security Awareness
-
-Interactive educational content, cyber threat library, quizzes, reports, and awareness resources.
+The platform provides students, researchers, educators, and organizations with practical tools to understand modern cyber threats, evaluate security posture, and improve cybersecurity awareness through interactive learning and controlled simulations.
 
 ---
 
-# 🚀 Features
+# 🎯 Project Vision
 
-## Security Analysis Tools
+To bridge the gap between cybersecurity theory and practical experience by providing a safe, educational, and interactive environment that enables users to understand cyber threats from both offensive and defensive perspectives.
+
+---
+
+# 🚀 Core Components
+
+## 🔵 Blue Teaming
+
+Defensive security tools designed to assess, analyze, and improve security posture.
+
+Features include:
 
 * Website Security Scanner
-* SSL Certificate Inspector
 * Security Headers Analyzer
+* SSL/TLS Certificate Inspector
 * URL Safety Checker
 * URL Expander
+* Domain & IP Information Checker
 * Password Strength Analyzer
 * Secure Password Generator
 * Email Phishing Detector
 * File Hash & Metadata Analyzer
-* Domain & IP Information Checker
 
 ---
 
-## Cyber Threat Library
+## 🔴 Red Teaming Educational Simulations
 
-Comprehensive knowledge base covering:
+Controlled awareness and threat-emulation modules designed for cybersecurity education.
+
+Features include:
+
+* Training Clone Generator
+* Security Awareness Landing Pages
+* QR Code Awareness Simulation (Quishing)
+* Fake Session Expired Pop-up Simulation
+* USB Security Awareness Simulation
+* Social Engineering Awareness Templates
+* User Interaction Tracking
+* Training Activity Dashboard
+
+> All simulations are intended solely for educational and awareness purposes.
+
+---
+
+## 🟢 Security Awareness & Education
+
+Interactive learning modules that help users understand cyber threats and secure practices.
+
+Features include:
+
+* Cyber Threat Library
+* Awareness Training Pages
+* Interactive Security Quiz System
+* Student Assessment Engine
+* Performance Evaluation
+* Certificate-Ready Student Profiles
+
+---
+
+# 📚 Cyber Threat Library
+
+The platform contains a built-in knowledge base covering:
 
 * Phishing
 * Spear Phishing
 * Smishing
 * Vishing
+* Quishing
 * Malware
 * Ransomware
 * SQL Injection
-* XSS
-* CSRF
+* Cross-Site Scripting (XSS)
+* Cross-Site Request Forgery (CSRF)
 * Man-in-the-Middle (MITM)
+* USB Drop Attacks
+* UI Redressing & Fake Pop-up Attacks
 
-Each threat includes:
+Each topic includes:
 
 * Description
 * Risk Level
 * Attack Method
 * Prevention Techniques
+* Awareness Recommendations
 
 ---
 
-## Security Awareness Quiz System
+# 👥 User Management System
 
-Features:
+SET-CDP includes a Role-Based Access Control (RBAC) model.
 
-* Dynamic Question Management
-* Admin Question Builder
-* Student Assessment
-* Automated Scoring
-* Pass / Fail Evaluation
-* Certificate Generation
-* Results Management Dashboard
+### Administrator
+
+* Full dashboard access
+* Manage users
+* Manage quiz questions
+* View all reports
+* View all activity logs
+* Manage simulations
+* Access platform analytics
+
+### Standard User
+
+* Access security tools
+* Use awareness simulations
+* Take quizzes
+* Manage personal profile
+* View personal activity
+* View personal reports
 
 ---
 
-## Dashboard & Reporting
+# 🧑‍💻 User Profiles
 
-The platform provides:
+Each user can maintain a personal profile containing:
 
-* Security Activity Dashboard
+* Username
+* Official Certificate Name
+* Profile Image
+* Biography
+* Personal Quiz Results
+* Personal Activity History
+* Training Statistics
+
+---
+
+# 📊 Dashboard & Reporting
+
+The platform provides real-time insights through:
+
+* User Dashboard
+* Administrative Dashboard
+* Security Activity Monitoring
 * Scan Statistics
-* Training Attempts Statistics
 * Quiz Analytics
-* Visual Charts using Chart.js
+* Training Simulation Statistics
+* Activity History
 * Reports Center
+* Interactive Charts (Chart.js)
+
+---
+
+# 📝 Security Awareness Quiz System
+
+Features include:
+
+* Dynamic Question Builder
+* Question Management
+* Student Assessments
+* Automatic Scoring
+* Pass/Fail Evaluation
+* Results Management
+* Quiz Analytics
+* Certificate Integration
 
 ---
 
@@ -107,13 +180,18 @@ The platform provides:
 * HTML5
 * CSS3
 * JavaScript
+* Bootstrap 5
+* Jinja2
 
 ## Libraries & Frameworks
 
-* Jinja2
+* Requests
+* BeautifulSoup4
+* qrcode
+* Pillow
+* PyPDF
 * Chart.js
 * Font Awesome
-* Bootstrap Components
 
 ## Development Tools
 
@@ -130,8 +208,8 @@ The platform provides:
 SET-CDP/
 │
 ├── app.py
-├── database.db
 ├── requirements.txt
+├── README.md
 │
 ├── static/
 │   ├── style.css
@@ -143,14 +221,30 @@ SET-CDP/
 │   ├── reports.html
 │   ├── threat_library.html
 │   ├── about.html
+│   ├── login.html
+│   ├── register.html
+│   ├── profile.html
+│   ├── attack.html
+│   ├── ready_templates.html
+│   ├── awareness_training.html
 │   ├── quiz_start.html
 │   ├── quiz_take.html
 │   ├── quiz_result.html
 │   ├── quiz_builder.html
 │   ├── quiz_admin.html
-│   └── base_nav.html
+│   ├── base_nav.html
+│   │
+│   ├── social/
+│   │   ├── facebook.html
+│   │   ├── instagram.html
+│   │   ├── linkedin.html
+│   │   ├── university.html
+│   │   └── fake_popup.html
+│   │
+│   └── clones/
 │
-└── README.md
+├── uploads/
+└── database.db
 ```
 
 ---
@@ -163,7 +257,7 @@ Clone repository:
 git clone https://github.com/Hassan-Jouda/SET-CDP.git
 ```
 
-Move into project directory:
+Navigate into the project directory:
 
 ```bash
 cd SET-CDP
@@ -175,13 +269,13 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Run application:
+Run the application:
 
 ```bash
 python app.py
 ```
 
-Open browser:
+Open your browser:
 
 ```text
 http://127.0.0.1:5000
@@ -192,19 +286,22 @@ http://127.0.0.1:5000
 # 🎯 Project Objectives
 
 * Improve cybersecurity awareness.
-* Provide practical security education.
-* Support cybersecurity training environments.
-* Help students understand cyber threats.
+* Support cybersecurity education.
 * Demonstrate security testing concepts.
+* Help students understand modern cyber threats.
+* Provide hands-on learning experiences.
 * Promote ethical cybersecurity practices.
+* Encourage proactive security culture.
 
 ---
 
 # 🔒 Ethical Notice
 
-SET-CDP was developed for academic, educational, and cybersecurity awareness purposes only.
+SET-CDP is an academic and educational cybersecurity project.
 
-The platform is intended to support learning, training, and defensive security activities. Users are expected to follow ethical and legal cybersecurity practices at all times.
+The platform was developed to support cybersecurity education, awareness training, security assessment, and authorized testing activities.
+
+All simulations, demonstrations, and educational modules must be used only in approved environments and for legitimate educational or awareness purposes.
 
 ---
 
@@ -227,11 +324,13 @@ The platform is intended to support learning, training, and defensive security a
 # 🔮 Future Roadmap
 
 * AI-Assisted Threat Analysis
-* Advanced Reporting System
-* Leaderboard & Student Ranking
+* Advanced Security Reporting
+* Student Leaderboards
 * Enhanced Certificate System
-* Security Awareness Campaign Module
-* SIEM Integration Research
+* Awareness Campaign Management
+* Security Operations Dashboard
+* Research on SIEM Integration
+* Advanced Analytics & Metrics
 
 ---
 
@@ -239,8 +338,8 @@ The platform is intended to support learning, training, and defensive security a
 
 Academic Graduation Project
 
-Developed for educational and research purposes.
+Developed for educational, research, and cybersecurity awareness purposes.
 
 ---
 
-© 2026 SET-CDP – Security Education, Testing & Cyber Defense Platform
+© 2026 SET-CDP — Security Education, Testing & Cyber Defense Platform
