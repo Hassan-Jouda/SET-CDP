@@ -251,3 +251,44 @@ body{background:#f4f6f9;color:#1f2937}.navbar{background:#111827;padding:12px 0}
         padding-right: 25px;
     }
 }
+.nav-user {
+    color: #94a3b8;
+    font-size: 13px;
+    padding: 8px 10px;
+    background: #111827;
+    border: 1px solid #334155;
+    border-radius: 8px;
+}
+
+.logout-link {
+    color: #fecaca !important;
+}
+
+.logout-link:hover {
+    color: #ffffff !important;
+    background: #991b1b !important;
+}
+
+.nav-user {
+    color: #e0f2fe !important;
+    font-size: 13px;
+    padding: 8px 10px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    text-decoration: none;
+}
+
+.nav-user:hover {
+    background: #1e293b !important;
+    color: #38bdf8 !important;
+}
+
+.logout-link {
+    color: #fecaca !important;
+}
+
+.logout-link:hover {
+    color: #ffffff !important;
+    background: #991b1b !important;
+}

@@ -3,31 +3,54 @@
 
     <a class="top-brand" href="/">🛡️ SET-CDP</a>
 
-    <button class="nav-toggle" type="button" onclick="toggleNavMenu()">
+    <button class="nav-toggle" type="button" onclick="toggleNavMenu()" aria-label="Toggle navigation">
       ☰
     </button>
 
     <div class="top-nav-links" id="topNavLinks">
+
       <a href="/">أدوات الفحص</a>
-      <a href="/attack">الاختبار التعليمي</a>
-      <a href="/ready_templates">القوالب</a>
-      <a href="/dashboard">لوحة التحكم</a>
       <a href="/threat-library">مكتبة التهديدات</a>
-
-      <div class="nav-dropdown">
-        <button class="dropdown-btn" type="button" onclick="toggleQuizDropdown(event)">
-          الامتحان ▾
-        </button>
-
-        <div class="dropdown-menu-custom" id="quizDropdown">
-          <a href="/quiz">تقديم الامتحان</a>
-          <a href="/quiz-admin">نتائج الامتحان</a>
-          <a href="/reports">التقارير</a>
-          <a href="/quiz-builder">إدارة الامتحان</a>
-        </div>
-      </div>
-
       <a href="/about">من نحن</a>
+
+      {% if session.get('user_id') %}
+
+
+{% if session.get('user_id') %}
+  <a href="/attack">اختبار الاختراق</a>
+  <a href="/ready_templates">القوالب</a>
+  <a href="/dashboard">لوحة التحكم</a>
+{% endif %}
+
+        <div class="nav-dropdown">
+          <button class="dropdown-btn" type="button" onclick="toggleQuizDropdown(event)">
+            الامتحان ▾
+          </button>
+
+          <div class="dropdown-menu-custom" id="quizDropdown">
+            <a href="/quiz">تقديم الامتحان</a>
+
+            {% if session.get('role') == 'admin' %}
+              <a href="/quiz-admin">نتائج الامتحان</a>
+              <a href="/reports">التقارير</a>
+              <a href="/quiz-builder">إدارة الامتحان</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <a href="/profile" class="nav-user">
+          👤 {{ session.get('full_name') or session.get('username') }} 
+        </a>
+
+        <a class="logout-link" href="/logout">تسجيل خروج</a>
+
+      {% else %}
+
+        <a href="/login">تسجيل الدخول</a>
+        <a href="/register">إنشاء حساب</a>
+
+      {% endif %}
+
     </div>
 
   </div>
@@ -36,17 +59,26 @@
 <script>
 function toggleNavMenu() {
   const nav = document.getElementById("topNavLinks");
-  nav.classList.toggle("show");
+  if (nav) {
+    nav.classList.toggle("show");
+  }
 }
 
 function toggleQuizDropdown(event) {
   event.stopPropagation();
+
   const menu = document.getElementById("quizDropdown");
-  menu.classList.toggle("show");
+  if (menu) {
+    menu.classList.toggle("show");
+  }
 }
 
-document.addEventListener("click", function () {
+document.addEventListener("click", function (event) {
   const menu = document.getElementById("quizDropdown");
-  if (menu) menu.classList.remove("show");
+  const dropdown = document.querySelector(".nav-dropdown");
+
+  if (menu && dropdown && !dropdown.contains(event.target)) {
+    menu.classList.remove("show");
+  }
 });
 </script>

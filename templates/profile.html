@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>الملف الشخصي | SET-CDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+
+  <style>
+    body { background:#f8fafc; }
+
+    .profile-hero {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      border-radius: 18px;
+      padding: 30px;
+      margin-bottom: 25px;
+    }
+
+    .profile-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #38bdf8;
+      background: white;
+    }
+
+    .profile-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+{% include 'base_nav.html' %}
+
+<main class="container py-5">
+
+  <section class="profile-hero d-flex align-items-center gap-4 flex-wrap">
+    {% if user.profile_image %}
+      <img class="profile-img" src="/uploads/{{ user.profile_image }}">
+    {% else %}
+      <div class="profile-img d-flex align-items-center justify-content-center text-dark fw-bold">
+        USER
+      </div>
+    {% endif %}
+
+    <div>
+      <h1>{{ user.full_name or user.username }}</h1>
+      <p class="mb-1">Username: {{ user.username }}</p>
+      <p class="mb-0">Role: {{ user.role }}</p>
+    </div>
+  </section>
+
+  <section class="profile-card">
+    <h3>تعديل الملف الشخصي</h3>
+
+    <form method="post" enctype="multipart/form-data">
+      <label class="form-label">الاسم الرسمي للشهادة</label>
+      <input name="full_name" class="form-control mb-3" value="{{ user.full_name or '' }}" placeholder="مثال: Hassan Jouda" required>
+
+      <label class="form-label">نبذة قصيرة</label>
+      <textarea name="bio" class="form-control mb-3" rows="3">{{ user.bio or '' }}</textarea>
+
+      <label class="form-label">الصورة الشخصية</label>
+      <input name="profile_image" type="file" class="form-control mb-3" accept="image/png,image/jpeg,image/webp">
+
+      <button class="btn btn-primary">حفظ التعديلات</button>
+    </form>
+  </section>
+
+  <section class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="profile-card text-center">
+        <h2>{{ scans|length }}</h2>
+        <p>فحوصاتي الأخيرة</p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="profile-card text-center">
+        <h2>{{ quizzes|length }}</h2>
+        <p>اختباراتي</p>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="profile-card text-center">
+        <h2>{{ captures|length }}</h2>
+        <p>محاولاتي التدريبية</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="profile-card">
+    <h3>نتائج الامتحانات الخاصة بي</h3>
+
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>الاسم</th>
+            <th>العلامة</th>
+            <th>النسبة</th>
+            <th>الحالة</th>
+            <th>الوقت</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for q in quizzes %}
+          <tr>
+            <td>{{ q.student_name }}</td>
+            <td>{{ q.score }}/{{ q.total }}</td>
+            <td>{{ q.percentage }}%</td>
+            <td>{{ q.status }}</td>
+            <td>{{ q.timestamp }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">لا توجد نتائج بعد.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="profile-card">
+    <h3>آخر الفحوصات الخاصة بي</h3>
+
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>النوع</th>
+            <th>الهدف</th>
+            <th>النتيجة</th>
+            <th>المستوى</th>
+            <th>الوقت</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in scans %}
+          <tr>
+            <td>{{ s.scan_type }}</td>
+            <td class="text-break">{{ s.target }}</td>
+            <td>{{ s.result_summary }}</td>
+            <td>{{ s.risk_level }}</td>
+            <td>{{ s.timestamp }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">لا توجد فحوصات بعد.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>
