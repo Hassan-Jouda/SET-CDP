@@ -11,6 +11,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import qrcode
 import base64
+from flask import send_file, abort
+
+
 
 # ==================== CONFIGURATION ====================
 
@@ -49,6 +52,7 @@ QUIZ_QUESTIONS = [
     {"id": 9, "q": "HTTP without S means?", "a": ["Not encrypted", "More secure", "Always safe", "No website"], "correct": 0},
     {"id": 10, "q": "Security awareness means?", "a": ["Knowing risks and safe behavior", "Only coding", "Only design", "Only hardware"], "correct": 0}
 ]
+
 
 # ==================== SECURITY DECORATORS ====================
 
@@ -496,7 +500,10 @@ def about(): return render_template("about.html")
 @app.route('/awareness-training')
 def awareness(): return render_template('awareness_training.html')
 
-
+@app.route('/extensions')
+@login_required
+def extensions_page():
+    return render_template('extensions.html')
 # ==================== OFFENSIVE (CLONE & CAPTURE) APIs ====================
 
 @app.route('/api/generate-qr', methods=['POST'])
