@@ -422,23 +422,6 @@ Navigate into the project directory:
 cd SET-CDP
 ```
 
-Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate the virtual environment:
-
-```bash
-venv\Scripts\activate
-```
-
-For Linux or macOS:
-
-```bash
-source venv/bin/activate
-```
 
 Install dependencies:
 
