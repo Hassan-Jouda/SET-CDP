@@ -1,0 +1,855 @@
+<!-- =========================================================
+     SET-CDP Floating Awareness Chatbot Widget - Advanced UI
+     File: templates/chatbot_widget.html
+========================================================= -->
+
+<style>
+  :root {
+    --setcdp-chat-primary: #0ea5e9;
+    --setcdp-chat-secondary: #0f766e;
+    --setcdp-chat-dark: #020617;
+    --setcdp-chat-slate: #0f172a;
+    --setcdp-chat-border: #e2e8f0;
+    --setcdp-chat-muted: #64748b;
+    --setcdp-chat-bg: #f8fafc;
+  }
+
+  .setcdp-chatbot-button {
+    position: fixed;
+    bottom: 22px;
+    left: 22px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,0.28), transparent 35%),
+      linear-gradient(135deg, var(--setcdp-chat-primary), var(--setcdp-chat-secondary));
+    color: white;
+    font-size: 26px;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.30);
+    cursor: pointer;
+    z-index: 99999;
+    display: grid;
+    place-items: center;
+    transition: 0.25s ease;
+  }
+
+  .setcdp-chatbot-button:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.40);
+  }
+
+  .setcdp-chatbot-button .setcdp-chat-notification {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border: 2px solid white;
+    border-radius: 999px;
+    box-shadow: 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: setcdpPulse 1.5s infinite;
+  }
+
+  @keyframes setcdpPulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  }
+
+  .setcdp-chatbot-window {
+    position: fixed;
+    bottom: 98px;
+    left: 22px;
+    width: 395px;
+    max-width: calc(100vw - 32px);
+    height: 570px;
+    max-height: calc(100vh - 130px);
+    background: #ffffff;
+    border: 1px solid var(--setcdp-chat-border);
+    border-radius: 24px;
+    box-shadow: 0 26px 65px rgba(15, 23, 42, 0.32);
+    z-index: 99999;
+    display: none;
+    overflow: hidden;
+    direction: rtl;
+  }
+
+  .setcdp-chatbot-window.show {
+    display: flex;
+    flex-direction: column;
+    animation: setcdpChatOpen 0.22s ease;
+  }
+
+  @keyframes setcdpChatOpen {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .setcdp-chatbot-header {
+    background:
+      radial-gradient(circle at top left, rgba(56,189,248,.28), transparent 35%),
+      linear-gradient(135deg, #020617, #0f172a, #0f766e);
+    color: white;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .setcdp-chatbot-title {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+  }
+
+  .setcdp-chatbot-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.13);
+    display: grid;
+    place-items: center;
+    color: #38bdf8;
+    font-size: 21px;
+    flex-shrink: 0;
+  }
+
+  .setcdp-chatbot-title strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .setcdp-chatbot-title span {
+    display: block;
+    color: #cbd5e1;
+    font-size: 12px;
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  .setcdp-chatbot-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .setcdp-chatbot-icon-btn {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: white;
+    border-radius: 11px;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.2s;
+  }
+
+  .setcdp-chatbot-icon-btn:hover {
+    background: rgba(255,255,255,0.22);
+  }
+
+  .setcdp-chatbot-status {
+    background: #ecfdf5;
+    color: #047857;
+    border-bottom: 1px solid #d1fae5;
+    padding: 8px 13px;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .setcdp-chatbot-status.offline {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-bottom-color: #fecaca;
+  }
+
+  .setcdp-chatbot-status-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+  }
+
+  .setcdp-chatbot-status.offline .setcdp-chatbot-status-dot {
+    background: #ef4444;
+  }
+
+  .setcdp-chatbot-messages {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+    background:
+      radial-gradient(circle at top right, rgba(14,165,233,.08), transparent 28%),
+      #f8fafc;
+  }
+
+  .setcdp-chatbot-messages::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  .setcdp-chatbot-messages::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+  }
+
+  .setcdp-chatbot-message {
+    margin-bottom: 12px;
+    display: flex;
+  }
+
+  .setcdp-chatbot-message.user {
+    justify-content: flex-start;
+  }
+
+  .setcdp-chatbot-message.bot {
+    justify-content: flex-end;
+  }
+
+  .setcdp-chatbot-bubble {
+    max-width: 84%;
+    border-radius: 17px;
+    padding: 11px 13px;
+    line-height: 1.75;
+    font-size: 14px;
+    word-wrap: break-word;
+  }
+
+  .setcdp-chatbot-message.user .setcdp-chatbot-bubble {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 8px 18px rgba(14,165,233,.18);
+  }
+
+  .setcdp-chatbot-message.bot .setcdp-chatbot-bubble {
+    background: white;
+    color: #0f172a;
+    border: 1px solid var(--setcdp-chat-border);
+    border-bottom-left-radius: 6px;
+    box-shadow: 0 6px 16px rgba(15,23,42,.06);
+  }
+
+  .setcdp-chatbot-meta {
+    display: block;
+    margin-top: 6px;
+    font-size: 10px;
+    opacity: 0.7;
+  }
+
+  .setcdp-chatbot-suggestions {
+    padding: 10px 12px;
+    background: #ffffff;
+    border-top: 1px solid var(--setcdp-chat-border);
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+  }
+
+  .setcdp-chatbot-suggestions button,
+  .setcdp-chatbot-inline-suggestions button {
+    border: 1px solid #bae6fd;
+    background: #f0f9ff;
+    color: #0369a1;
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .setcdp-chatbot-suggestions button:hover,
+  .setcdp-chatbot-inline-suggestions button:hover {
+    background: #0ea5e9;
+    color: white;
+    border-color: #0ea5e9;
+  }
+
+  .setcdp-chatbot-links {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .setcdp-chatbot-link-btn {
+    display: inline-block;
+    text-decoration: none;
+    background: #0f172a;
+    color: white;
+    border-radius: 10px;
+    padding: 6px 9px;
+    font-size: 12px;
+    font-weight: 800;
+    transition: 0.2s;
+  }
+
+  .setcdp-chatbot-link-btn:hover {
+    background: #0ea5e9;
+    color: white;
+  }
+
+  .setcdp-chatbot-inline-suggestions {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .setcdp-chatbot-input-area {
+    padding: 12px;
+    background: #fff;
+    border-top: 1px solid var(--setcdp-chat-border);
+    display: flex;
+    gap: 8px;
+  }
+
+  .setcdp-chatbot-input-area input {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    padding: 11px 12px;
+    outline: none;
+    font-size: 14px;
+    min-width: 0;
+  }
+
+  .setcdp-chatbot-input-area input:focus {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14,165,233,0.13);
+  }
+
+  .setcdp-chatbot-send-btn {
+    width: 48px;
+    border: none;
+    border-radius: 14px;
+    background: #0f172a;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+    flex-shrink: 0;
+  }
+
+  .setcdp-chatbot-send-btn:hover {
+    background: #0ea5e9;
+  }
+
+  .setcdp-chatbot-send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .setcdp-typing-dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .setcdp-typing-dots span {
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: setcdpTypingBlink 1.2s infinite;
+  }
+
+  .setcdp-typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .setcdp-typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes setcdpTypingBlink {
+    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+  }
+
+  .setcdp-chatbot-empty-note {
+    color: #64748b;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px;
+  }
+
+  @media (max-width: 600px) {
+    .setcdp-chatbot-button {
+      left: 16px;
+      bottom: 16px;
+      width: 58px;
+      height: 58px;
+    }
+
+    .setcdp-chatbot-window {
+      left: 16px;
+      bottom: 86px;
+      width: calc(100vw - 32px);
+      height: 540px;
+      max-height: calc(100vh - 105px);
+      border-radius: 20px;
+    }
+
+    .setcdp-chatbot-bubble {
+      max-width: 88%;
+    }
+  }
+</style>
+
+<button class="setcdp-chatbot-button" id="setcdpChatbotToggle" type="button" title="اسأل SET-CDP">
+  <span class="setcdp-chat-notification"></span>
+  <i class="fas fa-robot"></i>
+</button>
+
+<div class="setcdp-chatbot-window" id="setcdpChatbotWindow">
+  <div class="setcdp-chatbot-header">
+    <div class="setcdp-chatbot-title">
+      <div class="setcdp-chatbot-avatar">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div>
+        <strong>SET-CDP Assistant</strong>
+        <span>مساعد التوعية السيبرانية</span>
+      </div>
+    </div>
+
+    <div class="setcdp-chatbot-header-actions">
+      <button class="setcdp-chatbot-icon-btn" id="setcdpChatbotClear" type="button" title="مسح المحادثة">
+        <i class="fas fa-trash"></i>
+      </button>
+
+      <button class="setcdp-chatbot-icon-btn" id="setcdpChatbotClose" type="button" title="إغلاق">
+        ×
+      </button>
+    </div>
+  </div>
+
+  <div class="setcdp-chatbot-status" id="setcdpChatbotStatus">
+    <span class="setcdp-chatbot-status-dot"></span>
+    <span>المساعد جاهز للإجابة</span>
+  </div>
+
+  <div class="setcdp-chatbot-messages" id="setcdpChatMessages">
+    <div class="setcdp-chatbot-message bot">
+      <div class="setcdp-chatbot-bubble">
+        أهلاً بك 👋 أنا مساعد SET-CDP. اسألني عن أدوات الفحص، SSL، الروابط المشبوهة، Mini-EDR، Agent، الإضافات، القوالب، أو نصائح الحماية.
+        <span class="setcdp-chatbot-meta">SET-CDP Assistant</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="setcdp-chatbot-suggestions" id="setcdpMainSuggestions">
+    <button type="button" data-suggestion="ما هي SET-CDP؟">ما هي SET-CDP؟</button>
+    <button type="button" data-suggestion="كيف أفحص رابط؟">فحص رابط</button>
+    <button type="button" data-suggestion="ما هو Mini-EDR؟">Mini-EDR</button>
+    <button type="button" data-suggestion="ما هي CookieShield؟">CookieShield</button>
+    <button type="button" data-suggestion="نصائح حماية">نصائح</button>
+  </div>
+
+  <div class="setcdp-chatbot-input-area">
+    <input
+      id="setcdpChatInput"
+      type="text"
+      maxlength="500"
+      placeholder="اكتب سؤالك هنا..."
+      autocomplete="off"
+    >
+
+    <button class="setcdp-chatbot-send-btn" id="setcdpSendButton" type="button" title="إرسال">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+(function () {
+  const API_ENDPOINT = "/api/chatbot";
+  const STORAGE_KEY = "setcdp_chat_history_v1";
+  const MAX_HISTORY_MESSAGES = 30;
+
+  const toggleBtn = document.getElementById("setcdpChatbotToggle");
+  const closeBtn = document.getElementById("setcdpChatbotClose");
+  const clearBtn = document.getElementById("setcdpChatbotClear");
+  const chatWindow = document.getElementById("setcdpChatbotWindow");
+  const messagesBox = document.getElementById("setcdpChatMessages");
+  const input = document.getElementById("setcdpChatInput");
+  const sendBtn = document.getElementById("setcdpSendButton");
+  const statusBox = document.getElementById("setcdpChatbotStatus");
+  const suggestionsBox = document.getElementById("setcdpMainSuggestions");
+
+  if (!toggleBtn || !chatWindow || !messagesBox || !input || !sendBtn) {
+    return;
+  }
+
+  function setStatus(text, mode) {
+    if (!statusBox) return;
+
+    statusBox.classList.remove("offline");
+
+    if (mode === "offline") {
+      statusBox.classList.add("offline");
+    }
+
+    const label = statusBox.querySelector("span:last-child");
+    if (label) {
+      label.textContent = text;
+    }
+  }
+
+  function toggleChatbot(forceState) {
+    const shouldOpen = typeof forceState === "boolean"
+      ? forceState
+      : !chatWindow.classList.contains("show");
+
+    if (shouldOpen) {
+      chatWindow.classList.add("show");
+      setTimeout(() => input.focus(), 120);
+      scrollToBottom();
+    } else {
+      chatWindow.classList.remove("show");
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function safeUrl(url) {
+    const clean = String(url || "").trim();
+
+    if (clean.startsWith("/")) return clean;
+    if (clean.startsWith("http://")) return clean;
+    if (clean.startsWith("https://")) return clean;
+
+    return "#";
+  }
+
+  function scrollToBottom() {
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+
+  function getTimeLabel() {
+    const now = new Date();
+    return now.toLocaleTimeString("ar", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  function addMessage(sender, text, options = {}) {
+    const message = document.createElement("div");
+    message.className = "setcdp-chatbot-message " + sender;
+
+    const bubble = document.createElement("div");
+    bubble.className = "setcdp-chatbot-bubble";
+
+    let html = escapeHtml(text).replaceAll("\n", "<br>");
+
+    if (sender === "bot" && options.quickLinks && options.quickLinks.length) {
+      html += `<div class="setcdp-chatbot-links">`;
+
+      options.quickLinks.forEach(function (link) {
+        html += `
+          <a href="${escapeHtml(safeUrl(link.url))}" class="setcdp-chatbot-link-btn">
+            ${escapeHtml(link.title || "فتح")}
+          </a>
+        `;
+      });
+
+      html += `</div>`;
+    }
+
+    if (sender === "bot" && options.suggestions && options.suggestions.length) {
+      html += `<div class="setcdp-chatbot-inline-suggestions">`;
+
+      options.suggestions.forEach(function (item) {
+        html += `
+          <button type="button" data-suggestion="${escapeHtml(item)}">
+            ${escapeHtml(item)}
+          </button>
+        `;
+      });
+
+      html += `</div>`;
+    }
+
+    html += `<span class="setcdp-chatbot-meta">${sender === "user" ? "أنت" : "SET-CDP Assistant"} • ${getTimeLabel()}</span>`;
+
+    bubble.innerHTML = html;
+    message.appendChild(bubble);
+    messagesBox.appendChild(message);
+
+    bindSuggestionButtons(message);
+    scrollToBottom();
+    saveHistory();
+  }
+
+  function addTypingMessage() {
+    removeTypingMessage();
+
+    const message = document.createElement("div");
+    message.className = "setcdp-chatbot-message bot";
+    message.id = "setcdpTypingMessage";
+
+    const bubble = document.createElement("div");
+    bubble.className = "setcdp-chatbot-bubble";
+    bubble.innerHTML = `
+      <span class="setcdp-typing-dots">
+        <span></span><span></span><span></span>
+      </span>
+    `;
+
+    message.appendChild(bubble);
+    messagesBox.appendChild(message);
+    scrollToBottom();
+  }
+
+  function removeTypingMessage() {
+    const typing = document.getElementById("setcdpTypingMessage");
+    if (typing) typing.remove();
+  }
+
+  function setLoading(isLoading) {
+    sendBtn.disabled = isLoading;
+    input.disabled = isLoading;
+
+    if (isLoading) {
+      sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      setStatus("جاري معالجة السؤال...", "online");
+    } else {
+      sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+      setStatus("المساعد جاهز للإجابة", "online");
+    }
+  }
+
+  function bindSuggestionButtons(root) {
+    const scope = root || document;
+
+    scope.querySelectorAll("[data-suggestion]").forEach(function (btn) {
+      if (btn.dataset.bound === "1") return;
+
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", function () {
+        const text = btn.getAttribute("data-suggestion") || "";
+        sendSuggestion(text);
+      });
+    });
+  }
+
+  function sendSuggestion(text) {
+    input.value = text;
+    toggleChatbot(true);
+    sendMessage();
+  }
+
+  async function sendMessage() {
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    if (message.length > 500) {
+      addMessage("bot", "السؤال طويل جداً. اختصره قليلاً وسأساعدك.");
+      return;
+    }
+
+    addMessage("user", message);
+    input.value = "";
+
+    setLoading(true);
+    addTypingMessage();
+
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: message
+        })
+      });
+
+      let data = {};
+
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        data = {};
+      }
+
+      removeTypingMessage();
+
+      if (!response.ok) {
+        addMessage(
+          "bot",
+          data.reply || "حدث خطأ أثناء الرد. حاول مرة أخرى.",
+          {
+            suggestions: data.suggestions || [],
+            quickLinks: data.quick_links || []
+          }
+        );
+
+        if (response.status === 429) {
+          setStatus("تم تقييد الطلبات مؤقتاً", "offline");
+        }
+
+        return;
+      }
+
+      addMessage(
+        "bot",
+        data.reply || "لم أتمكن من توليد رد مناسب.",
+        {
+          suggestions: data.suggestions || [],
+          quickLinks: data.quick_links || []
+        }
+      );
+
+    } catch (error) {
+      removeTypingMessage();
+
+      addMessage(
+        "bot",
+        "تعذر الاتصال بالمساعد حالياً. تأكد أن السيرفر يعمل وأن مسار /api/chatbot موجود في app.py."
+      );
+
+      setStatus("تعذر الاتصال بالسيرفر", "offline");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function saveHistory() {
+    try {
+      const items = [];
+
+      messagesBox.querySelectorAll(".setcdp-chatbot-message").forEach(function (node) {
+        if (node.id === "setcdpTypingMessage") return;
+
+        const isUser = node.classList.contains("user");
+        const bubble = node.querySelector(".setcdp-chatbot-bubble");
+
+        if (!bubble) return;
+
+        const clone = bubble.cloneNode(true);
+
+        clone.querySelectorAll(".setcdp-chatbot-meta, .setcdp-chatbot-links, .setcdp-chatbot-inline-suggestions").forEach(function (el) {
+          el.remove();
+        });
+
+        const text = clone.innerText.trim();
+
+        if (text) {
+          items.push({
+            sender: isUser ? "user" : "bot",
+            text: text
+          });
+        }
+      });
+
+      const limited = items.slice(-MAX_HISTORY_MESSAGES);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(limited));
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+  }
+
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+
+      const history = JSON.parse(raw);
+
+      if (!Array.isArray(history) || !history.length) return;
+
+      messagesBox.innerHTML = "";
+
+      history.forEach(function (item) {
+        addMessage(item.sender === "user" ? "user" : "bot", item.text || "");
+      });
+    } catch (e) {
+      // Ignore loading errors
+    }
+  }
+
+  function clearHistory() {
+    if (!confirm("هل تريد مسح محادثة المساعد؟")) return;
+
+    localStorage.removeItem(STORAGE_KEY);
+
+    messagesBox.innerHTML = `
+      <div class="setcdp-chatbot-message bot">
+        <div class="setcdp-chatbot-bubble">
+          تم مسح المحادثة. كيف يمكنني مساعدتك الآن؟
+          <span class="setcdp-chatbot-meta">SET-CDP Assistant • ${getTimeLabel()}</span>
+        </div>
+      </div>
+    `;
+
+    scrollToBottom();
+  }
+
+  toggleBtn.addEventListener("click", function () {
+    toggleChatbot();
+  });
+
+  closeBtn.addEventListener("click", function () {
+    toggleChatbot(false);
+  });
+
+  clearBtn.addEventListener("click", clearHistory);
+
+  sendBtn.addEventListener("click", sendMessage);
+
+  input.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendMessage();
+    }
+
+    if (event.key === "Escape") {
+      toggleChatbot(false);
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && chatWindow.classList.contains("show")) {
+      toggleChatbot(false);
+    }
+  });
+
+  bindSuggestionButtons(suggestionsBox);
+  loadHistory();
+
+  window.SetCDPChatbot = {
+    open: function () { toggleChatbot(true); },
+    close: function () { toggleChatbot(false); },
+    sendSuggestion: sendSuggestion
+  };
+})();
+</script>

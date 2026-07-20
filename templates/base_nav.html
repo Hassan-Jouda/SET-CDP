@@ -1,7 +1,227 @@
+<style>
+  .top-navbar {
+    background: #0f172a;
+    color: #fff;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.22);
+  }
+
+  .top-navbar-wrap {
+    max-width: 1300px;
+    margin: auto;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .top-brand {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 20px;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+
+  .top-brand:hover {
+    color: #38bdf8;
+  }
+
+  .nav-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    border-radius: 10px;
+    padding: 7px 11px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .top-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .top-nav-links a,
+  .dropdown-btn {
+    color: #e2e8f0;
+    text-decoration: none;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: 0.2s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .top-nav-links a:hover,
+  .dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #38bdf8;
+  }
+
+  .nav-dropdown {
+    position: relative;
+  }
+
+  .dropdown-menu-custom {
+    display: none;
+    position: absolute;
+    top: 43px;
+    right: 0;
+    min-width: 230px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 8px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
+    z-index: 10000;
+  }
+
+  .dropdown-menu-custom.show {
+    display: block;
+  }
+
+  .dropdown-menu-custom a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0f172a;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-decoration: none;
+    width: 100%;
+  }
+
+  .dropdown-menu-custom a:hover {
+    background: #f1f5f9;
+    color: #0f766e;
+  }
+
+  .danger-nav-item {
+    color: #dc2626 !important;
+    font-weight: 900 !important;
+  }
+
+  .danger-nav-item:hover {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+  }
+
+  .admin-btn {
+    color: #facc15 !important;
+  }
+
+  .admin-btn:hover {
+    background: rgba(250, 204, 21, 0.12) !important;
+    color: #fde68a !important;
+  }
+
+  .nav-user {
+    background: rgba(56, 189, 248, 0.14) !important;
+    color: #bae6fd !important;
+    font-weight: 900 !important;
+  }
+
+  .nav-user:hover {
+    background: rgba(56, 189, 248, 0.24) !important;
+    color: white !important;
+  }
+
+  .logout-link {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #fecaca !important;
+  }
+
+  .logout-link:hover {
+    background: #dc2626 !important;
+    color: white !important;
+  }
+
+  .register-link {
+    background: #0f766e !important;
+    color: white !important;
+  }
+
+  .register-link:hover {
+    background: #115e59 !important;
+    color: white !important;
+  }
+
+  .soc-link {
+    color: #f87171 !important;
+    font-weight: 900 !important;
+  }
+
+  .soc-link:hover {
+    background: rgba(248, 113, 113, 0.15) !important;
+    color: #fecaca !important;
+  }
+
+  @media (max-width: 1100px) {
+    .top-navbar-wrap {
+      flex-wrap: wrap;
+    }
+
+    .nav-toggle {
+      display: block;
+    }
+
+    .top-nav-links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+      margin-top: 12px;
+      gap: 6px;
+    }
+
+    .top-nav-links.show {
+      display: flex;
+    }
+
+    .top-nav-links a,
+    .dropdown-btn {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: right;
+    }
+
+    .nav-dropdown {
+      width: 100%;
+    }
+
+    .dropdown-menu-custom {
+      position: static;
+      width: 100%;
+      margin-top: 5px;
+      box-shadow: none;
+      border-radius: 12px;
+    }
+  }
+</style>
+
 <nav class="top-navbar">
   <div class="top-navbar-wrap">
 
-    <a class="top-brand" href="/">🛡️ SET-CDP</a>
+    <a class="top-brand" href="/">
+      🛡️ SET-CDP
+    </a>
 
     <button class="nav-toggle" type="button" onclick="toggleNavMenu()" aria-label="Toggle navigation">
       ☰
@@ -9,46 +229,157 @@
 
     <div class="top-nav-links" id="topNavLinks">
 
-      <a href="/">أدوات الفحص</a>
-      <a href="/threat-library">مكتبة التهديدات</a>
-      <a href="/about">من نحن</a>
-  <a href="/extensions"> الإضافات </a>
+      <!-- Public Links -->
+      <a href="/">
+        <i class="fas fa-search"></i>
+        أدوات الفحص
+      </a>
+
+      <a href="/threat-library">
+        <i class="fas fa-biohazard"></i>
+        مكتبة التهديدات
+      </a>
+
+      <a href="/extensions">
+        <i class="fab fa-chrome"></i>
+        الإضافات
+      </a>
+
+      <a href="/about">
+        <i class="fas fa-circle-info"></i>
+        من نحن
+      </a>
 
       {% if session.get('user_id') %}
 
-
-{% if session.get('user_id') %}
-  <a href="/attack">اختبار الاختراق</a>
-  <a href="/ready_templates">القوالب</a>
-  <a href="/dashboard">لوحة التحكم</a>
-{% endif %}
-
+        <!-- Platform Tools Dropdown -->
         <div class="nav-dropdown">
-          <button class="dropdown-btn" type="button" onclick="toggleQuizDropdown(event)">
+          <button class="dropdown-btn" type="button" onclick="toggleDropdown(event, 'toolsDropdown')">
+            <i class="fas fa-shield-halved"></i>
+            أدوات المنصة ▾
+          </button>
+
+          <div class="dropdown-menu-custom" id="toolsDropdown">
+            <a href="/attack">
+              <i class="fas fa-bug"></i>
+              اختبار الاختراق
+            </a>
+
+            <a href="/ready_templates">
+              <i class="fas fa-layer-group"></i>
+              القوالب
+            </a>
+
+            <a href="/dashboard">
+              <i class="fas fa-chart-line"></i>
+              لوحة التحكم
+            </a>
+
+            <a href="/edr" class="danger-nav-item">
+              <i class="fas fa-satellite-dish"></i>
+              Live SOC Monitor
+            </a>
+
+          </div>
+        </div>
+
+        <!-- Quiz Dropdown -->
+        <div class="nav-dropdown">
+          <button class="dropdown-btn" type="button" onclick="toggleDropdown(event, 'quizDropdown')">
+            <i class="fas fa-clipboard-question"></i>
             الامتحان ▾
           </button>
 
           <div class="dropdown-menu-custom" id="quizDropdown">
-            <a href="/quiz">تقديم الامتحان</a>
+            <a href="/quiz">
+              <i class="fas fa-pen-to-square"></i>
+              تقديم الامتحان
+            </a>
 
-            {% if session.get('role') == 'admin' %}
-              <a href="/quiz-admin">نتائج الامتحان</a>
-              <a href="/reports">التقارير</a>
-              <a href="/quiz-builder">إدارة الامتحان</a>
+            {% if session.get('role') == 'admin' or session.get('is_admin') %}
+              <a href="/quiz-admin">
+                <i class="fas fa-square-poll-vertical"></i>
+                نتائج الامتحان
+              </a>
+
+              <a href="/quiz-builder">
+                <i class="fas fa-gear"></i>
+                إدارة الامتحان
+              </a>
+
+              <a href="/reports">
+                <i class="fas fa-file-lines"></i>
+                التقارير
+              </a>
             {% endif %}
           </div>
         </div>
 
+        {% if session.get('role') == 'admin' or session.get('is_admin') %}
+
+          <!-- Admin Dropdown -->
+          <div class="nav-dropdown">
+            <button class="dropdown-btn admin-btn" type="button" onclick="toggleDropdown(event, 'adminDropdown')">
+              <i class="fas fa-user-shield"></i>
+              الإدارة ▾
+            </button>
+
+            <div class="dropdown-menu-custom" id="adminDropdown">
+              <a href="/admin/threats">
+                <i class="fas fa-plus-circle"></i>
+                نشر تهديد جديد
+              </a>
+
+              <a href="/quiz-builder">
+                <i class="fas fa-list-check"></i>
+                إدارة الأسئلة
+              </a>
+
+              <a href="/reports">
+                <i class="fas fa-chart-pie"></i>
+                مركز التقارير
+              </a>
+
+              <a href="/edr">
+                <i class="fas fa-satellite-dish"></i>
+                مراقبة Mini-EDR
+              </a>
+              <!-- في المكان المخصص لروابط الأدمن داخل base_nav.html -->
+<a href="/edr/devices">
+    <i class="fas fa-server"></i>
+    Endpoint Devices
+</a>
+<a href="/edr/download">
+    <i class="fas fa-download"></i>
+    Agent Download
+</a>
+            </div>
+          </div>
+
+        {% endif %}
+
+        <!-- User Profile -->
         <a href="/profile" class="nav-user">
-          👤 {{ session.get('full_name') or session.get('username') }} 
+          <i class="fas fa-user"></i>
+          {{ session.get('full_name') or session.get('username') }}
         </a>
 
-        <a class="logout-link" href="/logout">تسجيل خروج</a>
+        <a class="logout-link" href="/logout">
+          <i class="fas fa-right-from-bracket"></i>
+          تسجيل خروج
+        </a>
 
       {% else %}
 
-        <a href="/login">تسجيل الدخول</a>
-        <a href="/register">إنشاء حساب</a>
+        <a href="/login">
+          <i class="fas fa-right-to-bracket"></i>
+          تسجيل الدخول
+        </a>
+
+        <a href="/register" class="register-link">
+          <i class="fas fa-user-plus"></i>
+          إنشاء حساب
+        </a>
 
       {% endif %}
 
@@ -56,30 +387,43 @@
 
   </div>
 </nav>
-
+{% include 'chatbot_widget.html' %}
 <script>
-function toggleNavMenu() {
-  const nav = document.getElementById("topNavLinks");
-  if (nav) {
-    nav.classList.toggle("show");
+  function toggleNavMenu() {
+    const nav = document.getElementById("topNavLinks");
+
+    if (nav) {
+      nav.classList.toggle("show");
+    }
   }
-}
 
-function toggleQuizDropdown(event) {
-  event.stopPropagation();
+  function toggleDropdown(event, dropdownId) {
+    event.stopPropagation();
 
-  const menu = document.getElementById("quizDropdown");
-  if (menu) {
-    menu.classList.toggle("show");
+    const targetMenu = document.getElementById(dropdownId);
+
+    document.querySelectorAll(".dropdown-menu-custom").forEach(function(menu) {
+      if (menu.id !== dropdownId) {
+        menu.classList.remove("show");
+      }
+    });
+
+    if (targetMenu) {
+      targetMenu.classList.toggle("show");
+    }
   }
-}
 
-document.addEventListener("click", function (event) {
-  const menu = document.getElementById("quizDropdown");
-  const dropdown = document.querySelector(".nav-dropdown");
+  document.addEventListener("click", function() {
+    document.querySelectorAll(".dropdown-menu-custom").forEach(function(menu) {
+      menu.classList.remove("show");
+    });
+  });
 
-  if (menu && dropdown && !dropdown.contains(event.target)) {
-    menu.classList.remove("show");
-  }
-});
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+      document.querySelectorAll(".dropdown-menu-custom").forEach(function(menu) {
+        menu.classList.remove("show");
+      });
+    }
+  });
 </script>

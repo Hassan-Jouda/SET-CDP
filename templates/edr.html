@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>Mini-EDR Live Monitor | SET-CDP</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        body {
+            background: #020617;
+            color: #e2e8f0;
+        }
+
+        .edr-container {
+            max-width: 1450px;
+            margin: 25px auto;
+            padding: 0 15px 40px;
+        }
+
+        .edr-hero {
+            background:
+                radial-gradient(circle at top left, rgba(56,189,248,.25), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(239,68,68,.18), transparent 35%),
+                linear-gradient(135deg, #020617, #0f172a, #111827);
+            border: 1px solid #1e293b;
+            border-radius: 22px;
+            padding: 30px;
+            margin-bottom: 22px;
+            box-shadow: 0 18px 40px rgba(0,0,0,.35);
+        }
+
+        .edr-hero h1 {
+            color: #38bdf8;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .edr-hero p {
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .live-badge {
+            background: #064e3b;
+            color: #6ee7b7;
+            border: 1px solid #10b981;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pulse {
+            width: 9px;
+            height: 9px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 rgba(34,197,94,.7);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(34,197,94,.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+        }
+
+        .metric-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 18px;
+            padding: 18px;
+            height: 100%;
+            box-shadow: 0 10px 26px rgba(0,0,0,.25);
+        }
+
+        .metric-card span {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .metric-card h3 {
+            margin: 6px 0 0;
+            color: #f8fafc;
+            font-weight: 900;
+        }
+
+        .soc-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 28px rgba(0,0,0,.25);
+            margin-bottom: 22px;
+        }
+
+        .soc-card-header {
+            background: #020617;
+            border-bottom: 1px solid #1e293b;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .soc-card-header h5 {
+            margin: 0;
+            font-weight: 900;
+        }
+
+        .table {
+            margin: 0;
+            color: #e2e8f0;
+        }
+
+        .table thead th {
+            background: #020617;
+            color: #38bdf8;
+            border-bottom: 1px solid #1e293b;
+            font-size: 13px;
+        }
+
+        .table tbody td {
+            border-color: #1e293b;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .risk-normal {
+            color: #94a3b8;
+            font-weight: 800;
+        }
+
+        .risk-low {
+            color: #22c55e;
+            font-weight: 900;
+        }
+
+        .risk-medium {
+            color: #f59e0b;
+            font-weight: 900;
+        }
+
+        .risk-high {
+            color: #ef4444;
+            font-weight: 900;
+        }
+
+        .row-high {
+            background: rgba(239, 68, 68, .12) !important;
+        }
+
+        .row-medium {
+            background: rgba(245, 158, 11, .10) !important;
+        }
+
+        .alert-box {
+            background: #111827;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .alert-title {
+            font-weight: 900;
+            color: #f87171;
+        }
+
+        .alert-details {
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .btn-kill {
+            border: none;
+            background: #7f1d1d;
+            color: white;
+            border-radius: 8px;
+            padding: 5px 9px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .text-ltr {
+            direction: ltr;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+{% include 'base_nav.html' %}
+
+<main class="edr-container">
+
+    <section class="edr-hero">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="fas fa-satellite-dish"></i> Mini-EDR Live Monitor</h1>
+                <p>
+                    مراقبة مباشرة للعمليات، موارد النظام، الاتصالات الشبكية، والتنبيهات الأمنية داخل بيئة SET-CDP.
+                </p>
+            </div>
+
+            <div class="live-badge" id="liveStatus">
+                <span class="pulse"></span>
+                Live Monitoring
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <span><i class="fas fa-microchip"></i> CPU Usage</span>
+                <h3 id="cpuMetric">--%</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="metric-card">
+                <span><i class="fas fa-memory"></i> RAM Usage</span>
+                <h3 id="ramMetric">--%</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="metric-card">
+                <span><i class="fas fa-hard-drive"></i> Disk Usage</span>
+                <h3 id="diskMetric">--%</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="metric-card">
+                <span><i class="fas fa-clock"></i> Last Update</span>
+                <h3 id="timeMetric">--</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="soc-card">
+        <div class="soc-card-header">
+            <h5 class="text-danger">
+                <i class="fas fa-triangle-exclamation"></i>
+                Live Alerts
+            </h5>
+            <span class="badge bg-danger" id="alertCount">0</span>
+        </div>
+
+        <div class="p-3" id="alertsBox">
+            <div class="text-secondary">لا توجد تنبيهات حالياً.</div>
+        </div>
+    </section>
+
+    <section class="soc-card">
+        <div class="soc-card-header">
+            <h5 class="text-warning">
+                <i class="fas fa-network-wired"></i>
+                Network Connections
+            </h5>
+            <span class="badge bg-dark" id="connCount">0</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th>Risk</th>
+                        <th>Protocol</th>
+                        <th>Local</th>
+                        <th>Remote</th>
+                        <th>Status</th>
+                        <th>PID</th>
+                        <th>Process</th>
+                        <th>Reasons</th>
+                    </tr>
+                </thead>
+                <tbody id="connectionsBody">
+                    <tr>
+                        <td colspan="8" class="text-center text-secondary">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="soc-card">
+        <div class="soc-card-header">
+            <h5 class="text-info">
+                <i class="fas fa-microchip"></i>
+                Top Processes
+            </h5>
+            <span class="badge bg-dark" id="procCount">0</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th>Risk</th>
+                        <th>PID</th>
+                        <th>Name</th>
+                        <th>User</th>
+                        <th>CPU</th>
+                        <th>RAM</th>
+                        <th>Status</th>
+                        <th>Path</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="processesBody">
+                    <tr>
+                        <td colspan="9" class="text-center text-secondary">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<script>
+function riskClass(level) {
+    if (level === "High") return "risk-high";
+    if (level === "Medium") return "risk-medium";
+    if (level === "Low") return "risk-low";
+    return "risk-normal";
+}
+
+function rowClass(level) {
+    if (level === "High") return "row-high";
+    if (level === "Medium") return "row-medium";
+    return "";
+}
+
+function safeText(value) {
+    if (value === null || value === undefined || value === "") return "-";
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
+
+function loadEDRData() {
+    fetch("/api/edr-data")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("liveStatus").innerHTML =
+                '<span class="pulse"></span> Live Monitoring';
+
+            const sys = data.system || {};
+
+            document.getElementById("cpuMetric").innerText = safeText(sys.cpu_percent) + "%";
+            document.getElementById("ramMetric").innerText = safeText(sys.memory_percent) + "%";
+            document.getElementById("diskMetric").innerText = safeText(sys.disk_percent) + "%";
+            document.getElementById("timeMetric").innerText = safeText(sys.time).split(" ")[1] || "--";
+
+            renderAlerts(data.alerts || []);
+            renderConnections(data.connections || []);
+            renderProcesses(data.processes || []);
+        })
+        .catch(() => {
+            document.getElementById("liveStatus").innerHTML =
+                '<i class="fas fa-circle-xmark"></i> Connection Lost';
+            document.getElementById("liveStatus").style.background = "#7f1d1d";
+            document.getElementById("liveStatus").style.color = "#fecaca";
+        });
+}
+
+function renderAlerts(alerts) {
+    const box = document.getElementById("alertsBox");
+    document.getElementById("alertCount").innerText = alerts.length;
+
+    if (!alerts.length) {
+        box.innerHTML = '<div class="text-secondary">لا توجد تنبيهات حالياً.</div>';
+        return;
+    }
+
+    box.innerHTML = alerts.map(a => `
+        <div class="alert-box">
+            <div class="alert-title">
+                ${safeText(a.severity)} — ${safeText(a.title)}
+            </div>
+            <div class="alert-details">
+                ${safeText(a.details)}
+            </div>
+        </div>
+    `).join("");
+}
+
+function renderConnections(connections) {
+    const body = document.getElementById("connectionsBody");
+    document.getElementById("connCount").innerText = connections.length;
+
+    if (!connections.length) {
+        body.innerHTML = '<tr><td colspan="8" class="text-center text-secondary">No active connections.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = connections.map(c => `
+        <tr class="${rowClass(c.risk_level)}">
+            <td class="${riskClass(c.risk_level)}">${safeText(c.risk_level)} (${safeText(c.risk_score)})</td>
+            <td>${safeText(c.type)}</td>
+            <td class="text-ltr">${safeText(c.local_address)}</td>
+            <td class="text-ltr">${safeText(c.remote_address)}</td>
+            <td>${safeText(c.status)}</td>
+            <td>${safeText(c.pid)}</td>
+            <td>${safeText(c.process_name)}</td>
+            <td>${safeText((c.risk_reasons || []).join(", "))}</td>
+        </tr>
+    `).join("");
+}
+
+function renderProcesses(processes) {
+    const body = document.getElementById("processesBody");
+    document.getElementById("procCount").innerText = processes.length;
+
+    if (!processes.length) {
+        body.innerHTML = '<tr><td colspan="9" class="text-center text-secondary">No process data.</td></tr>';
+        return;
+    }
+
+    body.innerHTML = processes.map(p => `
+        <tr class="${rowClass(p.risk_level)}">
+            <td class="${riskClass(p.risk_level)}">${safeText(p.risk_level)} (${safeText(p.risk_score)})</td>
+            <td>${safeText(p.pid)}</td>
+            <td>${safeText(p.name)}</td>
+            <td>${safeText(p.username)}</td>
+            <td>${safeText(p.cpu_percent)}%</td>
+            <td>${safeText(p.memory_percent)}%</td>
+            <td>${safeText(p.status)}</td>
+            <td class="text-ltr">${safeText(p.exe)}</td>
+            <td>
+                <button class="btn-kill" onclick="killProcess(${p.pid})">
+                    Kill
+                </button>
+            </td>
+        </tr>
+    `).join("");
+}
+
+function killProcess(pid) {
+    if (!confirm("هل أنت متأكد أنك تريد إنهاء هذه العملية؟")) return;
+
+    fetch(`/api/edr-kill/${pid}`, {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message || data.error || "Done");
+        loadEDRData();
+    })
+    .catch(() => {
+        alert("فشل تنفيذ الأمر.");
+    });
+}
+
+setInterval(loadEDRData, 3000);
+loadEDRData();
+</script>
+
+</body>
+</html>

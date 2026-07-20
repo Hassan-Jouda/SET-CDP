@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>تحميل الـ Agent | SET-CDP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #020617; color: #e2e8f0; }
+        .dl-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 40px; margin-top: 50px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .code-box { background: #000; border-radius: 8px; padding: 15px; color: #22c55e; direction: ltr; text-align: left; font-family: monospace; font-size: 14px; margin-top: 20px; }
+        .btn-exe { background: #38bdf8; color: #0f172a; transition: 0.3s; }
+        .btn-exe:hover { background: #0ea5e9; color: #fff; }
+        .btn-py { background: transparent; color: #38bdf8; border: 1px solid #38bdf8; transition: 0.3s; }
+        .btn-py:hover { background: rgba(56,189,248,0.1); }
+    </style>
+</head>
+<body>
+{% include 'base_nav.html' %}
+<div class="container" style="max-width: 800px;">
+    <div class="dl-card">
+        <i class="fas fa-shield-virus fa-4x text-info mb-3"></i>
+        <h2 class="fw-bold text-white mb-3">SET-CDP Endpoint Agent</h2>
+        <p class="text-secondary mb-4">اختر النسخة المناسبة لنظامك. يقوم العميل الذكي بالارتباط بمنصة Mini-SOC المركزية لإرسال الـ Heartbeats الدورية والمراقبة.</p>
+        
+        <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
+            <!-- زر تحميل EXE -->
+            <a href="/static/agent.exe" download="agent.exe" class="btn btn-exe btn-lg fw-bold rounded-3 px-4">
+                <i class="fab fa-windows fs-5"></i> تحميل نسخة (EXE)
+            </a>
+            
+            <!-- زر تحميل Python -->
+            <a href="/static/agent.py" download="agent.py" class="btn btn-py btn-lg fw-bold rounded-3 px-4">
+                <i class="fab fa-python fs-5"></i> تحميل سكربت (Python)
+            </a>
+        </div>
+
+        <div class="text-start mt-4">
+            <h5 class="text-light"><i class="fas fa-terminal"></i> تعليمات التشغيل:</h5>
+            <div class="code-box">
+                <span class="text-secondary"># لنسخة الـ Windows (EXE):</span><br>
+                <span class="text-light">فقط قم بنقر مزدوج على ملف agent.exe للبدء.</span><br><br>
+                
+                <span class="text-secondary"># لنسخة السكربت (Python):</span><br>
+                pip install psutil requests<br>
+                python agent.py
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

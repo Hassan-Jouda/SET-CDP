@@ -5,36 +5,287 @@
   <title>الملف الشخصي | SET-CDP</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="/static/style.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
 
   <style>
-    body { background:#f8fafc; }
+    body {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .profile-page {
+      max-width: 1200px;
+      margin: auto;
+    }
 
     .profile-hero {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(15,118,110,.22), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a, #1e293b);
       color: white;
-      border-radius: 18px;
-      padding: 30px;
+      border-radius: 24px;
+      padding: 34px;
       margin-bottom: 25px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-hero::before {
+      content: "SET-CDP";
+      position: absolute;
+      left: 30px;
+      bottom: -20px;
+      font-size: 85px;
+      font-weight: 950;
+      color: rgba(255,255,255,.035);
+      letter-spacing: 6px;
+      pointer-events: none;
     }
 
     .profile-img {
-      width: 120px;
-      height: 120px;
+      width: 125px;
+      height: 125px;
       border-radius: 50%;
       object-fit: cover;
-      border: 4px solid #38bdf8;
+      border: 5px solid #38bdf8;
       background: white;
+      box-shadow: 0 12px 32px rgba(14,165,233,.28);
+    }
+
+    .profile-fallback {
+      width: 125px;
+      height: 125px;
+      border-radius: 50%;
+      border: 5px solid #38bdf8;
+      background: linear-gradient(135deg, #e0f2fe, #ccfbf1);
+      color: #0f172a;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      font-weight: 950;
+      box-shadow: 0 12px 32px rgba(14,165,233,.28);
+    }
+
+    .profile-name {
+      font-size: 34px;
+      font-weight: 950;
+      margin-bottom: 8px;
+    }
+
+    .profile-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .profile-pill {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #e2e8f0;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .role-admin {
+      background: rgba(239,68,68,.18);
+      color: #fecaca;
+      border-color: rgba(239,68,68,.35);
+    }
+
+    .role-user {
+      background: rgba(14,165,233,.18);
+      color: #bae6fd;
+      border-color: rgba(14,165,233,.35);
     }
 
     .profile-card {
       background: white;
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+      margin-bottom: 22px;
+    }
+
+    .profile-card h3 {
+      font-weight: 950;
+      color: #0f172a;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .profile-card h3 i {
+      color: #0ea5e9;
+    }
+
+    .form-label {
+      font-weight: 850;
+      color: #334155;
+    }
+
+    .form-control {
+      border-radius: 13px;
+      border-color: #cbd5e1;
+      padding: 11px 13px;
+    }
+
+    .form-control:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14,165,233,.13);
+    }
+
+    .stats-card {
+      position: relative;
+      overflow: hidden;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px;
+      height: 100%;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+      transition: .25s;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 35px rgba(15, 23, 42, 0.11);
+    }
+
+    .stats-icon {
+      width: 52px;
+      height: 52px;
       border-radius: 16px;
-      padding: 22px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 5px 18px rgba(0,0,0,0.06);
-      margin-bottom: 20px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+
+    .stats-card h2 {
+      font-size: 38px;
+      font-weight: 950;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .stats-card p {
+      color: #64748b;
+      margin: 0;
+      font-weight: 800;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table thead th {
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 950;
+      border-color: #e2e8f0;
+      padding: 13px;
+      white-space: nowrap;
+    }
+
+    .table tbody td {
+      border-color: #e2e8f0;
+      vertical-align: middle;
+      font-size: 14px;
+      padding: 12px;
+    }
+
+    .badge-soft {
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 850;
+      font-size: 12px;
+    }
+
+    .risk-high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .risk-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .risk-low {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 35px 15px;
+      color: #94a3b8;
+    }
+
+    .empty-state i {
+      font-size: 38px;
+      margin-bottom: 10px;
+      opacity: .45;
+    }
+
+    .text-ltr {
+      direction: ltr;
+      text-align: left;
+    }
+
+    .bio-box {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 16px;
+      padding: 13px 15px;
+      margin-top: 14px;
+      color: #cbd5e1;
+      line-height: 1.8;
+      max-width: 700px;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .btn-rounded {
+      border-radius: 13px;
+      font-weight: 850;
+      padding: 10px 15px;
+    }
+
+    @media (max-width: 768px) {
+      .profile-hero {
+        text-align: center;
+        padding: 26px 18px;
+      }
+
+      .profile-hero-content {
+        justify-content: center;
+      }
+
+      .profile-name {
+        font-size: 27px;
+      }
+
+      .profile-meta,
+      .profile-actions {
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -43,69 +294,174 @@
 
 {% include 'base_nav.html' %}
 
-<main class="container py-5">
+<main class="container py-5 profile-page">
 
-  <section class="profile-hero d-flex align-items-center gap-4 flex-wrap">
-    {% if user.profile_image %}
-      <img class="profile-img" src="/uploads/{{ user.profile_image }}">
-    {% else %}
-      <div class="profile-img d-flex align-items-center justify-content-center text-dark fw-bold">
-        USER
+  <section class="profile-hero">
+    <div class="d-flex align-items-center gap-4 flex-wrap profile-hero-content">
+
+      {% if user.profile_image %}
+        <!-- تمت إضافة حماية الصورة onerror -->
+        <img class="profile-img" src="/uploads/{{ user.profile_image }}" alt="Profile image" onerror="this.style.display='none';">
+      {% else %}
+        <div class="profile-fallback">
+          {{ (user.full_name or user.username or 'U')[0]|upper }}
+        </div>
+      {% endif %}
+
+      <div class="flex-grow-1">
+        <h1 class="profile-name">
+          {{ user.full_name or user.username }}
+        </h1>
+
+        <div class="profile-meta">
+          <span class="profile-pill">
+            <i class="fas fa-user"></i>
+            Username: {{ user.username }}
+          </span>
+
+          {% if user.role == 'admin' %}
+            <span class="profile-pill role-admin">
+              <i class="fas fa-user-shield"></i>
+              Admin
+            </span>
+          {% else %}
+            <span class="profile-pill role-user">
+              <i class="fas fa-user"></i>
+              User
+            </span>
+          {% endif %}
+        </div>
+
+        {% if user.bio %}
+          <div class="bio-box">
+            <i class="fas fa-quote-right"></i>
+            {{ user.bio }}
+          </div>
+        {% else %}
+          <div class="bio-box">
+            لم تتم إضافة نبذة شخصية بعد. يمكنك تعديل ملفك وإضافة وصف قصير يظهر هنا.
+          </div>
+        {% endif %}
+
+        <div class="profile-actions">
+          <a href="/dashboard" class="btn btn-info btn-rounded text-white">
+            <i class="fas fa-chart-line"></i>
+            لوحة التحكم
+          </a>
+
+          <a href="/quiz" class="btn btn-outline-light btn-rounded">
+            <i class="fas fa-clipboard-question"></i>
+            تقديم امتحان
+          </a>
+
+          <a href="/" class="btn btn-outline-light btn-rounded">
+            <i class="fas fa-toolbox"></i>
+            أدوات الفحص
+          </a>
+        </div>
       </div>
-    {% endif %}
 
-    <div>
-      <h1>{{ user.full_name or user.username }}</h1>
-      <p class="mb-1">Username: {{ user.username }}</p>
-      <p class="mb-0">Role: {{ user.role }}</p>
     </div>
   </section>
 
-  <section class="profile-card">
-    <h3>تعديل الملف الشخصي</h3>
-
-    <form method="post" enctype="multipart/form-data">
-      <label class="form-label">الاسم الرسمي للشهادة</label>
-      <input name="full_name" class="form-control mb-3" value="{{ user.full_name or '' }}" placeholder="مثال: Hassan Jouda" required>
-
-      <label class="form-label">نبذة قصيرة</label>
-      <textarea name="bio" class="form-control mb-3" rows="3">{{ user.bio or '' }}</textarea>
-
-      <label class="form-label">الصورة الشخصية</label>
-      <input name="profile_image" type="file" class="form-control mb-3" accept="image/png,image/jpeg,image/webp">
-
-      <button class="btn btn-primary">حفظ التعديلات</button>
-    </form>
-  </section>
-
   <section class="row g-3 mb-4">
+
     <div class="col-md-4">
-      <div class="profile-card text-center">
+      <div class="stats-card">
+        <div class="stats-icon" style="background: linear-gradient(135deg,#0ea5e9,#0284c7);">
+          <i class="fas fa-magnifying-glass-chart"></i>
+        </div>
         <h2>{{ scans|length }}</h2>
         <p>فحوصاتي الأخيرة</p>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="profile-card text-center">
+      <div class="stats-card">
+        <div class="stats-icon" style="background: linear-gradient(135deg,#22c55e,#0f766e);">
+          <i class="fas fa-award"></i>
+        </div>
         <h2>{{ quizzes|length }}</h2>
         <p>اختباراتي</p>
       </div>
     </div>
 
     <div class="col-md-4">
-      <div class="profile-card text-center">
+      <div class="stats-card">
+        <div class="stats-icon" style="background: linear-gradient(135deg,#f97316,#dc2626);">
+          <i class="fas fa-shield-halved"></i>
+        </div>
         <h2>{{ captures|length }}</h2>
-        <p>محاولاتي التدريبية</p>
+        <p>محاولات التوعية التدريبية</p>
       </div>
     </div>
+
   </section>
 
   <section class="profile-card">
-    <h3>نتائج الامتحانات الخاصة بي</h3>
+    <h3>
+      <i class="fas fa-user-pen"></i>
+      تعديل الملف الشخصي
+    </h3>
+
+    <form method="post" enctype="multipart/form-data">
+      <div class="row g-3">
+
+        <div class="col-md-6">
+          <label class="form-label">الاسم الرسمي للشهادة</label>
+          <input
+            name="full_name"
+            class="form-control"
+            value="{{ user.full_name or '' }}"
+            placeholder="مثال: Hassan Jouda"
+            required
+          >
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">الصورة الشخصية</label>
+          <input
+            name="profile_image"
+            type="file"
+            class="form-control"
+            accept="image/png,image/jpeg,image/webp"
+          >
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">نبذة قصيرة</label>
+          <textarea
+            name="bio"
+            class="form-control"
+            rows="3"
+            placeholder="اكتب نبذة قصيرة عنك أو عن دورك في المنصة..."
+          >{{ user.bio or '' }}</textarea>
+        </div>
+
+      </div>
+
+      <div class="mt-3 d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary btn-rounded">
+          <i class="fas fa-floppy-disk"></i>
+          حفظ التعديلات
+        </button>
+
+        <a href="/profile" class="btn btn-outline-secondary btn-rounded">
+          <i class="fas fa-rotate-right"></i>
+          تحديث الصفحة
+        </a>
+      </div>
+    </form>
+  </section>
+
+  <section class="profile-card">
+    <h3>
+      <i class="fas fa-award"></i>
+      نتائج الامتحانات الخاصة بي
+    </h3>
 
     <div class="table-responsive">
-      <table class="table table-bordered">
+      <table class="table table-hover align-middle">
         <thead>
           <tr>
             <th>الاسم</th>
@@ -113,20 +469,69 @@
             <th>النسبة</th>
             <th>الحالة</th>
             <th>الوقت</th>
+            <!-- تمت إضافة عمود الإجراء -->
+            <th>الإجراء</th>
           </tr>
         </thead>
+
         <tbody>
           {% for q in quizzes %}
           <tr>
-            <td>{{ q.student_name }}</td>
-            <td>{{ q.score }}/{{ q.total }}</td>
-            <td>{{ q.percentage }}%</td>
-            <td>{{ q.status }}</td>
-            <td>{{ q.timestamp }}</td>
+            <td class="fw-bold">{{ q.student_name }}</td>
+
+            <td>
+              <span class="badge bg-dark">
+                {{ q.score }}/{{ q.total }}
+              </span>
+            </td>
+
+            <td>
+              <span class="badge 
+                {% if q.percentage|float >= 70 %}bg-success
+                {% elif q.percentage|float >= 50 %}bg-warning text-dark
+                {% else %}bg-danger{% endif %}">
+                {{ q.percentage }}%
+              </span>
+            </td>
+
+            <td>
+              {% if q.percentage|float >= 70 %}
+                <span class="badge-soft risk-low">
+                  <i class="fas fa-circle-check"></i>
+                  {{ q.status }}
+                </span>
+              {% else %}
+                <span class="badge-soft risk-high">
+                  <i class="fas fa-circle-xmark"></i>
+                  {{ q.status }}
+                </span>
+              {% endif %}
+            </td>
+
+            <td class="text-ltr">
+              <small class="text-muted">{{ q.timestamp }}</small>
+            </td>
+
+            <!-- زر الشهادة يظهر فقط عند النجاح -->
+            <td>
+              {% if q.percentage|float >= 70 %}
+                <a href="/quiz/result/{{ q.id }}" class="btn btn-sm btn-outline-success fw-bold rounded-pill px-3">
+                  <i class="fas fa-certificate"></i>
+                  الشهادة
+                </a>
+              {% else %}
+                <span class="text-muted small">-</span>
+              {% endif %}
+            </td>
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="text-center text-muted">لا توجد نتائج بعد.</td>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <div>لا توجد نتائج امتحانات بعد.</div>
+              </div>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -135,10 +540,13 @@
   </section>
 
   <section class="profile-card">
-    <h3>آخر الفحوصات الخاصة بي</h3>
+    <h3>
+      <i class="fas fa-clock-rotate-left"></i>
+      آخر الفحوصات الخاصة بي
+    </h3>
 
     <div class="table-responsive">
-      <table class="table table-bordered">
+      <table class="table table-hover align-middle">
         <thead>
           <tr>
             <th>النوع</th>
@@ -148,18 +556,47 @@
             <th>الوقت</th>
           </tr>
         </thead>
+
         <tbody>
           {% for s in scans %}
           <tr>
-            <td>{{ s.scan_type }}</td>
-            <td class="text-break">{{ s.target }}</td>
-            <td>{{ s.result_summary }}</td>
-            <td>{{ s.risk_level }}</td>
-            <td>{{ s.timestamp }}</td>
+            <td>
+              <span class="badge bg-secondary">
+                {{ s.scan_type }}
+              </span>
+            </td>
+
+            <td class="text-break text-ltr" style="max-width: 280px;">
+              {{ s.target }}
+            </td>
+
+            <td>
+              {{ s.result_summary }}
+            </td>
+
+            <td>
+              {% set level = s.risk_level|string %}
+              {% if level in ['Critical', 'High Risk', 'Insecure', 'Error', 'Weak', 'High'] %}
+                <span class="badge-soft risk-high">{{ s.risk_level }}</span>
+              {% elif level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon', 'Medium'] %}
+                <span class="badge-soft risk-medium">{{ s.risk_level }}</span>
+              {% else %}
+                <span class="badge-soft risk-low">{{ s.risk_level }}</span>
+              {% endif %}
+            </td>
+
+            <td class="text-ltr">
+              <small class="text-muted">{{ s.timestamp }}</small>
+            </td>
           </tr>
           {% else %}
           <tr>
-            <td colspan="5" class="text-center text-muted">لا توجد فحوصات بعد.</td>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <div>لا توجد فحوصات بعد.</div>
+              </div>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -168,6 +605,9 @@
   </section>
 
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/script.js"></script>
 
 </body>
 </html>

@@ -2,39 +2,542 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>نتيجة الامتحان</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>نتيجة الامتحان | SET-CDP</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    body {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .result-container {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .result-card {
+      border: none;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+
+    .result-header {
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.25), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a, #0f766e);
+      color: white;
+      padding: 35px 25px;
+      text-align: center;
+    }
+
+    .result-header h1 {
+      font-weight: 950;
+      margin-bottom: 8px;
+      color: #38bdf8;
+    }
+
+    .score-box {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 22px;
+      height: 100%;
+      text-align: center;
+    }
+
+    .score-box h2 {
+      font-size: 42px;
+      font-weight: 950;
+      color: #0f766e;
+      margin: 0;
+    }
+
+    .score-box span {
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .status-pass {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #bbf7d0;
+      border-radius: 14px;
+      padding: 15px;
+      font-weight: 900;
+    }
+
+    .status-fail {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      border-radius: 14px;
+      padding: 15px;
+      font-weight: 900;
+    }
+
+    /* Certificate Design */
+    .certificate-wrapper {
+      margin-top: 35px;
+      background: white;
+      padding: 18px;
+      border-radius: 22px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+
+    .certificate {
+      position: relative;
+      background:
+        radial-gradient(circle at top right, rgba(56,189,248,.10), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(15,118,110,.12), transparent 30%),
+        #ffffff;
+      border: 8px solid #0f172a;
+      outline: 3px solid #38bdf8;
+      outline-offset: -18px;
+      padding: 55px 60px;
+      min-height: 690px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .certificate::before {
+      content: "SET-CDP";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 110px;
+      font-weight: 950;
+      color: rgba(15, 23, 42, 0.035);
+      transform: rotate(-18deg);
+      pointer-events: none;
+      letter-spacing: 8px;
+    }
+
+    .cert-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      direction: ltr;
+    }
+
+    .cert-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .cert-logo-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #0ea5e9, #0f766e);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      box-shadow: 0 10px 25px rgba(14,165,233,.25);
+    }
+
+    .cert-logo strong {
+      display: block;
+      font-size: 22px;
+      color: #0f172a;
+      font-weight: 950;
+    }
+
+    .cert-logo span {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .cert-id {
+      text-align: right;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .cert-title {
+      position: relative;
+      z-index: 1;
+      margin-top: 25px;
+    }
+
+    .cert-title h1 {
+      font-size: 46px;
+      font-weight: 950;
+      color: #0f172a;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .cert-title h2 {
+      font-size: 22px;
+      color: #0f766e;
+      font-weight: 900;
+      margin-bottom: 30px;
+    }
+
+    .cert-body {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: auto;
+    }
+
+    .cert-body p {
+      color: #475569;
+      font-size: 18px;
+      line-height: 1.9;
+      margin-bottom: 12px;
+    }
+
+    .student-name {
+      font-size: 42px;
+      font-weight: 950;
+      color: #0ea5e9;
+      margin: 18px 0;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #cbd5e1;
+      display: inline-block;
+      min-width: 420px;
+    }
+
+    .cert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #bbf7d0;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 950;
+      margin: 20px 0;
+    }
+
+    .cert-score {
+      margin-top: 18px;
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .cert-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      margin-top: 70px;
+      gap: 35px;
+      direction: ltr;
+    }
+
+    .signature-box,
+    .date-box {
+      width: 280px;
+      text-align: center;
+    }
+
+    .signature-line,
+    .date-line {
+      border-bottom: 2px solid #0f172a;
+      margin-bottom: 10px;
+      height: 42px;
+      display: flex;
+      align-items: end;
+      justify-content: center;
+      font-family: "Georgia", serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .signature-box strong,
+    .date-box strong {
+      display: block;
+      color: #0f172a;
+      font-weight: 950;
+    }
+
+    .signature-box span,
+    .date-box span {
+      display: block;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .cert-note {
+      position: relative;
+      z-index: 1;
+      margin-top: 32px;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 16px;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+
+    @media print {
+      body {
+        background: white !important;
+      }
+
+      .top-navbar,
+      .result-card,
+      .action-buttons,
+      .no-print,
+      nav {
+        display: none !important;
+      }
+
+      .container,
+      .result-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .certificate-wrapper {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      .certificate {
+        width: 100%;
+        min-height: 100vh;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .certificate {
+        padding: 35px 22px;
+      }
+
+      .cert-top,
+      .cert-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .cert-title h1 {
+        font-size: 34px;
+      }
+
+      .student-name {
+        font-size: 30px;
+        min-width: auto;
+        width: 100%;
+      }
+
+      .signature-box,
+      .date-box {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
+
 <body>
+
 {% include 'base_nav.html' %}
 
-<main class="container py-5">
-  <div class="card shadow text-center">
-    <div class="card-body">
-      <h1>نتيجة الامتحان</h1>
-      <h3>{{ name }}</h3>
+<main class="container py-5 result-container">
 
-      <p>Score: {{ score }}/{{ total }}</p>
-      <h2>{{ percentage }}%</h2>
+  <section class="card result-card">
+    <div class="result-header">
+      <h1>
+        <i class="fas fa-award"></i>
+        نتيجة الامتحان
+      </h1>
+      <p class="mb-0">
+        Cyber Awareness Quiz Result
+      </p>
+    </div>
 
-      <div class="alert alert-info">{{ status }}</div>
+    <div class="card-body p-4">
 
-      {% if percentage >= 70 %}
-      <div class="border rounded p-4 mt-4">
-        <h2>Certificate</h2>
-        <p>This certifies that</p>
-        <h3>{{ name }}</h3>
-        <p>has successfully completed the Cyber Awareness Quiz</p>
-        <h4>Cyber Awareness Passed</h4>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="score-box">
+            <span>اسم المتقدم</span>
+            <h4 class="mt-2 fw-bold">{{ name }}</h4>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="score-box">
+            <span>الدرجة</span>
+            <h2>{{ score }}/{{ total }}</h2>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="score-box">
+            <span>النسبة</span>
+            <h2>{{ percentage }}%</h2>
+          </div>
+        </div>
       </div>
+
+      {% if percentage|float >= 70 %}
+        <div class="status-pass text-center">
+          <i class="fas fa-circle-check"></i>
+          {{ status }}
+        </div>
+      {% else %}
+        <div class="status-fail text-center">
+          <i class="fas fa-circle-xmark"></i>
+          {{ status }}
+        </div>
       {% endif %}
 
-      <button class="btn btn-outline-primary mt-3" onclick="window.print()">طباعة / حفظ PDF</button>
-      <a class="btn btn-secondary mt-3" href="/quiz">إعادة الامتحان</a>
+      <div class="action-buttons no-print">
+        <button class="btn btn-primary fw-bold px-4" onclick="window.print()">
+          <i class="fas fa-print"></i>
+          طباعة / حفظ PDF
+        </button>
+
+        <a class="btn btn-outline-secondary fw-bold px-4" href="/quiz">
+          <i class="fas fa-rotate-right"></i>
+          إعادة الامتحان
+        </a>
+
+        <a class="btn btn-outline-dark fw-bold px-4" href="/dashboard">
+          <i class="fas fa-chart-line"></i>
+          لوحة التحكم
+        </a>
+      </div>
+
     </div>
-  </div>
+  </section>
+
+  {% if percentage|float >= 70 %}
+  <section class="certificate-wrapper" id="certificateArea">
+    <div class="certificate">
+
+      <div class="cert-top">
+        <div class="cert-logo">
+          <div class="cert-logo-icon">
+            <i class="fas fa-shield-halved"></i>
+          </div>
+          <div>
+            <strong>SET-CDP</strong>
+            <span>Security Education, Testing & Cyber Defense Platform</span>
+          </div>
+        </div>
+
+        <div class="cert-id">
+          Certificate ID<br>
+          <span dir="ltr">SET-CDP-QUIZ-{{ score }}{{ total }}-{{ percentage }}</span>
+        </div>
+      </div>
+
+      <div class="cert-title">
+        <h1>Certificate of Achievement</h1>
+        <h2>Cyber Awareness Training</h2>
+      </div>
+
+      <div class="cert-body">
+        <p>This certificate is proudly presented to</p>
+
+        <div class="student-name">
+          {{ name }}
+        </div>
+
+        <p>
+          for successfully completing the
+          <strong>Cyber Awareness Quiz</strong>
+          and demonstrating understanding of basic cybersecurity awareness concepts,
+          phishing indicators, safe browsing practices, and digital protection principles.
+        </p>
+
+        <div class="cert-badge">
+          <i class="fas fa-circle-check"></i>
+          Cyber Awareness Passed
+        </div>
+
+        <div class="cert-score">
+          Final Score: {{ score }}/{{ total }} — {{ percentage }}%
+        </div>
+      </div>
+
+      <div class="cert-footer">
+
+        <div class="signature-box">
+          <div class="signature-line">Hassan Jouda</div>
+          <strong>Hassan Jouda</strong>
+          <span>Project Manager / SET-CDP Director</span>
+        </div>
+
+        <div class="date-box">
+          <div class="date-line" id="certificateDate"></div>
+          <strong>Date of Issue</strong>
+          <span>Cyber Awareness Certificate</span>
+        </div>
+
+      </div>
+
+      <div class="cert-note">
+        This certificate is issued by SET-CDP as part of an academic cybersecurity awareness training environment.
+        It confirms completion of the awareness quiz and does not represent an official professional certification.
+      </div>
+
+    </div>
+  </section>
+  {% endif %}
+
 </main>
+
+<script>
+  const certificateDate = document.getElementById("certificateDate");
+  if (certificateDate) {
+    // جلب التاريخ المحفوظ في قاعدة البيانات القادم من سيرفر Flask
+    // يتم قص الوقت (الساعات والدقائق) والاكتفاء بالتاريخ فقط
+    const serverDate = "{{ timestamp }}".split(" ")[0]; 
+    
+    // إذا كان السيرفر لم يرسل تاريخاً، نستخدم تاريخ اليوم كاحتياط
+    if (serverDate && serverDate !== "") {
+        certificateDate.textContent = serverDate;
+    } else {
+        const now = new Date();
+        certificateDate.textContent = now.toLocaleDateString("en-GB", {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+    }
+  }
+</script>
 
 </body>
 </html>

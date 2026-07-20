@@ -8,19 +8,83 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    .hero {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff;
+      padding: 50px 0;
+      border-bottom: 4px solid #38bdf8;
+    }
+    .tool-card {
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .tool-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    }
+    .tool-card .card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+      height: 100%;
+    }
+    .stat-card h3 {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #38bdf8;
+      margin-bottom: 5px;
+    }
+    .stat-card span {
+      color: #64748b;
+      font-weight: 600;
+    }
+    .result-box {
+      display: none;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      color: #334155;
+      font-size: 13.5px;
+      line-height: 1.7;
+      direction: rtl;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .result-box.show { display: block; }
+    .result-box pre {
+      direction: ltr; text-align: left; background: #0f172a; color: #e2e8f0;
+      border-radius: 8px; padding: 10px; margin: 8px 0 0; font-size: 12px; overflow-x: auto;
+    }
+    .copy-btn {
+      border: none; background: #38bdf8; color: #0f172a; border-radius: 6px;
+      padding: 5px 10px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-light">
 
 {% include 'base_nav.html' %}
 
-<header class="hero">
+<header class="hero text-center mb-5 shadow-sm">
   <div class="container">
-    <h1>منصة أدوات التحقق والفحص السيبراني</h1>
-    <p>Red Teaming + Blue Teaming + Awareness Training</p>
-    <div>
-      <span class="pill red">Red Teaming</span>
-      <span class="pill blue">Blue Teaming</span>
-      <span class="pill green">Awareness</span>
+    <h1 class="fw-bold mb-3"><i class="fas fa-shield-alt text-info"></i> منصة أدوات التحقق والفحص السيبراني</h1>
+    <p class="lead text-light mb-4">Red Teaming + Blue Teaming + Awareness Training</p>
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+      <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill">Red Teaming</span>
+      <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">Blue Teaming</span>
+      <span class="badge bg-success px-3 py-2 fs-6 rounded-pill">Awareness</span>
     </div>
   </div>
 </header>
@@ -28,80 +92,53 @@
 <main class="container py-5">
   
   <section class="row g-3 mb-4">
-    <div class="col-md-3"><div class="stat-card"><h3 id="statCaptures">0</h3><span>محاولات تدريب</span></div></div>
-    <div class="col-md-3"><div class="stat-card"><h3 id="statClones">0</h3><span>نسخ تدريبية</span></div></div>
-    <div class="col-md-3"><div class="stat-card"><h3 id="statScans">0</h3><span>فحوصات</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><h3 id="statCaptures">{{ captures|length if captures is defined else 0 }}</h3><span>محاولات تدريب</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><h3 id="statClones">{{ clones|length if clones is defined else 0 }}</h3><span>نسخ تدريبية</span></div></div>
+    <div class="col-md-3"><div class="stat-card"><h3 id="statScans">{{ scans|length if scans is defined else 0 }}</h3><span>فحوصات</span></div></div>
     <div class="col-md-3"><div class="stat-card"><h3>10+</h3><span>أدوات أمنية</span></div></div>
   </section>
 
   <section class="row g-3 mb-4">
-    <div class="col-md-3"><a class="btn btn-primary w-100" href="/attack"><i class="fas fa-shield-halved"></i> المحاكاة التعليمية</a></div>
-    <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/dashboard"><i class="fas fa-tachometer-alt"></i> لوحة التحكم</a></div>
-    <div class="col-md-3"><a class="btn btn-outline-secondary w-100" href="/ready_templates"><i class="fas fa-layer-group"></i> القوالب الجاهزة</a></div>
-    <div class="col-md-3"><button class="btn btn-outline-dark w-100" onclick="loadHistory()"><i class="fas fa-sync-alt"></i> تحديث السجل</button></div>
+    <div class="col-md-3"><a class="btn btn-primary w-100 fw-bold py-2 shadow-sm" href="/attack"><i class="fas fa-shield-halved me-1"></i> المحاكاة التعليمية</a></div>
+    <div class="col-md-3"><a class="btn btn-outline-primary w-100 fw-bold py-2 shadow-sm" href="/dashboard"><i class="fas fa-tachometer-alt me-1"></i> لوحة التحكم</a></div>
+    <div class="col-md-3"><a class="btn btn-outline-secondary w-100 fw-bold py-2 shadow-sm" href="/ready_templates"><i class="fas fa-layer-group me-1"></i> القوالب الجاهزة</a></div>
+    <div class="col-md-3"><button class="btn btn-dark w-100 fw-bold py-2 shadow-sm" onclick="refreshHistory()"><i class="fas fa-sync-alt me-1"></i> تحديث السجل</button></div>
   </section>
 
-  <div class="section-head mt-5">
-    <div>
-      <h2>أدوات الفحص والتحقق (Blue Teaming)</h2>
-      <p>نتائج مرتبة وواضحة لفحص المواقع، SSL، الروابط، الملفات، وكلمات المرور.</p>
-    </div>
+  <div class="section-head mt-5 mb-4 text-center">
+    <h2 class="fw-bold text-dark"><i class="fas fa-toolbox text-primary"></i> أدوات الفحص والتحقق (Blue Teaming)</h2>
+    <p class="text-muted">نتائج مرتبة وواضحة لفحص المواقع، SSL، الروابط، الملفات، وكلمات المرور.</p>
   </div>
 
   <section class="row g-4">
-    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🌐 Website Security Scanner</h4><p class="muted">يفحص HTTPS و Security Headers ويعطي Security Score.</p><input id="scanUrl" class="form-control mb-2" placeholder="example.com"><button class="btn btn-primary w-100" onclick="scanWebsite()">ابدأ الفحص</button><div id="scanResult" class="result-box mt-3"></div></div></div></div>
-    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔒 SSL Inspector</h4><p class="muted">يفحص شهادة SSL وتاريخ الانتهاء والجهة المصدرة.</p><input id="sslDomain" class="form-control mb-2" placeholder="example.com"><button class="btn btn-info text-white w-100" onclick="checkSSL()">فحص الشهادة</button><div id="sslResult" class="result-box mt-3"></div></div></div></div>
-    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔑 Password Strength Analyzer</h4><p class="muted">يقيم قوة كلمة المرور محلياً ولا يتم حفظها.</p><input id="passwordInput" type="password" class="form-control mb-2" placeholder="اكتب كلمة للتقييم فقط"><button class="btn btn-success w-100" onclick="checkPassword()">تحليل القوة</button><div id="passwordResult" class="result-box mt-3"></div></div></div></div>
-    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>📧 Email Phishing Detector</h4><p class="muted">يبحث عن كلمات وروابط مشبوهة داخل نص البريد أو الرسالة.</p><textarea id="emailInput" rows="3" class="form-control mb-2" placeholder="الصق نص البريد أو الرسالة هنا"></textarea><button class="btn btn-warning w-100" onclick="checkEmail()">تحليل الرسالة</button><div id="emailResult" class="result-box mt-3"></div></div></div></div>
-    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>📁 File Hash & Metadata Analyzer</h4><p class="muted">يحسب Hashes ويستخرج Metadata للصور وملفات PDF.</p><input id="fileInput" type="file" class="form-control mb-2"><button class="btn btn-danger w-100" onclick="analyzeFile()">تحليل الملف</button><div id="fileResult" class="result-box mt-3"></div></div></div></div>
-    <div class="col-lg-6"><div class="card tool-card"><div class="card-body"><h4>🔗 URL Safety Checker</h4><p class="muted">يفحص الرابط بحثاً عن مؤشرات تصيد.</p><input id="urlCheckInput" class="form-control mb-2" placeholder="https://example.com"><button class="btn btn-secondary w-100" onclick="checkURL()">فحص الرابط</button><div id="urlResult" class="result-box mt-3"></div></div></div></div>
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-globe text-primary me-2"></i> Website Security Scanner</h5><p class="text-muted small mb-3">يفحص HTTPS و Security Headers ويعطي Security Score.</p><div class="mt-auto"><input id="scanUrl" class="form-control mb-2 bg-light" placeholder="https://example.com" type="url"><button class="btn btn-primary w-100 fw-bold" onclick="scanWebsite()">ابدأ الفحص</button><div id="scanResult" class="result-box mt-3"></div></div></div></div></div>
     
-    <div class="col-lg-6">
-      <div class="card tool-card">
-        <div class="card-body">
-          <h4>🧬 Secure Password Generator</h4>
-          <p class="muted">يولد كلمة مرور قوية عشوائية ويمكن نسخها.</p>
-          <input id="genLength" type="number" class="form-control mb-2" value="16" min="8" max="64">
-          <button class="btn btn-success w-100 mb-2" onclick="generatePassword()">توليد كلمة مرور</button>
-          <div id="generatedPasswordResult" class="result-box mt-3"></div>
-        </div>
-      </div>
-    </div>
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-lock text-success me-2"></i> SSL Inspector</h5><p class="text-muted small mb-3">يفحص شهادة SSL وتاريخ الانتهاء والجهة المصدرة.</p><div class="mt-auto"><input id="sslDomain" class="form-control mb-2 bg-light" placeholder="example.com"><button class="btn btn-success w-100 fw-bold" onclick="checkSSL()">فحص الشهادة</button><div id="sslResult" class="result-box mt-3"></div></div></div></div></div>
+    
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-key text-warning me-2"></i> Password Strength Analyzer</h5><p class="text-muted small mb-3">يقيم قوة كلمة المرور محلياً (لا يتم حفظها).</p><div class="mt-auto"><input id="passwordInput" type="password" class="form-control mb-2 bg-light" placeholder="اكتب كلمة للتقييم فقط"><button class="btn btn-warning text-dark w-100 fw-bold" onclick="checkPassword()">تحليل القوة</button><div id="passwordResult" class="result-box mt-3"></div></div></div></div></div>
+    
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-envelope-open-text text-danger me-2"></i> Email Phishing Detector</h5><p class="text-muted small mb-3">يبحث عن كلمات وروابط مشبوهة داخل نص البريد أو الرسالة.</p><div class="mt-auto"><textarea id="emailInput" rows="2" class="form-control mb-2 bg-light" placeholder="الصق نص البريد أو الرسالة هنا"></textarea><button class="btn btn-danger w-100 fw-bold" onclick="checkEmail()">تحليل الرسالة</button><div id="emailResult" class="result-box mt-3"></div></div></div></div></div>
+    
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-file-shield text-info me-2"></i> File Hash & Metadata Analyzer</h5><p class="text-muted small mb-3">يحسب Hashes للصور وملفات PDF محلياً.</p><div class="mt-auto"><input id="fileInput" type="file" class="form-control mb-2 bg-light"><button class="btn btn-info text-white w-100 fw-bold" onclick="analyzeFile()">تحليل الملف</button><div id="fileResult" class="result-box mt-3"></div></div></div></div></div>
+    
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-link text-secondary me-2"></i> URL Safety Checker</h5><p class="text-muted small mb-3">يفحص الرابط بحثاً عن مؤشرات تصيد متقدمة.</p><div class="mt-auto"><input id="urlCheckInput" class="form-control mb-2 bg-light" placeholder="https://example.com" type="url"><button class="btn btn-secondary w-100 fw-bold" onclick="checkURL()">فحص الرابط</button><div id="urlResult" class="result-box mt-3"></div></div></div></div></div>
+    
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-random text-success me-2"></i> Secure Password Generator</h5><p class="text-muted small mb-3">يولد كلمة مرور قوية عشوائية ويمكن نسخها.</p><div class="mt-auto"><div class="input-group mb-2"><span class="input-group-text bg-light border-end-0">طول الكلمة</span><input id="genLength" type="number" class="form-control bg-light border-start-0" value="16" min="8" max="64"></div><button class="btn btn-success w-100 fw-bold mb-2" onclick="generatePassword()">توليد كلمة مرور</button><div id="generatedPasswordResult" class="result-box mt-3"></div></div></div></div></div>
 
-    <div class="col-lg-6">
-      <div class="card tool-card">
-        <div class="card-body">
-          <h4>🔎 URL Expander</h4>
-          <p class="muted">يفك الروابط المختصرة ويعرض الرابط النهائي وسلسلة التحويلات.</p>
-          <input id="expandUrlInput" class="form-control mb-2" placeholder="https://bit.ly/example">
-          <button class="btn btn-dark w-100" onclick="expandUrl()">فك الرابط</button>
-          <div id="expandUrlResult" class="result-box mt-3"></div>
-        </div>
-      </div>
-    </div>
+    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-search-plus text-dark me-2"></i> URL Expander</h5><p class="text-muted small mb-3">يفك الروابط المختصرة ويعرض الرابط النهائي وسلسلة التحويلات.</p><div class="mt-auto"><input id="expandUrlInput" class="form-control mb-2 bg-light" placeholder="https://bit.ly/example" type="url"><button class="btn btn-dark w-100 fw-bold" onclick="expandUrl()">فك الرابط</button><div id="expandUrlResult" class="result-box mt-3"></div></div></div></div></div>
 
-    <div class="col-lg-12">
-      <div class="card tool-card">
-        <div class="card-body">
-          <h4>🛡️ Header Security Analyzer</h4>
-          <p class="muted">فحص عميق للـ Response Headers مثل CSP و HSTS و X-Frame-Options.</p>
-          <input id="headerUrlInput" class="form-control mb-2" placeholder="https://example.com">
-          <button class="btn btn-primary w-100" onclick="analyzeHeaders()">تحليل الهيدرز</button>
-          <div id="headerAnalyzerResult" class="result-box mt-3"></div>
-        </div>
-      </div>
-    </div>
+    <div class="col-lg-12"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-shield-virus text-primary me-2"></i> Header Security Analyzer</h5><p class="text-muted small mb-3">فحص عميق للـ Response Headers مثل CSP و HSTS و X-Frame-Options.</p><div class="mt-auto"><div class="input-group mb-2"><input id="headerUrlInput" class="form-control bg-light" placeholder="https://example.com" type="url"><button class="btn btn-primary fw-bold px-4" onclick="analyzeHeaders()">تحليل الهيدرز</button></div><div id="headerAnalyzerResult" class="result-box mt-3"></div></div></div></div></div>
   </section>
 
   {% if session.get('user_id') %}
-  <section class="card shadow-sm mt-5 mb-4 border-info">
-    <div class="card-body">
-      <h3 class="mb-3 text-info"><i class="fas fa-history"></i> سجل نشاطي الأخير</h3>
-      <p class="text-muted">يعرض آخر عمليات الفحص والتحليل التي قمت بإجرائها للتو.</p>
+  <section class="card shadow-sm mt-5 mb-4 border-info" style="border-radius: 14px;">
+    <div class="card-body p-4">
+      <h3 class="mb-3 text-info fw-bold"><i class="fas fa-history me-2"></i> سجل نشاطي الأخير</h3>
+      <p class="text-muted mb-4">يعرض آخر عمليات الفحص والتحليل التي قمت بإجرائها (يتم التحديث تلقائياً).</p>
 
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-          <thead class="table-info">
+      <div class="table-responsive rounded border border-light">
+        <table class="table table-bordered table-hover align-middle mb-0">
+          <thead class="table-info text-secondary">
             <tr>
               <th>ID</th>
               <th>نوع العملية</th>
@@ -114,22 +151,22 @@
               {% endif %}
             </tr>
           </thead>
-          <tbody>
+          <tbody id="historyBody">
             {% for s in scans %}
             <tr>
               <td>{{ s.id }}</td>
               <td><span class="badge bg-secondary">{{ s.scan_type | upper }}</span></td>
-              <td class="text-break" style="max-width: 250px;">{{ s.target }}</td>
+              <td class="text-break" style="max-width: 250px;" dir="ltr">{{ s.target }}</td>
               <td>{{ s.result_summary }}</td>
               <td>
                 <span class="badge 
-                  {% if s.risk_level in ['Critical', 'High Risk', 'Insecure', 'Error'] %}bg-danger
-                  {% elif s.risk_level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon'] %}bg-warning text-dark
+                  {% if s.risk_level in ['Critical', 'High Risk', 'Insecure', 'Error', 'Weak'] %}bg-danger
+                  {% elif s.risk_level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon', 'Medium'] %}bg-warning text-dark
                   {% else %}bg-success{% endif %}">
                   {{ s.risk_level }}
                 </span>
               </td>
-              <td><small class="text-muted">{{ s.timestamp }}</small></td>
+              <td><small class="text-muted" dir="ltr">{{ s.timestamp }}</small></td>
               
               {% if session.get('role') == 'admin' %}
                 <td><small class="fw-bold">{{ s.owner_username or 'زائر غير مسجل' }}</small></td>
@@ -137,7 +174,7 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="{% if session.get('role') == 'admin' %}7{% else %}6{% endif %}" class="text-center text-muted">
+              <td colspan="{% if session.get('role') == 'admin' %}7{% else %}6{% endif %}" class="text-center text-muted py-5">
                 لا توجد عمليات فحص حديثة في سجلك.
               </td>
             </tr>
@@ -148,15 +185,230 @@
     </div>
   </section>
   {% else %}
-  <div class="alert alert-info mt-5 text-center shadow-sm">
-      <i class="fas fa-info-circle fs-4 mb-2"></i><br>
-      يرجى <a href="/login" class="alert-link fw-bold">تسجيل الدخول</a> لحفظ وعرض سجل الفحوصات الخاص بك والوصول لكافة الميزات التدريبية.
+  <div class="alert alert-info mt-5 text-center shadow-sm border-0 py-4" style="border-radius: 14px; background-color: #f0f9ff; color: #0369a1;">
+      <i class="fas fa-info-circle fs-3 mb-2"></i><br>
+      يرجى <a href="/login" class="alert-link fw-bold text-decoration-underline">تسجيل الدخول</a> لحفظ وعرض سجل الفحوصات الخاص بك والوصول لكافة الميزات التدريبية.
   </div>
   {% endif %}
 
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/static/script.js"></script>
+
+<script>
+function escapeHtml(value) {
+  return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+
+function setResult(id, html, type = 'info') {
+  const box = document.getElementById(id);
+  if (!box) return;
+  const border = type === 'danger' ? '#fecaca' : type === 'success' ? '#bbf7d0' : type === 'warning' ? '#fde68a' : '#bae6fd';
+  const bg = type === 'danger' ? '#fef2f2' : type === 'success' ? '#f0fdf4' : type === 'warning' ? '#fffbeb' : '#f0f9ff';
+  box.style.borderColor = border; box.style.background = bg; box.classList.add('show'); box.innerHTML = html;
+}
+
+function normalizeUrl(raw) {
+  const value = String(raw || '').trim();
+  if (!value) return '';
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
+async function postJson(url, payload) {
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
+  return data;
+}
+
+function scoreBadge(level) {
+  const clean = escapeHtml(level || 'Info');
+  let cls = 'bg-success';
+  if (/high|critical|danger|insecure|error|weak/i.test(clean)) cls = 'bg-danger';
+  else if (/medium|moderate|warning|suspicious/i.test(clean)) cls = 'bg-warning text-dark';
+  return `<span class="badge ${cls} rounded-pill px-3">${clean}</span>`;
+}
+
+async function logScan(scanType, target, resultSummary, riskLevel) {
+  try {
+    await postJson('/api/log-scan', { scan_type: scanType, target: target || '-', result_summary: resultSummary || 'Completed', risk_level: riskLevel || 'Info' });
+  } catch (e) { console.warn('Logging skipped:', e.message); }
+}
+
+async function refreshHistory() {
+  const body = document.getElementById('historyBody');
+  if (!body) return;
+  try {
+    const res = await fetch('/api/scans/recent');
+    const data = await res.json();
+    const scans = Array.isArray(data.scans) ? data.scans : [];
+    
+    const isAdmin = {{ 'true' if session.get('role') == 'admin' else 'false' }};
+    const colCount = isAdmin ? 7 : 6;
+
+    if (!scans.length) {
+      body.innerHTML = `<tr><td colspan="${colCount}" class="text-center text-muted py-5">لا توجد عمليات فحص حديثة في سجلك.</td></tr>`;
+      return;
+    }
+    
+    body.innerHTML = scans.map(s => {
+      let badgeCls = 'bg-success';
+      if (/high|critical|danger|insecure|error|weak/i.test(s.risk_level)) badgeCls = 'bg-danger';
+      else if (/medium|moderate|warning|suspicious|expiring/i.test(s.risk_level)) badgeCls = 'bg-warning text-dark';
+      
+      return `<tr>
+        <td>${escapeHtml(s.id)}</td>
+        <td><span class="badge bg-secondary text-uppercase">${escapeHtml(s.scan_type)}</span></td>
+        <td class="text-break" style="max-width: 250px;" dir="ltr">${escapeHtml(s.target)}</td>
+        <td>${escapeHtml(s.result_summary)}</td>
+        <td><span class="badge ${badgeCls}">${escapeHtml(s.risk_level)}</span></td>
+        <td><small class="text-muted" dir="ltr">${escapeHtml(s.timestamp)}</small></td>
+        ${isAdmin ? `<td><small class="fw-bold">${escapeHtml(s.owner_username || 'زائر غير مسجل')}</small></td>` : ''}
+      </tr>`;
+    }).join('');
+  } catch (e) { console.warn('History update failed:', e); }
+}
+
+async function scanWebsite() {
+  const url = normalizeUrl(document.getElementById('scanUrl')?.value);
+  if (!url) return setResult('scanResult', 'أدخل رابطاً.', 'warning');
+  setResult('scanResult', 'جاري الفحص...', 'info');
+  try {
+    const data = await postJson('/api/scan-website', { url });
+    let detailsHtml = '';
+    if (data.score !== undefined) detailsHtml += `<strong>التقييم (Score):</strong> ${escapeHtml(data.score)}%<br>`;
+    if (data.missing && data.missing.length) detailsHtml += `<strong>هيدرز مفقودة:</strong> ${escapeHtml(data.missing.join(', '))}<br>`;
+    
+    const finalLevel = data.level || 'Completed';
+    setResult('scanResult', `<strong>النتيجة:</strong> ${scoreBadge(finalLevel)}<br><strong>الرابط:</strong> <span dir="ltr">${escapeHtml(data.url || url)}</span><br>${detailsHtml}`, finalLevel === 'Secure' ? 'success' : (finalLevel === 'Insecure' ? 'danger' : 'warning'));
+    
+    await logScan('website_scan', url, `Score: ${data.score}%`, finalLevel);
+    await refreshHistory();
+  } catch (e) { setResult('scanResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
+}
+
+async function checkSSL() {
+  const domain = String(document.getElementById('sslDomain')?.value || '').trim().replace(/^https?:\/\//, '').split('/')[0];
+  if (!domain) return setResult('sslResult', 'أدخل اسم النطاق.', 'warning');
+  setResult('sslResult', 'جاري فحص الشهادة...', 'info');
+  try {
+    const data = await postJson('/api/ssl-check', { domain });
+    const finalLevel = data.status || 'Checked';
+    setResult('sslResult', `<strong>الحالة:</strong> ${scoreBadge(finalLevel)}<br><strong>أيام متبقية:</strong> ${escapeHtml(data.days_left)} يوم<br>${data.issuer ? `<strong>المُصدر:</strong> ${escapeHtml(data.issuer)}<br>` : ''}${data.expires ? `<strong>تاريخ الانتهاء:</strong> <span dir="ltr">${escapeHtml(data.expires)}</span>` : ''}`, finalLevel === 'Valid' ? 'success' : 'danger');
+    
+    await logScan('ssl_check', domain, `Days left: ${data.days_left}`, finalLevel);
+    await refreshHistory();
+  } catch (e) { setResult('sslResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
+}
+
+async function analyzeHeaders() {
+  const url = normalizeUrl(document.getElementById('headerUrlInput')?.value);
+  if (!url) return setResult('headerAnalyzerResult', 'أدخل رابطاً.', 'warning');
+  setResult('headerAnalyzerResult', 'جاري التحليل...', 'info');
+  try {
+    const data = await postJson('/api/header-analyzer', { url });
+    const finalLevel = data.level || data.status || 'Checked';
+    setResult('headerAnalyzerResult', `<strong>التقييم:</strong> ${scoreBadge(finalLevel)}<br><strong>الملخص:</strong> تم التحليل بدرجة ${escapeHtml(data.score)}%<br>${data.missing && data.missing.length ? `<strong>الهيدرز المفقودة:</strong> ${escapeHtml(data.missing.join(', '))}` : 'جميع الهيدرز الأساسية موجودة.'}`, finalLevel === 'Secure' ? 'success' : 'warning');
+    
+    await logScan('header_analyzer', url, `Score: ${data.score}%`, finalLevel);
+    await refreshHistory();
+  } catch (e) { setResult('headerAnalyzerResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
+}
+
+async function expandUrl() {
+  const url = normalizeUrl(document.getElementById('expandUrlInput')?.value);
+  if (!url) return setResult('expandUrlResult', 'أدخل رابطاً.', 'warning');
+  setResult('expandUrlResult', 'جاري فك الرابط...', 'info');
+  try {
+    const data = await postJson('/api/expand-url', { url });
+    const finalLevel = data.risk || 'Checked';
+    setResult('expandUrlResult', `<strong>الرابط الأصلي:</strong> <span dir="ltr">${escapeHtml(url)}</span><br><strong>الرابط النهائي:</strong> <span dir="ltr">${escapeHtml(data.final_url || '-')}</span><br><strong>التقييم:</strong> ${scoreBadge(finalLevel)}`, finalLevel === 'Safe' ? 'success' : 'warning');
+    
+    await logScan('url_expander', url, `Final: ${data.final_url || '-'}`, finalLevel);
+    await refreshHistory();
+  } catch (e) { setResult('expandUrlResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
+}
+
+function checkPassword() {
+  const pwd = document.getElementById('passwordInput')?.value || '';
+  if (!pwd) return setResult('passwordResult', 'اكتب كلمة.', 'warning');
+  let score = 0;
+  if (pwd.length >= 12) score += 25;
+  if (/[a-z]/.test(pwd)) score += 10; if (/[A-Z]/.test(pwd)) score += 15;
+  if (/\d/.test(pwd)) score += 15; if (/[^A-Za-z0-9]/.test(pwd)) score += 20;
+  if (pwd.length >= 16) score += 15;
+  if (/password|123456/i.test(pwd)) score -= 25;
+  score = Math.max(0, Math.min(100, score));
+  const level = score >= 80 ? 'Strong' : score >= 55 ? 'Medium' : 'Weak';
+  setResult('passwordResult', `<strong>القوة:</strong> ${scoreBadge(level)}<br><strong>Score:</strong> ${score}/100`, level === 'Strong' ? 'success' : level === 'Medium' ? 'warning' : 'danger');
+  
+  logScan('password_strength', 'Local Check', `Score: ${score}/100`, level).then(refreshHistory);
+}
+
+function checkEmail() {
+  const text = document.getElementById('emailInput')?.value || '';
+  if (!text.trim()) return setResult('emailResult', 'الصق النص.', 'warning');
+  let score = 0;
+  let notes = [];
+  
+  const dangerRegex = /urgent|password|login|winner|click here|عاجل|كلمة المرور|تسجيل الدخول|اربح|اضغط هنا|تحقق من حسابك|سيتم إغلاق حسابك/i;
+  if (dangerRegex.test(text)) { score += 40; notes.push('يحتوي كلمات مستعجلة أو حساسة.'); }
+  if (/https?:\/\//i.test(text)) { score += 20; notes.push('يحتوي على روابط.'); }
+  if (/@/i.test(text) && /https?:\/\/[^\s]*@[^\s]*/.test(text)) { score += 30; notes.push('رابط مشبوه يحتوي @.'); }
+  
+  const level = score >= 50 ? 'High Risk' : score >= 20 ? 'Suspicious' : 'Low Risk';
+  setResult('emailResult', `<strong>التقييم:</strong> ${scoreBadge(level)}<br><strong>Score:</strong> ${score}/100<br><strong>الملاحظات:</strong> ${notes.join(' ')}`, score >= 50 ? 'danger' : 'success');
+  
+  logScan('email_phishing', 'Local Text Analysis', `Score: ${score}/100`, level).then(refreshHistory);
+}
+
+async function analyzeFile() {
+  const file = document.getElementById('fileInput')?.files?.[0];
+  if (!file) return setResult('fileResult', 'اختر ملفاً.', 'warning');
+  setResult('fileResult', 'جاري الحساب...', 'info');
+  try {
+    const buffer = await file.arrayBuffer();
+    const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', buffer))).map(b => b.toString(16).padStart(2, '0')).join('');
+    setResult('fileResult', `<strong>الملف:</strong> ${escapeHtml(file.name)}<br><strong>SHA-256:</strong><pre>${hash}</pre><button class="copy-btn" onclick="navigator.clipboard.writeText('${hash}')">نسخ</button>`, 'success');
+    
+    await logScan('file_hash', file.name, 'SHA-256 Calculated', 'Info');
+    await refreshHistory();
+  } catch (e) { setResult('fileResult', `فشل: ${escapeHtml(e.message)}`, 'danger'); }
+}
+
+function checkURL() {
+  const raw = normalizeUrl(document.getElementById('urlCheckInput')?.value || '');
+  if (!raw) return setResult('urlResult', 'أدخل رابطاً.', 'warning');
+  let score = 0;
+  let notes = [];
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== 'https:') { score += 30; notes.push('لا يستخدم HTTPS.'); }
+    if (/\b\d{1,3}(\.\d{1,3}){3}\b/.test(u.hostname)) { score += 40; notes.push('استخدام IP بدل النطاق.'); }
+    if (u.hostname.includes('xn--')) { score += 30; notes.push('نطاق Punycode.'); }
+    if ((u.hostname.match(/-/g) || []).length >= 3) { score += 20; notes.push('شرطات كثيرة.'); }
+    if (/bit\.ly|tinyurl|t\.co|goo\.gl|is\.gd|cutt\.ly|shorturl/i.test(u.hostname)) { score += 30; notes.push('رابط مختصر.'); }
+    if (u.href.includes('@')) { score += 40; notes.push('يحتوي رمز @ لإخفاء النطاق.'); }
+    if (u.pathname.length > 50) { score += 10; notes.push('مسار طويل جداً.'); }
+
+    const level = score >= 50 ? 'High Risk' : score >= 25 ? 'Suspicious' : 'Safe';
+    setResult('urlResult', `<strong>الرابط:</strong> <span dir="ltr">${escapeHtml(raw)}</span><br><strong>التقييم:</strong> ${scoreBadge(level)}<br><strong>الملاحظات:</strong> ${notes.length ? notes.join(' ') : 'لا توجد مؤشرات واضحة.'}`, score >= 50 ? 'danger' : 'success');
+    
+    logScan('url_safety', raw, `Score: ${score}`, level).then(refreshHistory);
+  } catch { setResult('urlResult', 'الرابط غير صالح.', 'warning'); }
+}
+
+function generatePassword() {
+  const len = Math.max(8, Math.min(64, Number(document.getElementById('genLength')?.value || 16)));
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*()-_=+[]{}';
+  let password = '';
+  const array = new Uint32Array(len);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < len; i++) password += chars[array[i] % chars.length];
+  setResult('generatedPasswordResult', `<strong>كلمة المرور:</strong><pre>${escapeHtml(password)}</pre>`, 'success');
+  
+  logScan('password_generator', 'Local Gen', `Length: ${len}`, 'Info').then(refreshHistory);
+}
+</script>
 </body>
 </html>

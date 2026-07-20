@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>إدارة مكتبة التهديدات | SET-CDP</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+        }
+
+        .admin-threat-container {
+            max-width: 1250px;
+            margin: 30px auto;
+            padding: 0 15px 50px;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #0f172a, #1e293b, #0f766e);
+            color: white;
+            border-radius: 20px;
+            padding: 35px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, .22);
+        }
+
+        .admin-header h1 {
+            margin: 0 0 10px;
+            font-weight: 900;
+            color: #38bdf8;
+        }
+
+        .admin-header p {
+            margin: 0;
+            color: #cbd5e1;
+        }
+
+        .admin-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 8px 22px rgba(15,23,42,.06);
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            font-weight: 800;
+            color: #334155;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 10px;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-main {
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 11px 18px;
+            font-weight: 900;
+        }
+
+        .btn-main:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+        .threat-admin-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 15px;
+            background: #ffffff;
+        }
+
+        .risk-badge {
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .risk-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .risk-high {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .risk-medium {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .risk-low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .publish-badge {
+            background: #dcfce7;
+            color: #166534;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .draft-badge {
+            background: #e2e8f0;
+            color: #475569;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        textarea {
+            min-height: 90px;
+        }
+    </style>
+</head>
+
+<body>
+
+{% include 'base_nav.html' %}
+
+<main class="admin-threat-container">
+
+    <section class="admin-header">
+        <h1><i class="fas fa-user-shield"></i> إدارة مكتبة التهديدات</h1>
+        <p>من هنا يستطيع الأدمن نشر تهديدات جديدة داخل مكتبة التهديدات السيبرانية، وتعديل أو حذف المحتوى المنشور.</p>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} rounded-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="admin-card">
+        <h3 class="mb-4">
+            <i class="fas fa-plus-circle text-success"></i>
+            نشر تهديد جديد
+        </h3>
+
+        <form method="POST" action="{{ url_for('add_threat') }}">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">اسم التهديد</label>
+                    <input type="text" name="name" class="form-control" placeholder="مثال: Phishing Attack" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">مستوى الخطورة</label>
+                    <select name="risk" class="form-select" required>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">الوصف</label>
+                    <textarea name="desc" class="form-control" placeholder="اكتب وصفاً واضحاً للتهديد..." required></textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">أسلوب الهجوم</label>
+                    <textarea name="how" class="form-control" placeholder="اشرح كيف يحدث الهجوم بشكل تعليمي..." required></textarea>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">سبل الوقاية والدفاع</label>
+                    <textarea name="prev" class="form-control" placeholder="اكتب طرق الحماية والوقاية..." required></textarea>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check">
+                        <input type="checkbox" name="is_published" class="form-check-input" id="publishCheck" checked>
+                        <label class="form-check-label" for="publishCheck">
+                            نشر مباشرة في مكتبة التهديدات
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-main" type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                        نشر التهديد
+                    </button>
+
+                    <a href="{{ url_for('threat_library') }}" class="btn btn-outline-secondary rounded-3">
+                        <i class="fas fa-eye"></i>
+                        عرض المكتبة
+                    </a>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="admin-card">
+        <h3 class="mb-4">
+            <i class="fas fa-list"></i>
+            التهديدات المنشورة والمسودات
+        </h3>
+
+        {% if threats %}
+            {% for t in threats %}
+                <div class="threat-admin-item">
+                    <form method="POST" action="{{ url_for('update_threat', threat_id=t.id) }}">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <span class="risk-badge
+                                    {% if t.risk == 'Critical' %}risk-critical
+                                    {% elif t.risk == 'High' %}risk-high
+                                    {% elif t.risk == 'Low' %}risk-low
+                                    {% else %}risk-medium{% endif %}">
+                                    {{ t.risk }}
+                                </span>
+
+                                {% if t.is_published %}
+                                    <span class="publish-badge">Published</span>
+                                {% else %}
+                                    <span class="draft-badge">Draft</span>
+                                {% endif %}
+                            </div>
+
+                            <small class="text-muted">
+                                ID: {{ t.id }}
+                            </small>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">اسم التهديد</label>
+                                <input type="text" name="name" class="form-control" value="{{ t.name }}" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">الخطورة</label>
+                                <select name="risk" class="form-select" required>
+                                    <option value="Critical" {% if t.risk == 'Critical' %}selected{% endif %}>Critical</option>
+                                    <option value="High" {% if t.risk == 'High' %}selected{% endif %}>High</option>
+                                    <option value="Medium" {% if t.risk == 'Medium' %}selected{% endif %}>Medium</option>
+                                    <option value="Low" {% if t.risk == 'Low' %}selected{% endif %}>Low</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">الوصف</label>
+                                <textarea name="desc" class="form-control" required>{{ t.desc }}</textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">أسلوب الهجوم</label>
+                                <textarea name="how" class="form-control" required>{{ t.how }}</textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">سبل الوقاية والدفاع</label>
+                                <textarea name="prev" class="form-control" required>{{ t.prev }}</textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_published" class="form-check-input"
+                                           id="publish{{ t.id }}" {% if t.is_published %}checked{% endif %}>
+                                    <label class="form-check-label" for="publish{{ t.id }}">
+                                        منشور في مكتبة التهديدات
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex gap-2 flex-wrap">
+                                <button class="btn btn-main" type="submit">
+                                    <i class="fas fa-save"></i>
+                                    حفظ التعديل
+                                </button>
+                    </form>
+
+                                <form method="POST"
+                                      action="{{ url_for('delete_threat', threat_id=t.id) }}"
+                                      onsubmit="return confirm('هل أنت متأكد من حذف هذا التهديد؟');">
+                                    <button class="btn btn-danger rounded-3" type="submit">
+                                        <i class="fas fa-trash"></i>
+                                        حذف
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info rounded-3">
+                لا توجد تهديدات بعد. قم بنشر أول تهديد من النموذج بالأعلى.
+            </div>
+        {% endif %}
+    </section>
+
+</main>
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>
