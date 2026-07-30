@@ -191,10 +191,99 @@
             direction: ltr;
             text-align: left;
         }
+
+
+        /* =========================================
+           EDR Theme Safety Net
+           يحافظ على وضوح النصوص فور تبديل الثيم
+           ========================================= */
+        html[data-theme] body.edr-page .edr-hero h1 {
+            color: #f8fafc !important;
+            -webkit-text-fill-color: #f8fafc !important;
+            opacity: 1 !important;
+        }
+
+        html[data-theme] body.edr-page .edr-hero p {
+            color: #cbd5e1 !important;
+            -webkit-text-fill-color: #cbd5e1 !important;
+            opacity: 1 !important;
+        }
+
+        html[data-theme] body.edr-page .live-badge {
+            background: rgba(6, 78, 59, .92) !important;
+            color: #6ee7b7 !important;
+            -webkit-text-fill-color: #6ee7b7 !important;
+        }
+
+        html[data-theme="light"] body.edr-page .metric-card,
+        html[data-theme="light"] body.edr-page .soc-card {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        html[data-theme="dark"] body.edr-page .metric-card,
+        html[data-theme="dark"] body.edr-page .soc-card {
+            background: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+
+        html[data-theme="light"] body.edr-page .soc-card-header {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        html[data-theme="dark"] body.edr-page .soc-card-header {
+            background: #020617 !important;
+            color: #f8fafc !important;
+            border-color: #1e293b !important;
+        }
+
+        html[data-theme] body.edr-page .soc-card-header h5.text-danger,
+        html[data-theme] body.edr-page .alert-title {
+            color: #ef4444 !important;
+            -webkit-text-fill-color: #ef4444 !important;
+            opacity: 1 !important;
+        }
+
+        html[data-theme] body.edr-page .soc-card-header h5.text-warning {
+            color: #f59e0b !important;
+            -webkit-text-fill-color: #f59e0b !important;
+        }
+
+        html[data-theme] body.edr-page .soc-card-header h5.text-info {
+            color: #0ea5e9 !important;
+            -webkit-text-fill-color: #0ea5e9 !important;
+        }
+
+        html[data-theme="light"] body.edr-page .alert-box {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        html[data-theme="dark"] body.edr-page .alert-box {
+            background: #111827 !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+
+        html[data-theme="light"] body.edr-page .alert-details {
+            color: #334155 !important;
+            -webkit-text-fill-color: #334155 !important;
+        }
+
+        html[data-theme="dark"] body.edr-page .alert-details {
+            color: #cbd5e1 !important;
+            -webkit-text-fill-color: #cbd5e1 !important;
+        }
+
     </style>
 </head>
 
-<body>
+<body class="edr-page">
 
 {% include 'base_nav.html' %}
 

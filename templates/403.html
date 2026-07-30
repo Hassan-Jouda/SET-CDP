@@ -1,10 +1,274 @@
-{% include 'base_nav.html' %}
-<link rel="stylesheet" href="/static/style.css">
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>غير مصرح | SET-CDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<main class="container" style="margin-top:40px;">
-  <div class="card">
-    <h1>غير مصرح</h1>
-    <p>لا تملك صلاحية الوصول إلى هذه الصفحة.</p>
-    <a class="btn" href="/">العودة للرئيسية</a>
-  </div>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    body {
+      background: #f8fafc;
+      color: #0f172a;
+      min-height: 100vh;
+    }
+
+    .unauthorized-page {
+      min-height: calc(100vh - 90px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 15px;
+    }
+
+    .unauthorized-card {
+      width: 100%;
+      max-width: 760px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 20px 55px rgba(15, 23, 42, 0.12);
+    }
+
+    .unauthorized-header {
+      background:
+        radial-gradient(circle at top left, rgba(239,68,68,.23), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(14,165,233,.20), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a, #1e293b);
+      color: white;
+      padding: 42px 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .unauthorized-header::before {
+      content: "403";
+      position: absolute;
+      left: 25px;
+      bottom: -35px;
+      font-size: 150px;
+      font-weight: 950;
+      color: rgba(255,255,255,.05);
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .lock-icon {
+      width: 92px;
+      height: 92px;
+      border-radius: 26px;
+      background: rgba(239,68,68,.16);
+      border: 1px solid rgba(248,113,113,.35);
+      color: #fecaca;
+      display: grid;
+      place-items: center;
+      font-size: 42px;
+      margin: 0 auto 18px;
+      box-shadow: 0 12px 30px rgba(239,68,68,.18);
+    }
+
+    .unauthorized-header h1 {
+      font-size: 34px;
+      font-weight: 950;
+      margin-bottom: 10px;
+      color: #fecaca;
+    }
+
+    .unauthorized-header p {
+      color: #cbd5e1;
+      margin: 0;
+      line-height: 1.9;
+      font-size: 16px;
+    }
+
+    .unauthorized-body {
+      padding: 30px;
+    }
+
+    .message-box {
+      background: #fff1f2;
+      border: 1px solid #fecaca;
+      border-right: 6px solid #ef4444;
+      color: #991b1b;
+      border-radius: 18px;
+      padding: 18px 20px;
+      line-height: 1.9;
+      font-weight: 750;
+      margin-bottom: 22px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 17px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .info-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .info-box span {
+      display: block;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 3px;
+    }
+
+    .info-box strong {
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: 950;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-rounded {
+      border-radius: 14px;
+      font-weight: 850;
+      padding: 11px 16px;
+    }
+
+    .small-note {
+      margin-top: 18px;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 768px) {
+      .unauthorized-header {
+        padding: 34px 20px;
+      }
+
+      .unauthorized-header h1 {
+        font-size: 28px;
+      }
+
+      .unauthorized-body {
+        padding: 22px;
+      }
+
+      .actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+{% include 'base_nav.html' %}
+
+<main class="unauthorized-page">
+
+  <section class="unauthorized-card">
+
+    <div class="unauthorized-header">
+      <div class="lock-icon">
+        <i class="fas fa-lock"></i>
+      </div>
+
+      <h1>غير مصرح بالوصول</h1>
+
+      <p>
+        لا تملك الصلاحية الكافية للوصول إلى هذه الصفحة داخل منصة SET-CDP.
+      </p>
+    </div>
+
+    <div class="unauthorized-body">
+
+      <div class="message-box">
+        <i class="fas fa-shield-halved"></i>
+        تم تقييد هذه الصفحة لأنها مخصصة لحسابات لديها صلاحيات أعلى، مثل حساب الأدمن أو مدير النظام.
+      </div>
+
+      <div class="info-grid">
+
+        <div class="info-box">
+          <div class="info-icon" style="background: linear-gradient(135deg,#ef4444,#991b1b);">
+            <i class="fas fa-ban"></i>
+          </div>
+          <div>
+            <span>رمز الخطأ</span>
+            <strong>403 Forbidden</strong>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-icon" style="background: linear-gradient(135deg,#0ea5e9,#0284c7);">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <div>
+            <span>السبب المحتمل</span>
+            <strong>صلاحيات غير كافية</strong>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <a href="/" class="btn btn-primary btn-rounded">
+          <i class="fas fa-house"></i>
+          العودة للرئيسية
+        </a>
+
+        <a href="/dashboard" class="btn btn-outline-dark btn-rounded">
+          <i class="fas fa-chart-line"></i>
+          لوحة التحكم
+        </a>
+
+        <a href="/profile" class="btn btn-outline-secondary btn-rounded">
+          <i class="fas fa-user"></i>
+          ملفي الشخصي
+        </a>
+
+        <button type="button" class="btn btn-outline-danger btn-rounded" onclick="history.back()">
+          <i class="fas fa-arrow-right"></i>
+          رجوع
+        </button>
+      </div>
+
+      <div class="small-note">
+        <i class="fas fa-circle-info"></i>
+        إذا كنت تعتقد أن لديك صلاحية للوصول إلى هذه الصفحة، تواصل مع مدير المنصة أو سجل الدخول بحساب أدمن.
+      </div>
+
+    </div>
+
+  </section>
+
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/script.js"></script>
+
+</body>
+</html>

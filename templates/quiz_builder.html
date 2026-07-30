@@ -2,106 +2,677 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>إدارة أسئلة الامتحان</title>
+  <title>إدارة أسئلة الامتحان | SET-CDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    body {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .builder-page {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .builder-hero {
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(15,118,110,.22), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a, #1e293b);
+      color: white;
+      border-radius: 26px;
+      padding: 38px 30px;
+      margin-bottom: 26px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .builder-hero::before {
+      content: "SET-CDP";
+      position: absolute;
+      left: 25px;
+      bottom: -20px;
+      font-size: 90px;
+      font-weight: 950;
+      color: rgba(255,255,255,.04);
+      letter-spacing: 7px;
+      pointer-events: none;
+    }
+
+    .builder-hero h1 {
+      color: #38bdf8;
+      font-weight: 950;
+      margin-bottom: 10px;
+      font-size: 36px;
+    }
+
+    .builder-hero p {
+      color: #cbd5e1;
+      line-height: 1.9;
+      margin-bottom: 0;
+      max-width: 780px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 28px rgba(15,23,42,.06);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .stat-card span {
+      display: block;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .stat-card strong {
+      display: block;
+      color: #0f172a;
+      font-size: 28px;
+      font-weight: 950;
+      line-height: 1;
+    }
+
+    .builder-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 22px;
+      box-shadow: 0 12px 35px rgba(15,23,42,.08);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .builder-card-header {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .builder-card-header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 950;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .builder-card-header h2 i {
+      color: #0ea5e9;
+    }
+
+    .builder-card-body {
+      padding: 24px;
+    }
+
+    .form-label {
+      color: #334155;
+      font-weight: 850;
+      margin-bottom: 7px;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 14px;
+      border-color: #cbd5e1;
+      padding: 11px 13px;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14,165,233,.13);
+    }
+
+    .option-input-group {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px;
+      height: 100%;
+    }
+
+    .option-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: #0f172a;
+      color: #38bdf8;
+      font-weight: 950;
+      margin-bottom: 8px;
+    }
+
+    .save-btn {
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-weight: 950;
+    }
+
+    .search-box {
+      max-width: 360px;
+      width: 100%;
+    }
+
+    .search-box input {
+      border-radius: 14px;
+      padding: 11px 14px;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table thead th {
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-color: #dbeafe;
+      padding: 14px;
+      font-size: 13px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .table tbody td {
+      padding: 14px;
+      border-color: #e2e8f0;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    .question-text {
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.8;
+      max-width: 470px;
+    }
+
+    .options-preview {
+      margin-top: 8px;
+      color: #64748b;
+      font-size: 12.5px;
+      line-height: 1.8;
+    }
+
+    .answer-badge {
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 850;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+
+    .status-active {
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 850;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+
+    .status-disabled {
+      background: #e5e7eb;
+      color: #374151;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 850;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons .btn {
+      border-radius: 11px;
+      font-weight: 850;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: #94a3b8;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: .55;
+    }
+
+    .notice-box {
+      background: #f0f9ff;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      border-right: 6px solid #0ea5e9;
+      border-radius: 16px;
+      padding: 16px 18px;
+      line-height: 1.9;
+      font-weight: 750;
+      margin-bottom: 24px;
+    }
+
+    .btn-rounded {
+      border-radius: 13px;
+      font-weight: 850;
+      padding: 10px 15px;
+    }
+
+    @media (max-width: 768px) {
+      .builder-hero {
+        text-align: center;
+        padding: 30px 18px;
+      }
+
+      .builder-hero h1 {
+        font-size: 28px;
+      }
+
+      .builder-card-body {
+        padding: 18px;
+      }
+
+      .builder-card-header {
+        align-items: stretch;
+      }
+
+      .search-box,
+      .builder-card-header .btn {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
+
 <body>
+
 {% include 'base_nav.html' %}
 
-<main class="container py-5">
-  <h1>إدارة أسئلة الامتحان</h1>
-  <p class="text-muted">أضف أسئلة جديدة، فعّل أو عطّل الأسئلة، أو احذفها.</p>
+<main class="container py-5 builder-page">
 
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <h4>إضافة سؤال جديد</h4>
+  <section class="builder-hero">
+    <h1>
+      <i class="fas fa-list-check"></i>
+      إدارة أسئلة الامتحان
+    </h1>
 
-      <form method="post" action="/quiz-builder/add">
-        <label class="form-label">السؤال</label>
-        <textarea name="question" class="form-control mb-2" required></textarea>
+    <p>
+      من هذه الصفحة يستطيع الأدمن إضافة أسئلة جديدة، تحديد الإجابة الصحيحة،
+      تفعيل أو تعطيل الأسئلة، وحذف الأسئلة القديمة الخاصة بامتحان التوعية الأمنية.
+    </p>
+  </section>
 
-        <div class="row">
+  {% set total_questions = questions|length %}
+  {% set active_count = namespace(value=0) %}
+  {% set inactive_count = namespace(value=0) %}
+
+  {% for q in questions %}
+    {% if q.is_active == 1 %}
+      {% set active_count.value = active_count.value + 1 %}
+    {% else %}
+      {% set inactive_count.value = inactive_count.value + 1 %}
+    {% endif %}
+  {% endfor %}
+
+  <section class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background: linear-gradient(135deg,#0ea5e9,#0284c7);">
+        <i class="fas fa-circle-question"></i>
+      </div>
+      <div>
+        <span>إجمالي الأسئلة</span>
+        <strong>{{ total_questions }}</strong>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background: linear-gradient(135deg,#22c55e,#0f766e);">
+        <i class="fas fa-circle-check"></i>
+      </div>
+      <div>
+        <span>الأسئلة المفعلة</span>
+        <strong>{{ active_count.value }}</strong>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background: linear-gradient(135deg,#64748b,#334155);">
+        <i class="fas fa-circle-pause"></i>
+      </div>
+      <div>
+        <span>الأسئلة المعطلة</span>
+        <strong>{{ inactive_count.value }}</strong>
+      </div>
+    </div>
+
+  </section>
+
+  <div class="notice-box">
+    <i class="fas fa-circle-info"></i>
+    يفضل أن تكون الأسئلة واضحة ومباشرة، وأن تقيس مفاهيم عملية مثل التصيد، الروابط المشبوهة،
+    كلمات المرور، التصفح الآمن، والهندسة الاجتماعية.
+  </div>
+
+  <section class="builder-card">
+
+    <div class="builder-card-header">
+      <h2>
+        <i class="fas fa-plus-circle"></i>
+        إضافة سؤال جديد
+      </h2>
+
+      <a href="/quiz-results" class="btn btn-outline-primary btn-rounded">
+        <i class="fas fa-chart-column"></i>
+        عرض نتائج الامتحان
+      </a>
+    </div>
+
+    <div class="builder-card-body">
+      <form method="post" action="/quiz-builder/add" id="addQuestionForm">
+
+        <div class="mb-3">
+          <label class="form-label">نص السؤال</label>
+          <textarea
+            name="question"
+            id="questionText"
+            class="form-control"
+            rows="3"
+            placeholder="مثال: ما هو التصرف الصحيح عند استلام رابط مشبوه؟"
+            required
+          ></textarea>
+        </div>
+
+        <div class="row g-3 mb-3">
+
           <div class="col-md-6">
-            <label>الخيار A</label>
-            <input name="option_a" class="form-control mb-2" required>
+            <div class="option-input-group">
+              <div class="option-badge">A</div>
+              <label class="form-label">الخيار A</label>
+              <input name="option_a" id="optionA" class="form-control" required>
+            </div>
           </div>
+
           <div class="col-md-6">
-            <label>الخيار B</label>
-            <input name="option_b" class="form-control mb-2" required>
+            <div class="option-input-group">
+              <div class="option-badge">B</div>
+              <label class="form-label">الخيار B</label>
+              <input name="option_b" id="optionB" class="form-control" required>
+            </div>
           </div>
+
           <div class="col-md-6">
-            <label>الخيار C</label>
-            <input name="option_c" class="form-control mb-2" required>
+            <div class="option-input-group">
+              <div class="option-badge">C</div>
+              <label class="form-label">الخيار C</label>
+              <input name="option_c" id="optionC" class="form-control" required>
+            </div>
           </div>
+
           <div class="col-md-6">
-            <label>الخيار D</label>
-            <input name="option_d" class="form-control mb-2" required>
+            <div class="option-input-group">
+              <div class="option-badge">D</div>
+              <label class="form-label">الخيار D</label>
+              <input name="option_d" id="optionD" class="form-control" required>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="row g-3 align-items-end">
+          <div class="col-md-8">
+            <label class="form-label">الإجابة الصحيحة</label>
+            <select name="correct_option" id="correctOption" class="form-select" required>
+              <option value="0">A - الخيار الأول</option>
+              <option value="1">B - الخيار الثاني</option>
+              <option value="2">C - الخيار الثالث</option>
+              <option value="3">D - الخيار الرابع</option>
+            </select>
+          </div>
+
+          <div class="col-md-4">
+            <button class="btn btn-primary save-btn w-100" id="saveQuestionBtn" type="submit">
+              <i class="fas fa-floppy-disk"></i>
+              حفظ السؤال
+            </button>
           </div>
         </div>
 
-        <label>الإجابة الصحيحة</label>
-        <select name="correct_option" class="form-control mb-3" required>
-          <option value="0">A</option>
-          <option value="1">B</option>
-          <option value="2">C</option>
-          <option value="3">D</option>
-        </select>
-
-        <button class="btn btn-primary">حفظ السؤال</button>
       </form>
     </div>
-  </div>
+  </section>
 
-  <h3>الأسئلة الحالية</h3>
+  <section class="builder-card">
 
-  {% if questions %}
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover">
-      <thead class="table-primary">
-        <tr>
-          <th>ID</th>
-          <th>السؤال</th>
-          <th>الإجابة الصحيحة</th>
-          <th>الحالة</th>
-          <th>إجراء</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for q in questions %}
-        <tr>
-          <td>{{ q.id }}</td>
-          <td>{{ q.question }}</td>
-          <td>
-            {% if q.correct_option == 0 %}A{% endif %}
-            {% if q.correct_option == 1 %}B{% endif %}
-            {% if q.correct_option == 2 %}C{% endif %}
-            {% if q.correct_option == 3 %}D{% endif %}
-          </td>
-          <td>
-            {% if q.is_active == 1 %}
-              <span class="badge bg-success">مفعل</span>
-            {% else %}
-              <span class="badge bg-secondary">معطل</span>
-            {% endif %}
-          </td>
-          <td>
-            <form method="post" action="/quiz-builder/toggle/{{ q.id }}" style="display:inline">
-              <button class="btn btn-sm btn-warning">تفعيل/تعطيل</button>
-            </form>
+    <div class="builder-card-header">
+      <h2>
+        <i class="fas fa-table-list"></i>
+        الأسئلة الحالية
+      </h2>
 
-            <form method="post" action="/quiz-builder/delete/{{ q.id }}" style="display:inline">
-              <button class="btn btn-sm btn-danger" onclick="return confirm('حذف السؤال؟')">حذف</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-    <div class="alert alert-info">لا توجد أسئلة مضافة. سيتم استخدام الامتحان الجاهز الافتراضي.</div>
-  {% endif %}
+      <div class="search-box">
+        <input
+          type="text"
+          id="questionSearch"
+          class="form-control"
+          placeholder="بحث داخل الأسئلة..."
+          oninput="filterQuestions()"
+        >
+      </div>
+    </div>
+
+    {% if questions %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="questionsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>السؤال</th>
+            <th>الإجابة الصحيحة</th>
+            <th>الحالة</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for q in questions %}
+          <tr>
+            <td class="fw-bold text-muted">
+              #{{ q.id }}
+            </td>
+
+            <td>
+              <div class="question-text">
+                {{ q.question }}
+              </div>
+
+              <div class="options-preview">
+                {% if q.option_a %}<div><strong>A:</strong> {{ q.option_a }}</div>{% endif %}
+                {% if q.option_b %}<div><strong>B:</strong> {{ q.option_b }}</div>{% endif %}
+                {% if q.option_c %}<div><strong>C:</strong> {{ q.option_c }}</div>{% endif %}
+                {% if q.option_d %}<div><strong>D:</strong> {{ q.option_d }}</div>{% endif %}
+              </div>
+            </td>
+
+            <td>
+              <span class="answer-badge">
+                <i class="fas fa-check"></i>
+                {% if q.correct_option|string == '0' %}A{% endif %}
+                {% if q.correct_option|string == '1' %}B{% endif %}
+                {% if q.correct_option|string == '2' %}C{% endif %}
+                {% if q.correct_option|string == '3' %}D{% endif %}
+              </span>
+            </td>
+
+            <td>
+              {% if q.is_active == 1 %}
+                <span class="status-active">
+                  <i class="fas fa-circle-check"></i>
+                  مفعل
+                </span>
+              {% else %}
+                <span class="status-disabled">
+                  <i class="fas fa-circle-pause"></i>
+                  معطل
+                </span>
+              {% endif %}
+            </td>
+
+            <td>
+              <div class="action-buttons">
+
+                <form method="post" action="/quiz-builder/toggle/{{ q.id }}">
+                  {% if q.is_active == 1 %}
+                    <button class="btn btn-sm btn-warning" type="submit">
+                      <i class="fas fa-pause"></i>
+                      تعطيل
+                    </button>
+                  {% else %}
+                    <button class="btn btn-sm btn-success" type="submit">
+                      <i class="fas fa-play"></i>
+                      تفعيل
+                    </button>
+                  {% endif %}
+                </form>
+
+                <form method="post" action="/quiz-builder/delete/{{ q.id }}">
+                  <button
+                    class="btn btn-sm btn-danger"
+                    type="submit"
+                    onclick="return confirm('هل أنت متأكد من حذف هذا السؤال؟')"
+                  >
+                    <i class="fas fa-trash"></i>
+                    حذف
+                  </button>
+                </form>
+
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <h5 class="fw-bold">لا توجد أسئلة مضافة</h5>
+        <p class="mb-0">
+          أضف أول سؤال من النموذج بالأعلى. في حال عدم وجود أسئلة، يمكن للنظام استخدام الامتحان الافتراضي حسب إعداداتك.
+        </p>
+      </div>
+    {% endif %}
+
+  </section>
+
 </main>
+
+<script>
+  function filterQuestions() {
+    const input = document.getElementById("questionSearch");
+    const table = document.getElementById("questionsTable");
+
+    if (!input || !table) return;
+
+    const query = input.value.toLowerCase().trim();
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach(function(row) {
+      const text = row.innerText.toLowerCase();
+
+      if (!query || text.includes(query)) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  }
+
+  const addQuestionForm = document.getElementById("addQuestionForm");
+
+  if (addQuestionForm) {
+    addQuestionForm.addEventListener("submit", function(event) {
+      const question = document.getElementById("questionText").value.trim();
+      const a = document.getElementById("optionA").value.trim();
+      const b = document.getElementById("optionB").value.trim();
+      const c = document.getElementById("optionC").value.trim();
+      const d = document.getElementById("optionD").value.trim();
+      const saveBtn = document.getElementById("saveQuestionBtn");
+
+      if (question.length < 8) {
+        event.preventDefault();
+        alert("نص السؤال قصير جداً. اكتب سؤالاً أوضح.");
+        return;
+      }
+
+      if (!a || !b || !c || !d) {
+        event.preventDefault();
+        alert("يرجى تعبئة جميع الخيارات.");
+        return;
+      }
+
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+      }
+    });
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/script.js"></script>
+
 </body>
 </html>

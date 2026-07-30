@@ -1,126 +1,320 @@
+<!-- SET-CDP Theme Preload: يمنع الوميض ويطبق الثيم قبل ظهور الصفحة -->
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=-uGfSeawYCquP5eXpLWi0NocAZbrziiht1MKivoTW8eEWqNB-ZQKc1tyB3wATylnLssumEPXtTRyjBCsZJ98bxIoR1ThKX3MClv9hLaPvdgPOZ5Mi8q_5kjz_sEJhXRGORy7Nm8L5X8IMdS2Lhg2LySi_1BFjwl0UXUGHryI94F-1HkxFUAN6BckKaOE0xdgF0WZDH9Hobk193hkmpwz47bKi8GE5uL5aAObet5sg6bTZcv3eYOUqkwvxwnmZdonQwxRNficHMVsFDggQB6WD6Mhr3spwyXjKZ6DLnt6-FuNhmPdHtcRAetLGCeeehEEUEgUY_nWTy4kFBk-POnSIA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGNkNDQ4MWY0OGZiOTc4MzA1ODFlNzYwYSZmbj1iYXNlX25hdl90aGVtZV9maW5hbC5odG1sJmNkPWF0dGFjaG1lbnQmdHM9NDk1OTIwJnA9ZnMmY2lkPTEmc2lnPTc2ODY1YzkyNzdlZmM2MDNmZjk1ZWE1NWI3YWNlYjgyYmUwODFkOWM4NzA3ZjVlMTcyODk1NGI1YzY4ZjIzOGImdj0w"/><script>
+(function () {
+  const KEY = "setcdp-theme";
+  const OLD_KEY = "theme";
+  const savedTheme = localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY) || "dark";
+  const theme = savedTheme === "light" ? "light" : "dark";
+
+  document.documentElement.setAttribute("data-theme", theme);
+  document.documentElement.classList.toggle("theme-dark", theme === "dark");
+  document.documentElement.classList.toggle("theme-light", theme === "light");
+  document.documentElement.style.colorScheme = theme;
+})();
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
+  /* =========================================
+     SET-CDP Global Theme Variables
+     ========================================= */
+
+  :root,
+  html[data-theme="light"] {
+    --set-bg: #f8fafc;
+    --set-bg-soft: #f1f5f9;
+    --set-card: #ffffff;
+    --set-text: #0f172a;
+    --set-text-soft: #334155;
+    --set-muted: #64748b;
+    --set-border: #e2e8f0;
+    --set-input: #ffffff;
+    --set-input-text: #0f172a;
+    --set-table-head: #eff6ff;
+    --set-table-head-text: #1e3a8a;
+    --set-shadow: rgba(15, 23, 42, 0.08);
+
+    --set-nav-bg: rgba(255, 255, 255, 0.94);
+    --set-nav-text: #0f172a;
+    --set-nav-brand: #0f172a;
+    --set-nav-border: rgba(15, 23, 42, 0.12);
+    --set-nav-hover: rgba(14, 165, 233, 0.12);
+
+    --set-dropdown-bg: #ffffff;
+    --set-dropdown-text: #0f172a;
+    --set-dropdown-hover: #f1f5f9;
+
+    --set-theme-btn-bg: rgba(14, 165, 233, 0.12);
+    --set-theme-btn-color: #0284c7;
+  }
+
+  html[data-theme="dark"] {
+    --set-bg: #020617;
+    --set-bg-soft: #0f172a;
+    --set-card: #0f172a;
+    --set-text: #e5e7eb;
+    --set-text-soft: #cbd5e1;
+    --set-muted: #94a3b8;
+    --set-border: #334155;
+    --set-input: #111827;
+    --set-input-text: #f8fafc;
+    --set-table-head: #172554;
+    --set-table-head-text: #bfdbfe;
+    --set-shadow: rgba(0, 0, 0, 0.38);
+
+    --set-nav-bg: rgba(15, 23, 42, 0.95);
+    --set-nav-text: #e2e8f0;
+    --set-nav-brand: #ffffff;
+    --set-nav-border: rgba(56, 189, 248, 0.20);
+    --set-nav-hover: rgba(56, 189, 248, 0.14);
+
+    --set-dropdown-bg: #0f172a;
+    --set-dropdown-text: #e2e8f0;
+    --set-dropdown-hover: rgba(56, 189, 248, 0.12);
+
+    --set-theme-btn-bg: rgba(250, 204, 21, 0.13);
+    --set-theme-btn-color: #fde047;
+  }
+
+  html,
+  body {
+    background: var(--set-bg) !important;
+    color: var(--set-text) !important;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  html[data-theme="dark"] body {
+    background:
+      radial-gradient(circle at top left, rgba(14, 165, 233, 0.08), transparent 30%),
+      radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.06), transparent 30%),
+      var(--set-bg) !important;
+  }
+
+  html[data-theme="light"] body {
+    background: var(--set-bg) !important;
+  }
+
+  /* =========================================
+     Navbar
+     ========================================= */
+
   .top-navbar {
-    background: #0f172a;
-    color: #fff;
-    padding: 0;
+    background: var(--set-nav-bg) !important;
+    color: var(--set-nav-text) !important;
+    border-bottom: 1px solid var(--set-nav-border);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     position: sticky;
     top: 0;
     z-index: 9999;
-    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.22);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    isolation: isolate;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+  }
+
+  .top-navbar,
+  .top-navbar * {
+    box-sizing: border-box;
   }
 
   .top-navbar-wrap {
-    max-width: 1300px;
-    margin: auto;
-    padding: 12px 18px;
+    width: 100%;
+    max-width: 1450px;
+    margin: 0 auto;
+    padding: 10px 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
+    gap: 22px;
+    flex-wrap: nowrap;
+    min-height: 68px;
   }
 
   .top-brand {
-    color: #fff;
+    color: var(--set-nav-brand) !important;
     text-decoration: none;
-    font-weight: 900;
-    font-size: 20px;
+    font-weight: 950;
+    font-size: 21px;
     white-space: nowrap;
     letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
   }
 
   .top-brand:hover {
-    color: #38bdf8;
+    color: #38bdf8 !important;
+    transform: translateY(-1px);
+  }
+
+  .top-brand i {
+    font-size: 20px;
   }
 
   .nav-toggle {
     display: none;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: white;
-    border-radius: 10px;
-    padding: 7px 11px;
-    font-size: 20px;
+    background: var(--set-nav-hover);
+    border: 1px solid var(--set-nav-border);
+    color: var(--set-nav-text);
+    border-radius: 12px;
+    padding: 7px 12px;
+    font-size: 19px;
     cursor: pointer;
+    flex-shrink: 0;
+    transition: 0.2s ease;
+  }
+
+  .nav-toggle:hover {
+    color: #38bdf8;
+    transform: translateY(-1px);
   }
 
   .top-nav-links {
     display: flex;
     align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex: 1;
+    min-width: 0;
+    padding-inline: 44px;
   }
 
   .top-nav-links a,
   .dropdown-btn {
-    color: #e2e8f0;
+    color: var(--set-nav-text) !important;
     text-decoration: none;
-    padding: 9px 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 700;
-    transition: 0.2s;
+    padding: 9px 11px;
+    border-radius: 11px;
+    font-size: 14.5px;
+    font-weight: 820;
+    line-height: 1.15;
     background: transparent;
     border: none;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     white-space: nowrap;
+    transition:
+      background 0.18s ease,
+      color 0.18s ease,
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
   }
 
   .top-nav-links a:hover,
   .dropdown-btn:hover {
-    background: rgba(255, 255, 255, 0.09);
-    color: #38bdf8;
+    background: var(--set-nav-hover) !important;
+    color: #38bdf8 !important;
+    transform: translateY(-1px);
+  }
+
+  .top-nav-links i,
+  .dropdown-btn i {
+    font-size: 15px;
+    flex-shrink: 0;
   }
 
   .nav-dropdown {
     position: relative;
+    flex-shrink: 0;
+  }
+
+  .nav-theme-btn {
+    background: var(--set-theme-btn-bg) !important;
+    border: 1px solid var(--set-theme-btn-color) !important;
+    color: var(--set-theme-btn-color) !important;
+    border-radius: 50%;
+    width: 39px;
+    height: 39px;
+    min-width: 39px;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease,
+      background 0.25s ease;
+    margin: 0 4px;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .nav-theme-btn:hover {
+    transform: rotate(25deg) scale(1.07);
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.28);
   }
 
   .dropdown-menu-custom {
     display: none;
     position: absolute;
-    top: 43px;
+    top: 47px;
     right: 0;
-    min-width: 230px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 8px;
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
+    min-width: 245px;
+    background: var(--set-dropdown-bg) !important;
+    border: 1px solid var(--set-nav-border) !important;
+    border-radius: 16px;
+    padding: 9px;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.24);
     z-index: 10000;
   }
 
   .dropdown-menu-custom.show {
     display: block;
+    animation: fadeInDropdown 0.18s ease forwards;
+  }
+
+  @keyframes fadeInDropdown {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .dropdown-menu-custom a {
+    width: 100%;
+    color: var(--set-dropdown-text) !important;
+    padding: 11px 13px;
+    border-radius: 11px;
+    font-size: 14.5px;
+    font-weight: 780;
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: #0f172a;
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    text-decoration: none;
-    width: 100%;
+    justify-content: flex-start;
+    gap: 10px;
+    transition: 0.18s ease;
   }
 
   .dropdown-menu-custom a:hover {
-    background: #f1f5f9;
-    color: #0f766e;
+    background: var(--set-dropdown-hover) !important;
+    color: #38bdf8 !important;
+    transform: translateX(-2px);
   }
 
   .danger-nav-item {
-    color: #dc2626 !important;
+    color: #ef4444 !important;
     font-weight: 900 !important;
   }
 
   .danger-nav-item:hover {
-    background: #fee2e2 !important;
-    color: #991b1b !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #ef4444 !important;
   }
 
   .admin-btn {
@@ -129,22 +323,36 @@
 
   .admin-btn:hover {
     background: rgba(250, 204, 21, 0.12) !important;
-    color: #fde68a !important;
   }
 
   .nav-user {
-    background: rgba(56, 189, 248, 0.14) !important;
-    color: #bae6fd !important;
-    font-weight: 900 !important;
+    background: rgba(56, 189, 248, 0.12) !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.24);
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    flex-shrink: 0;
+  }
+
+  .nav-user-name {
+    display: inline-block;
+    direction: ltr;
+    unicode-bidi: plaintext;
+    max-width: 155px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
   }
 
   .nav-user:hover {
-    background: rgba(56, 189, 248, 0.24) !important;
+    background: #38bdf8 !important;
     color: white !important;
   }
 
   .logout-link {
-    background: rgba(239, 68, 68, 0.15) !important;
+    background: rgba(239, 68, 68, 0.12) !important;
     color: #fecaca !important;
   }
 
@@ -154,28 +362,247 @@
   }
 
   .register-link {
-    background: #0f766e !important;
+    background: #0ea5e9 !important;
     color: white !important;
   }
 
   .register-link:hover {
-    background: #115e59 !important;
+    background: #0284c7 !important;
     color: white !important;
   }
 
-  .soc-link {
-    color: #f87171 !important;
-    font-weight: 900 !important;
+  /* =========================================
+     Global Theme Coverage
+     ========================================= */
+
+  html[data-theme] main,
+  html[data-theme] section,
+  html[data-theme] .container {
+    color: var(--set-text) !important;
   }
 
-  .soc-link:hover {
-    background: rgba(248, 113, 113, 0.15) !important;
-    color: #fecaca !important;
+  html[data-theme] .card,
+  html[data-theme] .tool-card,
+  html[data-theme] .stat-card,
+  html[data-theme] .result-box,
+  html[data-theme] .profile-card,
+  html[data-theme] .stats-card,
+  html[data-theme] .report-stat,
+  html[data-theme] .chart-card,
+  html[data-theme] .report-table-card,
+  html[data-theme] .results-card,
+  html[data-theme] .builder-card,
+  html[data-theme] .start-card,
+  html[data-theme] .question-card,
+  html[data-theme] .attack-card,
+  html[data-theme] .history-card,
+  html[data-theme] .summary-box,
+  html[data-theme] .ext-card,
+  html[data-theme] .threat-card,
+  html[data-theme] .unauthorized-card,
+  html[data-theme] .section-card,
+  html[data-theme] .dashboard-card,
+  html[data-theme] .modal-content,
+  html[data-theme] .list-group-item {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+    box-shadow: 0 10px 28px var(--set-shadow) !important;
   }
 
-  @media (max-width: 1100px) {
+  html[data-theme] .card-header,
+  html[data-theme] .results-card-header,
+  html[data-theme] .builder-card-header,
+  html[data-theme] .start-card-header,
+  html[data-theme] .report-table-header,
+  html[data-theme] .modal-header,
+  html[data-theme] .modal-footer,
+  html[data-theme] .bg-white,
+  html[data-theme] .bg-light {
+    background: var(--set-bg-soft) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] h1,
+  html[data-theme] h2,
+  html[data-theme] h3,
+  html[data-theme] h4,
+  html[data-theme] h5,
+  html[data-theme] h6,
+  html[data-theme] .card-title,
+  html[data-theme] .profile-name,
+  html[data-theme] .question-title,
+  html[data-theme] .student-name,
+  html[data-theme] .report-stat h2,
+  html[data-theme] .stats-card h2 {
+    color: var(--set-text) !important;
+  }
+
+  html[data-theme] p,
+  html[data-theme] label,
+  html[data-theme] .form-label,
+  html[data-theme] .text-muted,
+  html[data-theme] .small,
+  html[data-theme] .card-text,
+  html[data-theme] .time-text {
+    color: var(--set-muted) !important;
+  }
+
+  html[data-theme] input,
+  html[data-theme] textarea,
+  html[data-theme] select,
+  html[data-theme] .form-control,
+  html[data-theme] .form-select {
+    background: var(--set-input) !important;
+    color: var(--set-input-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] input::placeholder,
+  html[data-theme] textarea::placeholder {
+    color: var(--set-muted) !important;
+  }
+
+  html[data-theme] .input-group-text {
+    background: var(--set-bg-soft) !important;
+    color: var(--set-text-soft) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] .table {
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] .table thead th,
+  html[data-theme] .table-primary th,
+  html[data-theme] .table-success th {
+    background: var(--set-table-head) !important;
+    color: var(--set-table-head-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] .table tbody td {
+    background: var(--set-card) !important;
+    color: var(--set-text-soft) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] .table-hover tbody tr:hover td {
+    background: rgba(56, 189, 248, 0.09) !important;
+  }
+
+  html[data-theme] .details-box,
+  html[data-theme] .ethical-check,
+  html[data-theme] .rules-box,
+  html[data-theme] .notice-box,
+  html[data-theme] .executive-box,
+  html[data-theme] .message-box,
+  html[data-theme] .info-box,
+  html[data-theme] .option-input-group,
+  html[data-theme] .bio-box,
+  html[data-theme] .edit-profile-preview,
+  html[data-theme] .empty-state,
+  html[data-theme] .chart-message,
+  html[data-theme] .no-results,
+  html[data-theme] .clone-result-box {
+    background: var(--set-bg-soft) !important;
+    color: var(--set-text-soft) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] .option-box {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] .option-box:hover {
+    background: rgba(14, 165, 233, 0.11) !important;
+  }
+
+  html[data-theme] .option-box:has(input:checked) {
+    background: rgba(34, 197, 94, 0.13) !important;
+    border-color: #22c55e !important;
+  }
+
+  html[data-theme] .alert-light {
+    background: var(--set-bg-soft) !important;
+    color: var(--set-text-soft) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme="dark"] [style*="background: white"],
+  html[data-theme="dark"] [style*="background:white"],
+  html[data-theme="dark"] [style*="background-color: white"],
+  html[data-theme="dark"] [style*="background-color:white"],
+  html[data-theme="dark"] [style*="background: #fff"],
+  html[data-theme="dark"] [style*="background:#fff"],
+  html[data-theme="dark"] [style*="background-color: #fff"],
+  html[data-theme="dark"] [style*="background-color:#fff"],
+  html[data-theme="dark"] [style*="background: #ffffff"],
+  html[data-theme="dark"] [style*="background:#ffffff"] {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  /* =========================================
+     Responsive
+     ========================================= */
+
+  /* يحافظ على نفس حجم النافبار في صفحات المشروع */
+  @media (max-width: 1320px) and (min-width: 1151px) {
+    .top-navbar-wrap {
+      max-width: 100%;
+      padding: 9px 12px;
+      gap: 7px;
+      min-height: 68px;
+    }
+
+    .top-nav-links {
+      gap: 2px;
+      padding-inline: 4px;
+    }
+
+    .top-nav-links a,
+    .dropdown-btn {
+      font-size: 14.5px;
+      padding: 8px 5px;
+      gap: 4px;
+    }
+
+    .top-nav-links i,
+    .dropdown-btn i {
+      font-size: 15px;
+    }
+
+    .top-brand {
+      font-size: 21px;
+    }
+
+    .nav-user {
+      max-width: none;
+    }
+
+    .nav-user-name {
+      max-width: 135px;
+    }
+
+    .nav-theme-btn {
+      width: 37px;
+      height: 37px;
+      min-width: 37px;
+      margin-inline: 1px;
+    }
+  }
+
+  @media (max-width: 1150px) {
     .top-navbar-wrap {
       flex-wrap: wrap;
+      padding: 10px 18px;
+      min-height: 68px;
     }
 
     .nav-toggle {
@@ -187,12 +614,15 @@
       width: 100%;
       flex-direction: column;
       align-items: stretch;
-      margin-top: 12px;
-      gap: 6px;
+      justify-content: flex-start;
+      margin-top: 10px;
+      padding-inline: 0;
+      gap: 7px;
     }
 
     .top-nav-links.show {
       display: flex;
+      animation: fadeInDropdown 0.25s ease;
     }
 
     .top-nav-links a,
@@ -200,6 +630,8 @@
       width: 100%;
       justify-content: flex-start;
       text-align: right;
+      font-size: 14.5px;
+      padding: 11px 13px;
     }
 
     .nav-dropdown {
@@ -209,27 +641,545 @@
     .dropdown-menu-custom {
       position: static;
       width: 100%;
-      margin-top: 5px;
+      margin-top: 6px;
       box-shadow: none;
-      border-radius: 12px;
+      background: var(--set-bg-soft) !important;
+    }
+
+    .nav-theme-btn {
+      align-self: flex-start;
+      margin: 8px 0;
+    }
+
+    .nav-user {
+      max-width: 100%;
+    }
+
+    .nav-user-name {
+      max-width: calc(100vw - 120px);
     }
   }
+
+  /* =====================================================
+     SET-CDP FINAL THEME FIX
+     يحل مشكلة اختفاء النصوص والكروت البيضاء عند تبديل Dark/Light
+     ضعه دائماً في آخر style داخل base_nav.html
+     ===================================================== */
+
+  html[data-theme] {
+    color-scheme: light dark;
+  }
+
+  html[data-theme] body,
+  html[data-theme] main {
+    background-color: var(--set-bg) !important;
+    color: var(--set-text) !important;
+  }
+
+  /* يغطي أسماء الكروت الشائعة في صفحات المشروع */
+  html[data-theme] main :is(
+    .card,
+    .card-body,
+    .quiz-card,
+    .quiz-result-card,
+    .result-card,
+    .result-stat,
+    .score-card,
+    .summary-card,
+    .summary-box,
+    .metric-card,
+    .counter-card,
+    .threat-stat,
+    .threat-stat-card,
+    .threat-summary-card,
+    .filter-card,
+    .filter-box,
+    .filter-panel,
+    .search-box,
+    .search-panel,
+    .admin-toolbar,
+    .toolbar-card,
+    .content-card,
+    .panel-card,
+    .section-card,
+    .dashboard-card,
+    .profile-card,
+    .stats-card,
+    .info-card,
+    .report-card,
+    .chart-card,
+    .table-card,
+    .form-card,
+    .tool-card,
+    .history-card
+  ) {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme="dark"] main :is(
+    .bg-white,
+    .bg-light,
+    .text-bg-light,
+    [class*="bg-white"],
+    [class*="bg-light"]
+  ) {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  /* معالجة inline styles مثل background:white أو color:white */
+  html[data-theme="dark"] main [style*="background: white"],
+  html[data-theme="dark"] main [style*="background:white"],
+  html[data-theme="dark"] main [style*="background-color: white"],
+  html[data-theme="dark"] main [style*="background-color:white"],
+  html[data-theme="dark"] main [style*="background: #fff"],
+  html[data-theme="dark"] main [style*="background:#fff"],
+  html[data-theme="dark"] main [style*="background-color: #fff"],
+  html[data-theme="dark"] main [style*="background-color:#fff"],
+  html[data-theme="dark"] main [style*="background: #ffffff"],
+  html[data-theme="dark"] main [style*="background:#ffffff"],
+  html[data-theme="dark"] main [style*="background-color: #ffffff"],
+  html[data-theme="dark"] main [style*="background-color:#ffffff"] {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme="light"] main [style*="color: white"],
+  html[data-theme="light"] main [style*="color:white"],
+  html[data-theme="light"] main [style*="color: #fff"],
+  html[data-theme="light"] main [style*="color:#fff"],
+  html[data-theme="light"] main [style*="color: #ffffff"],
+  html[data-theme="light"] main [style*="color:#ffffff"] {
+    color: var(--set-text) !important;
+  }
+
+  /* لا تغيّر ألوان الأزرار والبادجات، لكن أصلح النصوص داخل المحتوى */
+  html[data-theme="light"] main :is(
+    h1,h2,h3,h4,h5,h6,p,label,small,span,td,th,li,div
+  ):not(.btn):not(.badge):not(.alert):not(.cyber-badge):not(.progress-bar):not(.top-navbar *):not([class*="text-"]) {
+    color: inherit;
+  }
+
+  html[data-theme] main :is(h1,h2,h3,h4,h5,h6,.title,.section-title,.card-title,.question-title,.student-name,.profile-name) {
+    color: var(--set-text) !important;
+  }
+
+  html[data-theme] main :is(p,small,label,.text-muted,.text-secondary,.subtitle,.section-subtitle,.card-text,.description,.time-text) {
+    color: var(--set-muted) !important;
+  }
+
+  /* أكثر سبب لاختفاء الكلام في Light هو text-white على كرت أبيض */
+  html[data-theme="light"] main .text-white:not(.btn):not(.badge):not(.alert):not(.cyber-badge):not(.hero-title):not(.top-brand) {
+    color: var(--set-text) !important;
+  }
+
+  html[data-theme="light"] main .text-light:not(.btn):not(.badge):not(.alert):not(.cyber-badge):not(.hero-title) {
+    color: var(--set-text-soft) !important;
+  }
+
+  html[data-theme="dark"] main .text-dark:not(.btn):not(.badge):not(.alert) {
+    color: var(--set-text) !important;
+  }
+
+  html[data-theme] main :is(input,textarea,select,.form-control,.form-select) {
+    background: var(--set-input) !important;
+    color: var(--set-input-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] main :is(input,textarea)::placeholder {
+    color: var(--set-muted) !important;
+    opacity: 1 !important;
+  }
+
+  html[data-theme] main .input-group-text {
+    background: var(--set-bg-soft) !important;
+    color: var(--set-text-soft) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] main table,
+  html[data-theme] main .table {
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] main .table tbody td {
+    background: var(--set-card) !important;
+    color: var(--set-text-soft) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] main .table thead th {
+    background: var(--set-table-head) !important;
+    color: var(--set-table-head-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  /* الحفاظ على alerts بألوان مفهومة بدل قلبها كلها */
+  html[data-theme="dark"] main .alert-success {
+    background: rgba(34, 197, 94, .13) !important;
+    color: #86efac !important;
+    border-color: rgba(34, 197, 94, .30) !important;
+  }
+
+  html[data-theme="dark"] main .alert-danger {
+    background: rgba(239, 68, 68, .13) !important;
+    color: #fecaca !important;
+    border-color: rgba(239, 68, 68, .30) !important;
+  }
+
+  html[data-theme="dark"] main .alert-warning {
+    background: rgba(245, 158, 11, .14) !important;
+    color: #fde68a !important;
+    border-color: rgba(245, 158, 11, .32) !important;
+  }
+
+  html[data-theme="dark"] main .alert-info {
+    background: rgba(14, 165, 233, .13) !important;
+    color: #bae6fd !important;
+    border-color: rgba(14, 165, 233, .30) !important;
+  }
+
+  html[data-theme="light"] main .alert-success {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border-color: #bbf7d0 !important;
+  }
+
+  html[data-theme="light"] main .alert-danger {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+    border-color: #fecaca !important;
+  }
+
+  html[data-theme="light"] main .alert-warning {
+    background: #fffbeb !important;
+    color: #92400e !important;
+    border-color: #fde68a !important;
+  }
+
+  html[data-theme="light"] main .alert-info {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border-color: #bfdbfe !important;
+  }
+
+  /* حل مشكلة تحديد النص الأزرق لو كان ظاهر بسبب selection */
+  html[data-theme] ::selection {
+    background: rgba(56, 189, 248, .35);
+    color: var(--set-text);
+  }
+
+
+  /* =========================================
+     Safe component colors
+     يمنع اختفاء الأرقام والعناوين داخل الكروت
+     ========================================= */
+
+  /* أرقام الإحصائيات وقيم المعلومات */
+  html[data-theme] main :is(
+    .summary-item,
+    .info-box,
+    .stat-card,
+    .stats-card,
+    .metric-card,
+    .counter-card,
+    .report-stat,
+    .result-stat
+  ) strong,
+  html[data-theme] main :is(
+    .summary-item,
+    .info-box,
+    .stat-card,
+    .stats-card,
+    .metric-card,
+    .counter-card,
+    .report-stat,
+    .result-stat
+  ) :is(.stat-value,.stat-number,.metric-value,.count,.value) {
+    color: var(--set-text) !important;
+    -webkit-text-fill-color: var(--set-text) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  html[data-theme] main :is(
+    .summary-item,
+    .info-box,
+    .stat-card,
+    .stats-card,
+    .metric-card,
+    .counter-card,
+    .report-stat,
+    .result-stat
+  ) span:not(.badge):not(.icon):not(.info-icon) {
+    color: var(--set-muted) !important;
+    -webkit-text-fill-color: var(--set-muted) !important;
+    opacity: 1 !important;
+  }
+
+  /* لا تسمح للقواعد العامة بتغيير ألوان عناوين الـ Hero */
+  html[data-theme] main :is(
+    .ext-hero,
+    .quiz-hero,
+    .builder-hero,
+    .profile-hero,
+    .report-hero,
+    .results-hero,
+    .hero-attack,
+    .threat-header,
+    .unauthorized-header,
+    .cyber-hero
+  ) {
+    color: #f8fafc !important;
+  }
+
+  html[data-theme] main :is(
+    .ext-hero,
+    .profile-hero,
+    .report-hero,
+    .results-hero,
+    .hero-attack,
+    .threat-header,
+    .unauthorized-header,
+    .cyber-hero
+  ) :is(h1,h2,h3,h4,h5,h6) {
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+  }
+
+  html[data-theme] main :is(.quiz-hero,.builder-hero) :is(h1,h2,h3,h4,h5,h6) {
+    color: #38bdf8 !important;
+    -webkit-text-fill-color: #38bdf8 !important;
+  }
+
+  html[data-theme] main :is(
+    .ext-hero,
+    .quiz-hero,
+    .builder-hero,
+    .profile-hero,
+    .report-hero,
+    .results-hero,
+    .hero-attack,
+    .threat-header,
+    .unauthorized-header,
+    .cyber-hero
+  ) p {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+  }
+
+  /* يمنع اختفاء النصوص الناتجة عن background-clip أو text-fill */
+  html[data-theme] main :is(
+    .summary-item strong,
+    .info-box strong,
+    .stat-card strong,
+    .stats-card strong,
+    .metric-card strong,
+    .counter-card strong
+  ) {
+    background: none !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
+  }
+
+
+  /* =====================================================
+     EDR / Mini-SOC Theme Compatibility
+     يمنع اختفاء عناوين وأرقام ومحتوى صفحات المراقبة
+     ===================================================== */
+
+  html[data-theme] body.edr-page main .edr-hero,
+  html[data-theme] body.edr-device-page main .edr-hero {
+    background:
+      radial-gradient(circle at top left, rgba(56,189,248,.24), transparent 35%),
+      radial-gradient(circle at bottom right, rgba(239,68,68,.18), transparent 35%),
+      linear-gradient(135deg, #082f49, #0f172a 55%, #301827) !important;
+    color: #f8fafc !important;
+    border-color: rgba(56,189,248,.22) !important;
+  }
+
+  html[data-theme] body.edr-page main .edr-hero :is(h1,h2,h3,h4,h5,h6),
+  html[data-theme] body.edr-device-page main .edr-hero :is(h1,h2,h3,h4,h5,h6) {
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+  }
+
+  html[data-theme] body.edr-page main .edr-hero p,
+  html[data-theme] body.edr-device-page main .edr-hero p {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+  }
+
+  html[data-theme] body.edr-page main .live-badge {
+    background: rgba(6,78,59,.88) !important;
+    color: #6ee7b7 !important;
+    -webkit-text-fill-color: #6ee7b7 !important;
+    border-color: #10b981 !important;
+  }
+
+  html[data-theme] body.edr-page main .metric-card,
+  html[data-theme] body.edr-device-page main .card-custom {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+    box-shadow: 0 10px 28px var(--set-shadow) !important;
+  }
+
+  html[data-theme] body.edr-page main .metric-card span,
+  html[data-theme] body.edr-device-page main .metric-title {
+    color: var(--set-muted) !important;
+    -webkit-text-fill-color: var(--set-muted) !important;
+  }
+
+  html[data-theme] body.edr-page main .metric-card h3,
+  html[data-theme] body.edr-device-page main .metric-value {
+    color: var(--set-text) !important;
+    -webkit-text-fill-color: var(--set-text) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  html[data-theme] body.edr-device-page main .metric-value.text-info {
+    color: #0ea5e9 !important;
+    -webkit-text-fill-color: #0ea5e9 !important;
+  }
+
+  html[data-theme] body.edr-device-page main .metric-value.text-warning {
+    color: #f59e0b !important;
+    -webkit-text-fill-color: #f59e0b !important;
+  }
+
+  html[data-theme] body.edr-device-page main .metric-value.text-danger {
+    color: #ef4444 !important;
+    -webkit-text-fill-color: #ef4444 !important;
+  }
+
+  html[data-theme] body.edr-page main .soc-card {
+    background: var(--set-card) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+    box-shadow: 0 12px 30px var(--set-shadow) !important;
+  }
+
+  html[data-theme] body.edr-page main .soc-card-header,
+  html[data-theme] body.edr-device-page main .device-section-header {
+    background: var(--set-bg-soft) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] body.edr-page main .soc-card-header h5.text-danger {
+    color: #ef4444 !important;
+    -webkit-text-fill-color: #ef4444 !important;
+  }
+
+  html[data-theme] body.edr-page main .soc-card-header h5.text-warning,
+  html[data-theme] body.edr-device-page main .device-section-header h5.text-warning {
+    color: #f59e0b !important;
+    -webkit-text-fill-color: #f59e0b !important;
+  }
+
+  html[data-theme] body.edr-page main .soc-card-header h5.text-info,
+  html[data-theme] body.edr-device-page main .device-section-header h5.text-info {
+    color: #0ea5e9 !important;
+    -webkit-text-fill-color: #0ea5e9 !important;
+  }
+
+  html[data-theme] body.edr-page main .alert-box {
+    background: var(--set-bg-soft) !important;
+    color: var(--set-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] body.edr-page main .alert-title {
+    color: #ef4444 !important;
+    -webkit-text-fill-color: #ef4444 !important;
+  }
+
+  html[data-theme] body.edr-page main .alert-details {
+    color: var(--set-text-soft) !important;
+    -webkit-text-fill-color: var(--set-text-soft) !important;
+  }
+
+  html[data-theme] body.edr-page main .table tbody td,
+  html[data-theme] body.edr-device-page main .table tbody td {
+    background: var(--set-card) !important;
+    color: var(--set-text-soft) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] body.edr-page main .table thead th,
+  html[data-theme] body.edr-device-page main .table thead th {
+    background: var(--set-table-head) !important;
+    color: var(--set-table-head-text) !important;
+    border-color: var(--set-border) !important;
+  }
+
+  html[data-theme] body.edr-page main .row-high > td,
+  html[data-theme] body.edr-device-page main .row-high > td {
+    background: rgba(239,68,68,.10) !important;
+  }
+
+  html[data-theme] body.edr-page main .row-medium > td,
+  html[data-theme] body.edr-device-page main .row-medium > td {
+    background: rgba(245,158,11,.09) !important;
+  }
+
+  html[data-theme] body.edr-page main .risk-high,
+  html[data-theme] body.edr-device-page main .risk-high {
+    color: #ef4444 !important;
+    -webkit-text-fill-color: #ef4444 !important;
+  }
+
+  html[data-theme] body.edr-page main .risk-medium,
+  html[data-theme] body.edr-device-page main .risk-medium {
+    color: #f59e0b !important;
+    -webkit-text-fill-color: #f59e0b !important;
+  }
+
+  html[data-theme] body.edr-page main .risk-low,
+  html[data-theme] body.edr-device-page main .risk-low {
+    color: #22c55e !important;
+    -webkit-text-fill-color: #22c55e !important;
+  }
+
+  html[data-theme] body.edr-page main .risk-normal,
+  html[data-theme] body.edr-device-page main .risk-normal {
+    color: var(--set-muted) !important;
+    -webkit-text-fill-color: var(--set-muted) !important;
+  }
+
+  html[data-theme="light"] body.edr-device-page main .text-light:not(.btn):not(.badge) {
+    color: var(--set-text) !important;
+    -webkit-text-fill-color: var(--set-text) !important;
+  }
+
 </style>
 
 <nav class="top-navbar">
   <div class="top-navbar-wrap">
 
     <a class="top-brand" href="/">
-      🛡️ SET-CDP
+      <i class="fas fa-shield-alt text-info"></i>
+      SET-CDP
     </a>
 
     <button class="nav-toggle" type="button" onclick="toggleNavMenu()" aria-label="Toggle navigation">
-      ☰
+      <i class="fas fa-bars"></i>
     </button>
 
     <div class="top-nav-links" id="topNavLinks">
 
-      <!-- Public Links -->
+      <button class="nav-theme-btn" id="themeToggleBtn" type="button" title="تبديل المظهر" aria-label="تبديل المظهر">
+        <i class="fas fa-moon" id="themeIcon"></i>
+      </button>
+
       <a href="/">
         <i class="fas fa-search"></i>
         أدوات الفحص
@@ -252,7 +1202,6 @@
 
       {% if session.get('user_id') %}
 
-        <!-- Platform Tools Dropdown -->
         <div class="nav-dropdown">
           <button class="dropdown-btn" type="button" onclick="toggleDropdown(event, 'toolsDropdown')">
             <i class="fas fa-shield-halved"></i>
@@ -262,8 +1211,8 @@
           <div class="dropdown-menu-custom" id="toolsDropdown">
             <a href="/attack">
               <i class="fas fa-bug"></i>
-              اختبار الاختراق
-            </a>
+اخبار الاختراق            
+</a>
 
             <a href="/ready_templates">
               <i class="fas fa-layer-group"></i>
@@ -279,11 +1228,9 @@
               <i class="fas fa-satellite-dish"></i>
               Live SOC Monitor
             </a>
-
           </div>
         </div>
 
-        <!-- Quiz Dropdown -->
         <div class="nav-dropdown">
           <button class="dropdown-btn" type="button" onclick="toggleDropdown(event, 'quizDropdown')">
             <i class="fas fa-clipboard-question"></i>
@@ -316,8 +1263,6 @@
         </div>
 
         {% if session.get('role') == 'admin' or session.get('is_admin') %}
-
-          <!-- Admin Dropdown -->
           <div class="nav-dropdown">
             <button class="dropdown-btn admin-btn" type="button" onclick="toggleDropdown(event, 'adminDropdown')">
               <i class="fas fa-user-shield"></i>
@@ -341,32 +1286,31 @@
               </a>
 
               <a href="/edr">
-                <i class="fas fa-satellite-dish"></i>
+                <i class="fas fa-eye"></i>
                 مراقبة Mini-EDR
               </a>
-              <!-- في المكان المخصص لروابط الأدمن داخل base_nav.html -->
-<a href="/edr/devices">
-    <i class="fas fa-server"></i>
-    Endpoint Devices
-</a>
-<a href="/edr/download">
-    <i class="fas fa-download"></i>
-    Agent Download
-</a>
+
+              <a href="/edr/devices">
+                <i class="fas fa-server"></i>
+                Endpoint Devices
+              </a>
+
+              <a href="/edr/download">
+                <i class="fas fa-download"></i>
+                Agent Download
+              </a>
             </div>
           </div>
-
         {% endif %}
 
-        <!-- User Profile -->
         <a href="/profile" class="nav-user">
           <i class="fas fa-user"></i>
-          {{ session.get('full_name') or session.get('username') }}
+          <span class="nav-user-name">{{ session.get('full_name') or session.get('username') }}</span>
         </a>
 
-        <a class="logout-link" href="/logout">
+        <a href="/logout" class="logout-link">
           <i class="fas fa-right-from-bracket"></i>
-          تسجيل خروج
+          خروج
         </a>
 
       {% else %}
@@ -384,10 +1328,11 @@
       {% endif %}
 
     </div>
-
   </div>
 </nav>
+
 {% include 'chatbot_widget.html' %}
+
 <script>
   function toggleNavMenu() {
     const nav = document.getElementById("topNavLinks");
@@ -426,4 +1371,82 @@
       });
     }
   });
+
+  (function () {
+    const KEY = "setcdp-theme";
+    const OLD_KEY = "theme";
+    const DEFAULT_THEME = "dark";
+
+    function getSavedTheme() {
+      return localStorage.getItem(KEY) || localStorage.getItem(OLD_KEY) || DEFAULT_THEME;
+    }
+
+    function updateThemeButton(theme) {
+      const btn = document.getElementById("themeToggleBtn");
+      const icon = document.getElementById("themeIcon");
+
+      if (icon) {
+        icon.style.transform = "rotate(180deg)";
+
+        setTimeout(function () {
+          icon.className = theme === "dark" ? "fas fa-sun" : "fas fa-moon";
+          icon.style.transform = "rotate(0deg)";
+        }, 90);
+      }
+
+      if (btn) {
+        btn.setAttribute("title", theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن");
+        btn.setAttribute("aria-label", theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن");
+      }
+    }
+
+    function applyTheme(theme) {
+      const cleanTheme = theme === "light" ? "light" : "dark";
+
+      document.documentElement.setAttribute("data-theme", cleanTheme);
+      document.documentElement.classList.toggle("theme-dark", cleanTheme === "dark");
+      document.documentElement.classList.toggle("theme-light", cleanTheme === "light");
+      document.documentElement.style.colorScheme = cleanTheme;
+
+      if (document.body) {
+        document.body.setAttribute("data-theme", cleanTheme);
+        document.body.classList.toggle("theme-dark", cleanTheme === "dark");
+        document.body.classList.toggle("theme-light", cleanTheme === "light");
+      }
+
+      localStorage.setItem(KEY, cleanTheme);
+      localStorage.setItem(OLD_KEY, cleanTheme);
+
+      updateThemeButton(cleanTheme);
+
+      window.dispatchEvent(new CustomEvent("setcdpThemeChanged", {
+        detail: {
+          theme: cleanTheme
+        }
+      }));
+    }
+
+    window.SETCDPApplyTheme = applyTheme;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const btn = document.getElementById("themeToggleBtn");
+      const savedTheme = getSavedTheme();
+
+      applyTheme(savedTheme);
+
+      if (btn) {
+        btn.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const currentTheme = document.documentElement.getAttribute("data-theme") || DEFAULT_THEME;
+          const nextTheme = currentTheme === "dark" ? "light" : "dark";
+
+          applyTheme(nextTheme);
+        });
+      }
+    });
+
+    applyTheme(getSavedTheme());
+  })();
 </script>

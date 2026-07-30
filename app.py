@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash, send_from_directory
-import os, re, ssl, socket, sqlite3, json, hashlib, ipaddress, uuid, secrets, string
+import os, re, ssl, socket, sqlite3, json, hashlib, ipaddress, uuid, secrets, string, math, zipfile
 from datetime import datetime
 from urllib.parse import urlparse
 from io import BytesIO
@@ -15,6 +15,7 @@ from flask import send_file, abort
 import psutil
 import platform
 import time
+import mimetypes
 
 
 # ==================== CONFIGURATION ====================
@@ -24,7 +25,7 @@ DB_PATH = os.path.join(BASE_DIR, 'database.db')
 
 app = Flask(__name__)
 app.secret_key = 'set-cdp-local-training-secret'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 25 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'uploads')
 app.config['CLONES_FOLDER'] = os.path.join(BASE_DIR, 'templates', 'clones')
 
@@ -338,6 +339,49 @@ def log_scan(scan_type, target, summary, level):
     conn.commit()
     conn.close()
 
+
+def get_dashboard_counts():
+    """
+    نفس أرقام لوحة التحكم:
+    - الأدمن يرى كل البيانات.
+    - المستخدم العادي يرى بياناته فقط.
+    - الزائر غير المسجل تظهر له الأرقام 0 لحماية الخصوصية.
+    """
+    user_id = session.get("user_id")
+    is_admin = session.get("role") == "admin" or session.get("is_admin") is True
+
+    stats = {
+        "captures": 0,
+        "training": 0,
+        "clones": 0,
+        "scans": 0,
+        "tools": 10,
+        "users": 0,
+        "quiz": 0
+    }
+
+    if not user_id:
+        return stats
+
+    conn = get_db()
+    try:
+        if is_admin:
+            stats["captures"] = conn.execute("SELECT COUNT(*) FROM captured_data").fetchone()[0]
+            stats["clones"] = conn.execute("SELECT COUNT(*) FROM clones").fetchone()[0]
+            stats["scans"] = conn.execute("SELECT COUNT(*) FROM scan_history").fetchone()[0]
+            stats["users"] = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+            stats["quiz"] = conn.execute("SELECT COUNT(*) FROM quiz_results").fetchone()[0]
+        else:
+            stats["captures"] = conn.execute("SELECT COUNT(*) FROM captured_data WHERE user_id = ?", (user_id,)).fetchone()[0]
+            stats["clones"] = conn.execute("SELECT COUNT(*) FROM clones WHERE user_id = ?", (user_id,)).fetchone()[0]
+            stats["scans"] = conn.execute("SELECT COUNT(*) FROM scan_history WHERE user_id = ?", (user_id,)).fetchone()[0]
+            stats["quiz"] = conn.execute("SELECT COUNT(*) FROM quiz_results WHERE user_id = ?", (user_id,)).fetchone()[0]
+
+        stats["training"] = stats["captures"]
+        return stats
+    finally:
+        conn.close()
+
 def password_strength(password):
     score=0; feedback=[]; p=password or ''
     if len(p)>=12: score+=2; feedback.append('✅ طول ممتاز 12+ حرف')
@@ -557,21 +601,26 @@ def uploaded_file(filename):
 def index():
     conn = get_db()
     user_id = session.get("user_id")
+    is_admin = session.get("role") == "admin"
+
     scans = []
-    
     if user_id:
-        if session.get("role") == "admin":
+        if is_admin:
             scans = conn.execute("""
-                SELECT scan_history.*, users.username AS owner_username 
-                FROM scan_history 
-                LEFT JOIN users ON scan_history.user_id = users.id 
+                SELECT scan_history.*, users.username AS owner_username
+                FROM scan_history
+                LEFT JOIN users ON scan_history.user_id = users.id
                 ORDER BY scan_history.id DESC LIMIT 15
             """).fetchall()
         else:
-            scans = conn.execute("SELECT * FROM scan_history WHERE user_id = ? ORDER BY id DESC LIMIT 15", (user_id,)).fetchall()
-            
+            scans = conn.execute(
+                "SELECT * FROM scan_history WHERE user_id = ? ORDER BY id DESC LIMIT 15",
+                (user_id,)
+            ).fetchall()
+
     conn.close()
-    return render_template('index.html', scans=scans)
+    stats = get_dashboard_counts()
+    return render_template('index.html', scans=scans, stats=stats)
 
 @app.route('/attack')
 @login_required
@@ -909,210 +958,807 @@ def del_clone(name):
     return jsonify({'error': 'Unauthorized'}), 403
 
 
-# ==================== DEFENSIVE SCANNERS & TOOLS ====================
+# ==================== DEFENSIVE SCANNERS & TOOLS (UPGRADED + FIXED) ====================
+
+MAX_ANALYZE_FILE_SIZE = 25 * 1024 * 1024
+
+SETCDP_SECURITY_HEADERS = {
+    'Strict-Transport-Security': 'HSTS forces HTTPS connections',
+    'Content-Security-Policy': 'CSP helps reduce XSS and injection risks',
+    'X-Frame-Options': 'Protects against clickjacking',
+    'X-Content-Type-Options': 'Prevents MIME sniffing',
+    'Referrer-Policy': 'Controls referrer leakage',
+    'Permissions-Policy': 'Restricts browser features',
+    'Cross-Origin-Opener-Policy': 'Improves cross-origin isolation',
+    'Cross-Origin-Resource-Policy': 'Controls cross-origin resource loading'
+}
+
+def safe_log_scan(scan_type, target, summary, level):
+    """
+    يمنع أي خطأ داخل log_scan من تعطيل أدوات الفحص.
+    مهم جداً حتى لا تظهر HTTP 500 بسبب مشكلة في قاعدة البيانات أو session.
+    """
+    try:
+        log_scan(scan_type, target, summary, level)
+    except Exception as e:
+        print("SET-CDP log_scan skipped:", e)
+
+
+def human_size(size):
+    size = int(size or 0)
+    units = ["B", "KB", "MB", "GB"]
+    value = float(size)
+    for unit in units:
+        if value < 1024 or unit == units[-1]:
+            return f"{value:.2f} {unit}" if unit != "B" else f"{int(value)} B"
+        value /= 1024
+
+
+def calculate_entropy(data):
+    """حساب Shannon Entropy بطريقة أسرع وأكثر ثباتاً."""
+    if not data:
+        return 0.0
+
+    counts = [0] * 256
+    for byte in data:
+        counts[byte] += 1
+
+    entropy = 0.0
+    length = len(data)
+
+    for count in counts:
+        if count:
+            p = count / length
+            entropy -= p * math.log2(p)
+
+    return round(entropy, 3)
+
+
+def normalize_tool_url(url):
+    url = (url or "").strip()
+    if not url:
+        return ""
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+    return url
+
+
+def normalize_tool_domain(value):
+    value = (value or "").strip()
+    value = value.replace("https://", "").replace("http://", "").split("/")[0].split(":")[0]
+    return value
+
+
+def detect_file_type(content, filename=""):
+    filename = filename or ""
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    magic_hex = content[:32].hex().upper()
+
+    result = {
+        "extension": ext,
+        "description": "Unknown",
+        "mime": mimetypes.guess_type(filename)[0] or "application/octet-stream",
+        "magic_hex": magic_hex[:64],
+        "signature": "Unknown"
+    }
+
+    if content.startswith(b"MZ"):
+        result.update({"description": "Windows Executable (EXE/DLL)", "mime": "application/x-msdownload", "signature": "MZ"})
+    elif content.startswith(b"%PDF"):
+        result.update({"description": "PDF Document", "mime": "application/pdf", "signature": "PDF"})
+    elif content.startswith(b"PK\x03\x04"):
+        result.update({"description": "ZIP / Office Document", "mime": "application/zip", "signature": "ZIP"})
+    elif content.startswith(b"\x89PNG"):
+        result.update({"description": "PNG Image", "mime": "image/png", "signature": "PNG"})
+    elif content.startswith(b"\xff\xd8\xff"):
+        result.update({"description": "JPEG Image", "mime": "image/jpeg", "signature": "JPEG"})
+    elif content.startswith(b"GIF87a") or content.startswith(b"GIF89a"):
+        result.update({"description": "GIF Image", "mime": "image/gif", "signature": "GIF"})
+    elif content.startswith(b"RIFF") and len(content) >= 12 and content[8:12] == b"WEBP":
+        result.update({"description": "WEBP Image", "mime": "image/webp", "signature": "WEBP"})
+    elif content[:300].lstrip().lower().startswith((b"<!doctype html", b"<html")) or ext in {"html", "htm"}:
+        result.update({"description": "HTML Document", "mime": "text/html", "signature": "HTML"})
+
+    # Office files are ZIP containers
+    if result["signature"] == "ZIP":
+        try:
+            with zipfile.ZipFile(BytesIO(content)) as z:
+                names = set(z.namelist())
+                if "[Content_Types].xml" in names:
+                    if any(n.startswith("word/") for n in names):
+                        result.update({"description": "Microsoft Word Document (DOCX)", "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "signature": "DOCX"})
+                    elif any(n.startswith("xl/") for n in names):
+                        result.update({"description": "Microsoft Excel Workbook (XLSX)", "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "signature": "XLSX"})
+                    elif any(n.startswith("ppt/") for n in names):
+                        result.update({"description": "Microsoft PowerPoint Presentation (PPTX)", "mime": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "signature": "PPTX"})
+        except Exception:
+            pass
+
+    return result
+
+
+def extract_html_metadata(content):
+    text = content[:300000].decode("utf-8", errors="ignore")
+    metadata = {}
+
+    try:
+        soup = BeautifulSoup(text, "html.parser")
+        title = soup.find("title")
+        metadata["Title"] = title.get_text(strip=True) if title else ""
+        metadata["Forms"] = len(soup.find_all("form"))
+        metadata["Inputs"] = len(soup.find_all("input"))
+        metadata["Scripts"] = len(soup.find_all("script"))
+        metadata["Links"] = len(soup.find_all("a"))
+
+        metas = {}
+        for meta in soup.find_all("meta"):
+            name = meta.get("name") or meta.get("property") or meta.get("http-equiv")
+            content_value = meta.get("content")
+            if name and content_value:
+                metas[name] = content_value[:300]
+        if metas:
+            metadata["Meta Tags"] = metas
+
+        metadata["External HTTP Assets"] = len(re.findall(r"(?:src|href)=[\"']http://", text, re.I))
+    except Exception as e:
+        metadata["HTML Parse Error"] = str(e)
+
+    return metadata
+
+
+def extract_pdf_metadata(content):
+    metadata = {}
+    try:
+        reader = PdfReader(BytesIO(content))
+        metadata["Pages"] = len(reader.pages)
+        metadata["Encrypted"] = bool(getattr(reader, "is_encrypted", False))
+
+        if reader.metadata:
+            for k, v in reader.metadata.items():
+                metadata[str(k).replace("/", "")] = str(v)
+
+        raw = content[:500000]
+        metadata["Has JavaScript Marker"] = b"/JavaScript" in raw or b"/JS" in raw
+        metadata["Has OpenAction Marker"] = b"/OpenAction" in raw
+        metadata["Has EmbeddedFile Marker"] = b"/EmbeddedFile" in raw
+    except Exception as e:
+        metadata["PDF Metadata Error"] = str(e)
+
+    return metadata
+
+
+def extract_image_metadata(content):
+    metadata = {}
+
+    try:
+        img = Image.open(BytesIO(content))
+        metadata["Format"] = img.format
+        metadata["Width"] = img.width
+        metadata["Height"] = img.height
+        metadata["Mode"] = img.mode
+
+        try:
+            exif = img.getexif()
+            if exif:
+                for tag_id, value in exif.items():
+                    tag = ExifTags.TAGS.get(tag_id, str(tag_id))
+                    if tag in {"Make", "Model", "Software", "DateTime", "DateTimeOriginal", "DateTimeDigitized", "Artist", "Copyright"}:
+                        metadata[tag] = str(value)
+        except Exception:
+            pass
+
+    except Exception as e:
+        metadata["Image Metadata Error"] = str(e)
+
+    return metadata
+
+
+def extract_zip_metadata(content):
+    metadata = {}
+
+    try:
+        with zipfile.ZipFile(BytesIO(content)) as z:
+            infos = z.infolist()
+            total_uncompressed = sum(i.file_size for i in infos)
+            total_compressed = sum(i.compress_size for i in infos)
+            metadata["Entries"] = len(infos)
+            metadata["Compressed Size"] = human_size(total_compressed)
+            metadata["Uncompressed Size"] = human_size(total_uncompressed)
+            metadata["Encrypted Entries"] = sum(1 for i in infos if i.flag_bits & 0x1)
+            metadata["Path Traversal Found"] = any(".." in i.filename.replace("\\", "/").split("/") for i in infos)
+            metadata["Sample Entries"] = [i.filename for i in infos[:25]]
+    except Exception as e:
+        metadata["ZIP Metadata Error"] = str(e)
+
+    return metadata
+
+
+def build_file_warnings(filename, detected, entropy, metadata):
+    warnings = []
+    ext = detected.get("extension", "")
+    desc = detected.get("description", "")
+
+    if desc.startswith("Windows Executable"):
+        warnings.append("🚨 الملف تنفيذي. لا تقم بتشغيله إلا إذا كان من مصدر موثوق ومصرح.")
+    if entropy >= 7.5:
+        warnings.append(f"⚠️ Entropy مرتفع ({entropy})؛ قد يكون الملف مضغوطاً أو مشفراً.")
+    elif entropy >= 7.2:
+        warnings.append(f"⚠️ Entropy أعلى من الطبيعي ({entropy}).")
+
+    if len(filename.split(".")) >= 3 and ext in {"exe", "scr", "bat", "cmd", "js", "vbs", "ps1"}:
+        warnings.append("🚨 امتداد مزدوج وينتهي بامتداد قابل للتنفيذ.")
+
+    if ext in {"jpg", "jpeg", "png", "gif", "webp"} and "Image" not in desc and desc != "Unknown":
+        warnings.append("⚠️ امتداد الملف يوحي بأنه صورة، لكن التوقيع الفعلي لا يطابق صورة.")
+
+    if desc == "HTML Document":
+        if metadata.get("Forms", 0) > 0:
+            warnings.append("⚠️ ملف HTML يحتوي نماذج إدخال Forms.")
+        if metadata.get("External HTTP Assets", 0) > 0:
+            warnings.append("⚠️ ملف HTML يحتوي موارد خارجية غير مشفرة HTTP.")
+
+    if metadata.get("Has JavaScript Marker"):
+        warnings.append("⚠️ ملف PDF يحتوي مؤشر JavaScript.")
+    if metadata.get("Has OpenAction Marker"):
+        warnings.append("⚠️ ملف PDF يحتوي OpenAction.")
+
+    if metadata.get("Path Traversal Found"):
+        warnings.append("🚨 الأرشيف يحتوي مسارات Path Traversal مثل ../")
+
+    return warnings
+
 
 @app.route("/api/generate-password", methods=["POST"])
 def generate_password():
-    data = request.get_json() or {}
-    length = int(data.get("length", 16))
-    use_upper = data.get("upper", True)
-    use_lower = data.get("lower", True)
-    use_digits = data.get("digits", True)
-    use_symbols = data.get("symbols", True)
+    try:
+        data = request.get_json(silent=True) or {}
+        length = max(8, min(64, int(data.get("length", 16))))
 
-    chars = ""
-    if use_upper: chars += string.ascii_uppercase
-    if use_lower: chars += string.ascii_lowercase
-    if use_digits: chars += string.digits
-    if use_symbols: chars += "!@#$%^&*()-_=+[]{};:,.?/"
+        chars = ""
+        if data.get("upper", True):
+            chars += string.ascii_uppercase
+        if data.get("lower", True):
+            chars += string.ascii_lowercase
+        if data.get("digits", True):
+            chars += string.digits
+        if data.get("symbols", True):
+            chars += "!@#$%^&*()-_=+[]{};:,.?/"
 
-    if not chars: return jsonify({"error": "اختر نوع واحد على الأقل"}), 400
+        if not chars:
+            return jsonify({"error": "اختر نوع واحد على الأقل"}), 400
 
-    password = "".join(secrets.choice(chars) for _ in range(length))
-    log_scan("password_generator", "local", f"Generated password length {length}", "Info")
-    return jsonify({"password": password, "length": length})
+        password = "".join(secrets.choice(chars) for _ in range(length))
+        safe_log_scan("password_generator", "Local Gen", f"Length {length}", "Info")
+        return jsonify({"password": password, "length": length})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/expand-url", methods=["POST"])
 def expand_url():
-    data = request.get_json() or {}
-    url = normalize_url(data.get("url", ""))
+    url = normalize_tool_url((request.get_json(silent=True) or {}).get("url", ""))
+
+    if not url:
+        return jsonify({"error": "أدخل رابطاً صحيحاً."}), 400
+
     parsed = urlparse(url)
     safe, msg = is_safe_hostname(parsed.hostname)
-    if not safe: return jsonify({"error": msg}), 400
+    if not safe:
+        return jsonify({"error": msg}), 400
 
     try:
-        response = requests.get(url, timeout=10, allow_redirects=True, headers={"User-Agent": "SET-CDP URL Expander/1.0"})
-        chain = [r.url for r in response.history]
-        chain.append(response.url)
+        response = requests.get(
+            url,
+            timeout=15,
+            allow_redirects=True,
+            headers={
+                "User-Agent": "Mozilla/5.0 SET-CDP URL Expander/2.1",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            }
+        )
+
+        chain = [r.url for r in response.history] + [response.url]
         risk = "Safe"
         notes = []
-        if len(chain) > 3: risk = "Suspicious"; notes.append("عدد التحويلات كبير")
-        if response.url.startswith("http://"): risk = "Suspicious"; notes.append("الرابط النهائي غير مشفر HTTP")
-        log_scan("url_expander", url, f"Final URL: {response.url}", risk)
-        return jsonify({"original_url": url, "final_url": response.url, "redirect_count": len(response.history), "chain": chain, "status_code": response.status_code, "risk": risk, "notes": notes or ["لا توجد مؤشرات واضحة"]})
-    except Exception as e: return jsonify({"error": str(e)}), 400
+
+        if len(chain) > 3:
+            risk = "Suspicious"
+            notes.append("سلسلة تحويلات طويلة.")
+        if response.url.startswith("http://"):
+            risk = "High Risk"
+            notes.append("الرابط النهائي غير مشفر HTTP.")
+        if response.status_code >= 400:
+            if risk == "Safe":
+                risk = "Suspicious"
+            notes.append(f"الخادم أرجع رمز حالة: {response.status_code}")
+
+        safe_log_scan("url_expander", url, f"Final: {response.url}", risk)
+
+        return jsonify({
+            "original_url": url,
+            "final_url": response.url,
+            "redirect_count": len(response.history),
+            "chain": chain,
+            "status_code": response.status_code,
+            "risk": risk,
+            "notes": notes or ["مسار التحويل تم تحليله بنجاح."]
+        })
+
+    except requests.exceptions.SSLError:
+        return jsonify({"error": "فشل التحقق من SSL للرابط. جرّب رابطاً آخر أو افحص الشهادة."}), 400
+    except requests.exceptions.Timeout:
+        return jsonify({"error": "انتهت مهلة الاتصال بالرابط."}), 400
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"تعذر فحص الرابط: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"error": f"خطأ غير متوقع في URL Expander: {str(e)}"}), 500
+
 
 @app.route("/api/header-analyzer", methods=["POST"])
 def header_analyzer():
-    data = request.get_json() or {}
-    url = normalize_url(data.get("url", ""))
+    url = normalize_tool_url((request.get_json(silent=True) or {}).get("url", ""))
+
+    if not url:
+        return jsonify({"error": "أدخل رابطاً صحيحاً."}), 400
+
     parsed = urlparse(url)
     safe, msg = is_safe_hostname(parsed.hostname)
-    if not safe: return jsonify({"error": msg}), 400
+    if not safe:
+        return jsonify({"error": msg}), 400
 
     try:
-        response = requests.get(url, timeout=10, allow_redirects=True, headers={"User-Agent": "SET-CDP Header Analyzer/1.0"})
+        response = requests.get(
+            url,
+            timeout=15,
+            allow_redirects=True,
+            headers={"User-Agent": "Mozilla/5.0 SET-CDP Header Analyzer/2.1"}
+        )
+
+        headers_to_check = dict(SETCDP_SECURITY_HEADERS)
+        try:
+            headers_to_check.update(SECURITY_HEADERS)
+        except Exception:
+            pass
+
         analysis = []
-        present = 0
-        for header, description in SECURITY_HEADERS.items():
-            exists = header in response.headers
-            if exists: present += 1
-            analysis.append({"header": header, "present": exists, "value": response.headers.get(header, "Not Set"), "description": description, "recommendation": "موجود" if exists else f"يفضل إضافة {header}"})
-        score = int((present / len(SECURITY_HEADERS)) * 100)
-        level = "Secure" if score >= 80 else "Moderate" if score >= 55 else "Insecure"
-        log_scan("header_analyzer", url, f"Headers score {score}%", level)
-        return jsonify({"url": url, "final_url": response.url, "score": score, "level": level, "headers": analysis})
-    except Exception as e: return jsonify({"error": str(e)}), 400
+        score = 100
+
+        for header, desc in headers_to_check.items():
+            value = response.headers.get(header)
+            if value:
+                analysis.append({
+                    "header": header,
+                    "status": "Secure",
+                    "present": True,
+                    "value": value,
+                    "desc": desc
+                })
+            else:
+                score -= 10
+                analysis.append({
+                    "header": header,
+                    "status": "Missing",
+                    "present": False,
+                    "value": "Not Set",
+                    "desc": desc
+                })
+
+        if response.url.startswith("http://"):
+            score -= 25
+
+        score = max(0, min(100, score))
+        level = "Secure" if score >= 80 else "Moderate" if score >= 50 else "Insecure"
+
+        safe_log_scan("header_analyzer", url, f"Score: {score}%", level)
+
+        return jsonify({
+            "url": url,
+            "final_url": response.url,
+            "score": score,
+            "level": level,
+            "status_code": response.status_code,
+            "server": response.headers.get("Server", "Unknown/Hidden"),
+            "x_powered_by": response.headers.get("X-Powered-By", "Not Disclosed"),
+            "headers": analysis
+        })
+
+    except requests.exceptions.Timeout:
+        return jsonify({"error": "انتهت مهلة الاتصال بالخادم."}), 400
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"تعذر الاتصال بالخادم: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"error": f"خطأ غير متوقع في Header Analyzer: {str(e)}"}), 500
+
 
 @app.route('/api/check-password', methods=['POST'])
-def api_password(): return jsonify(password_strength((request.get_json() or {}).get('password','')))
+def api_password():
+    try:
+        pwd = (request.get_json(silent=True) or {}).get('password', '')
+        score = 0
+        feedback = []
+
+        if len(pwd) >= 12:
+            score += 25
+            feedback.append({'type': 'success', 'msg': 'طول ممتاز (12+)'})
+        elif len(pwd) >= 8:
+            score += 10
+            feedback.append({'type': 'warning', 'msg': 'طول مقبول (8+)'})
+        else:
+            feedback.append({'type': 'danger', 'msg': 'قصيرة جداً (أقل من 8)'})
+
+        if re.search(r'[A-Z]', pwd):
+            score += 20
+            feedback.append({'type': 'success', 'msg': 'تحتوي حروف كبيرة'})
+        else:
+            feedback.append({'type': 'danger', 'msg': 'تفتقر للحروف الكبيرة'})
+
+        if re.search(r'[a-z]', pwd):
+            score += 15
+            feedback.append({'type': 'success', 'msg': 'تحتوي حروف صغيرة'})
+        else:
+            feedback.append({'type': 'warning', 'msg': 'يفضل إضافة حروف صغيرة'})
+
+        if re.search(r'\d', pwd):
+            score += 20
+            feedback.append({'type': 'success', 'msg': 'تحتوي أرقام'})
+        else:
+            feedback.append({'type': 'danger', 'msg': 'تفتقر للأرقام'})
+
+        if re.search(r'[^A-Za-z0-9]', pwd):
+            score += 20
+            feedback.append({'type': 'success', 'msg': 'تحتوي رموز معقدة'})
+        else:
+            feedback.append({'type': 'warning', 'msg': 'يفضل إضافة رموز (!@#$)'})
+
+        if pwd.lower() in COMMON_PASSWORDS or re.search(r'(12345|qwerty|password|admin)', pwd.lower()):
+            score -= 40
+            feedback.append({'type': 'danger', 'msg': 'كلمة شائعة جداً'})
+
+        score = max(0, min(100, score))
+        level = 'Strong' if score >= 80 else 'Medium' if score >= 50 else 'Weak'
+
+        safe_log_scan('password_strength', 'Local Check', f'Score: {score}/100', level)
+        return jsonify({'score': score, 'strength': level, 'feedback': feedback})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/check-email', methods=['POST'])
 def api_email():
-    text = (request.get_json() or {}).get('email', '')
-    low = text.lower()
-    score = 0
-    findings = []
-    for k in PHISHING_KEYWORDS:
-        if k.lower() in low: score += 1; findings.append(f'🚩 كلمة/عبارة مشبوهة: {k}')
-    urls = re.findall(r'https?://[^\s<>"\']+|www\.[^\s<>"\']+', text)
-    for u in urls:
-        if 'http://' in u: score += 1; findings.append('⚠️ رابط HTTP غير آمن')
-        if '@' in u: score += 1; findings.append('⚠️ الرابط يحتوي @')
-        if u.count('-') > 3: score += 1; findings.append('⚠️ رابط يحتوي شرطات كثيرة')
-    
-    risk = 'High Risk' if score >= 4 else 'Medium Risk' if score >= 2 else 'Low Risk'
-    log_scan('email', 'message text', f'{risk}, {len(findings)} indicators', risk)
-    return jsonify({'risk': risk, 'score': min(10, score), 'findings': findings or ['✅ لا توجد مؤشرات واضحة'], 'urls_found': urls[:5]})
+    try:
+        text = (request.get_json(silent=True) or {}).get('email', '')
+        low = text.lower()
+        score = 0
+        findings = []
+
+        urgency_patterns = [
+            'urgent', 'immediately', 'suspend', 'verify account', 'limited time',
+            'security alert', 'login now', 'عاجل', 'سيتم إيقاف', 'تأكيد هويتك',
+            'خلال 24 ساعة', 'تحقق من حسابك', 'كلمة المرور'
+        ]
+
+        for p in urgency_patterns:
+            if p in low:
+                score += 20
+                findings.append(f'🚩 نبرة استعجال/تهديد: "{p}".')
+
+        if re.search(r'(password|bank|credit card|login|verify|كلمة المرور|بطاقة ائتمان|تسجيل الدخول)', low):
+            score += 25
+            findings.append('⚠️ طلب أو إشارة لبيانات حساسة أو تسجيل دخول.')
+
+        urls = re.findall(r'https?://[^\s<>"\']+|www\.[^\s<>"\']+', text)
+
+        if urls:
+            findings.append(f'🔗 تم العثور على {len(urls)} رابط داخل النص.')
+            for u in urls:
+                u_lower = u.lower()
+                parsed = urlparse(u if u_lower.startswith(("http://", "https://")) else "https://" + u)
+                domain = parsed.hostname or ""
+
+                if u_lower.startswith('http://'):
+                    score += 15
+                    findings.append(f'⚠️ الرابط {u[:40]} غير مشفر HTTP.')
+                if '@' in u:
+                    score += 35
+                    findings.append('🚨 رابط يحتوي @ وقد يخفي النطاق الحقيقي.')
+                if domain.count('-') > 2:
+                    score += 10
+                    findings.append('⚠️ النطاق يحتوي شرطات متعددة.')
+                if domain.startswith('xn--'):
+                    score += 30
+                    findings.append('🚨 يستخدم Punycode وقد يكون محاولة تشابه بصري.')
+
+        score = min(100, score)
+        risk = 'High Risk' if score >= 60 else 'Suspicious' if score >= 30 else 'Low Risk'
+
+        safe_log_scan('email', 'Email Text', f'Score: {score}', risk)
+        return jsonify({
+            'risk': risk,
+            'score': score,
+            'findings': findings or ['✅ لا توجد مؤشرات هندسة اجتماعية واضحة.'],
+            'urls': urls
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/check-url', methods=['POST'])
 def api_url():
-    url = (request.get_json() or {}).get('url', '').strip()
-    issues = []
-    score = 100
-    if not url.startswith('https://'): issues.append('الرابط لا يبدأ بـ HTTPS'); score -= 25
-    if '@' in url: issues.append('وجود @ داخل الرابط مؤشر خطير'); score -= 30
-    if url.count('-') > 3: issues.append('شرطات كثيرة في الرابط'); score -= 15
-    if re.search(r'\d+\.\d+\.\d+\.\d+', url): issues.append('استخدام IP بدلاً من domain'); score -= 30
-    level = 'Safe' if score >= 80 else 'Suspicious' if score >= 50 else 'High Risk'
-    log_scan('url', url, f'{level} score {max(0, score)}', level)
-    return jsonify({'url': url, 'score': max(0, score), 'level': level, 'issues': issues or ['✅ لا توجد مؤشرات واضحة']})
+    try:
+        raw_url = (request.get_json(silent=True) or {}).get('url', '').strip()
+        url = normalize_tool_url(raw_url)
+
+        if not url:
+            return jsonify({'error': 'أدخل رابطاً صحيحاً.'}), 400
+
+        issues = []
+        score = 100
+        parsed = urlparse(url)
+        domain = parsed.hostname or ""
+
+        safe, msg = is_safe_hostname(domain)
+        if not safe:
+            return jsonify({"error": msg}), 400
+
+        if parsed.scheme != 'https':
+            issues.append('❌ لا يستخدم بروتوكول HTTPS الآمن.')
+            score -= 30
+        if '@' in url:
+            issues.append('🚨 يحتوي رمز @ وقد يخفي النطاق الحقيقي.')
+            score -= 40
+        if domain.count('-') > 2:
+            issues.append('⚠️ اسم النطاق يحتوي شرطات متعددة.')
+            score -= 15
+        if domain.startswith('xn--'):
+            issues.append('🚨 يستخدم Punycode واحتمال Homograph Attack.')
+            score -= 40
+        if re.fullmatch(r'\d+\.\d+\.\d+\.\d+', domain):
+            issues.append('⚠️ يستخدم عنوان IP بدلاً من اسم نطاق.')
+            score -= 30
+
+        suspicious_tlds = ['.xyz', '.tk', '.ml', '.ga', '.cf', '.gq', '.pw', '.cc', '.info']
+        if any(domain.endswith(tld) for tld in suspicious_tlds):
+            issues.append('⚠️ يستخدم امتداد نطاق شائع في المواقع المشبوهة.')
+            score -= 20
+
+        score = max(0, score)
+        level = 'Safe' if score >= 80 else 'Suspicious' if score >= 50 else 'High Risk'
+
+        safe_log_scan('url', raw_url, f'Score: {score}', level)
+        return jsonify({
+            'url': raw_url,
+            'domain': domain,
+            'score': score,
+            'level': level,
+            'issues': issues or ['✅ الرابط يبدو آمناً وخالياً من مؤشرات التصيد.']
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/scan-website', methods=['POST'])
 def api_scan_site():
-    url = normalize_url((request.get_json() or {}).get('url', ''))
+    url = normalize_tool_url((request.get_json(silent=True) or {}).get('url', ''))
+
+    if not url:
+        return jsonify({'error': 'أدخل رابطاً صحيحاً.'}), 400
+
     parsed = urlparse(url)
     safe, msg = is_safe_hostname(parsed.hostname)
-    if not safe: return jsonify({'error': msg}), 400
-    result = {'url': url, 'https': parsed.scheme == 'https', 'headers': {}, 'missing': [], 'score': 0, 'level': 'Error'}
+    if not safe:
+        return jsonify({'error': msg}), 400
+
     try:
-        r = requests.get(url, timeout=10, headers={'User-Agent': 'SET-CDP Training Scanner/1.0'}, allow_redirects=True)
-        present = 0
-        for h, d in SECURITY_HEADERS.items():
-            ok = h in r.headers; present += 1 if ok else 0
-            if not ok: result['missing'].append(h)
-            result['headers'][h] = {'present': ok, 'description': d, 'value': r.headers.get(h, 'Not Set')}
-        result['status_code'] = r.status_code
-        result['final_url'] = r.url
-        result['score'] = int((present / len(SECURITY_HEADERS)) * 70 + (30 if result['https'] else 0))
-        result['level'] = 'Secure' if result['score'] >= 80 else 'Moderate' if result['score'] >= 55 else 'Insecure'
-        log_scan('website', url, f"Score {result['score']}%", result['level'])
-        return jsonify(result)
+        r = requests.get(
+            url,
+            timeout=15,
+            allow_redirects=True,
+            headers={'User-Agent': 'Mozilla/5.0 SET-CDP Website Scanner/2.1'}
+        )
+
+        headers_to_check = dict(SETCDP_SECURITY_HEADERS)
+        try:
+            headers_to_check.update(SECURITY_HEADERS)
+        except Exception:
+            pass
+
+        present_headers = sum(1 for h in headers_to_check if h in r.headers)
+
+        soup = BeautifulSoup(r.text, 'html.parser')
+        insecure_assets = len(soup.find_all(
+            lambda tag: tag.name in ['script', 'img', 'iframe', 'link']
+            and str(tag.get('src') or tag.get('href') or '').startswith('http://')
+        ))
+        insecure_forms = len(soup.find_all('form', action=re.compile('^http://', re.I)))
+
+        score = 100
+        issues = []
+
+        if urlparse(r.url).scheme != 'https':
+            score -= 40
+            issues.append("الموقع النهائي لا يستخدم HTTPS.")
+        if insecure_assets > 0:
+            score -= 20
+            issues.append(f"يوجد {insecure_assets} موارد Mixed Content غير مشفرة.")
+        if insecure_forms > 0:
+            score -= 30
+            issues.append(f"يوجد {insecure_forms} نماذج ترسل البيانات عبر HTTP.")
+        missing_count = len(headers_to_check) - present_headers
+        if missing_count > 0:
+            score -= missing_count * 5
+            issues.append(f"ينقص الموقع {missing_count} هيدرز أمنية أساسية.")
+
+        score = max(0, min(100, score))
+        level = 'Secure' if score >= 80 else 'Moderate' if score >= 50 else 'Insecure'
+
+        safe_log_scan('website', url, f"Score {score}%", level)
+        return jsonify({
+            'url': url,
+            'final_url': r.url,
+            'status_code': r.status_code,
+            'server': r.headers.get('Server', 'Unknown'),
+            'score': score,
+            'level': level,
+            'issues': issues or ["✅ الموقع مطابق للمعايير الأساسية التي تم فحصها."],
+            'headers_found': present_headers,
+            'total_headers': len(headers_to_check)
+        })
+    except requests.exceptions.Timeout:
+        return jsonify({'error': 'انتهت مهلة الاتصال بالموقع.', 'level': 'Error'}), 400
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'تعذر فحص الموقع: {str(e)}', 'level': 'Error'}), 400
     except Exception as e:
-        log_scan('website', url, 'scan failed', 'Error')
-        return jsonify({'error': str(e), 'level': 'Error', 'score': 0}), 400
+        return jsonify({'error': f'خطأ غير متوقع في Website Scanner: {str(e)}', 'level': 'Error'}), 500
+
 
 @app.route('/api/ssl-check', methods=['POST'])
 def api_ssl():
-    domain = (request.get_json() or {}).get('domain', '').replace('https://', '').replace('http://', '').split('/')[0].strip()
+    domain = normalize_tool_domain((request.get_json(silent=True) or {}).get('domain', ''))
+
+    if not domain:
+        return jsonify({'error': 'أدخل اسم النطاق.'}), 400
+
     safe, msg = is_safe_hostname(domain)
-    if not safe: return jsonify({'error': msg}), 400
+    if not safe:
+        return jsonify({'error': msg}), 400
+
     try:
         context = ssl.create_default_context()
-        with socket.create_connection((domain, 443), timeout=10) as sock:
-            with context.wrap_socket(sock, server_hostname=domain) as ssock: cert = ssock.getpeercert()
+        with socket.create_connection((domain, 443), timeout=12) as sock:
+            with context.wrap_socket(sock, server_hostname=domain) as ssock:
+                cert = ssock.getpeercert()
+                tls_version = ssock.version()
+                cipher = ssock.cipher()
+
         expiry = datetime.strptime(cert['notAfter'], '%b %d %H:%M:%S %Y %Z')
         days = (expiry - datetime.utcnow()).days
-        status = 'Valid' if days > 30 else 'Expiring Soon' if days >= 0 else 'Expired'
-        log_scan('ssl', domain, f'{status}, {days} days left', status)
-        return jsonify({'domain': domain, 'status': status, 'expires': cert['notAfter'], 'days_left': days, 'issuer': dict(x[0] for x in cert.get('issuer', [])).get('organizationName', 'Unknown')})
-    except Exception as e: return jsonify({'error': str(e), 'status': 'Error'}), 400
+        issuer = dict(x[0] for x in cert.get('issuer', [])).get('organizationName', 'Unknown')
+        san = cert.get('subjectAltName', [])
+
+        score = 100
+        issues = []
+
+        if days < 0:
+            status = 'Expired'
+            score = 0
+            issues.append("❌ الشهادة منتهية الصلاحية.")
+        elif days <= 15:
+            status = 'Expiring Soon'
+            score -= 30
+            issues.append("⚠️ الشهادة ستنتهي قريباً.")
+        else:
+            status = 'Valid'
+
+        if tls_version in ['TLSv1', 'TLSv1.1']:
+            score -= 40
+            issues.append(f"❌ بروتوكول قديم وضعيف ({tls_version}).")
+
+        score = max(0, score)
+        safe_log_scan('ssl', domain, f'{status}, {days} days left', status)
+
+        return jsonify({
+            'domain': domain,
+            'status': status,
+            'score': score,
+            'expires': cert['notAfter'],
+            'days_left': days,
+            'issuer': issuer,
+            'tls_version': tls_version,
+            'cipher': cipher[0] if cipher else 'Unknown',
+            'san_count': len(san),
+            'issues': issues or ["✅ الشهادة صالحة وتستخدم بروتوكولات آمنة."]
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'status': 'Error'}), 400
+
 
 @app.route('/api/analyze-file', methods=['POST'])
 def api_file():
-    if 'file' not in request.files: return jsonify({'error': 'No file uploaded'}), 400
-    f = request.files['file']
-    content = f.read()
-    ext = f.filename.rsplit('.', 1)[-1].lower() if '.' in f.filename else ''
-    data = {'filename': f.filename, 'size': len(content), 'hashes': {'md5': hashlib.md5(content).hexdigest(), 'sha1': hashlib.sha1(content).hexdigest(), 'sha256': hashlib.sha256(content).hexdigest()}, 'metadata': {}, 'warnings': [], 'file_type': 'Unknown'}
     try:
-        if ext == 'pdf':
-            data['file_type'] = 'PDF'; reader = PdfReader(BytesIO(content)); data['metadata']['pages'] = len(reader.pages)
-            if reader.metadata:
-                for k, v in reader.metadata.items(): data['metadata'][str(k).replace('/', '')] = str(v)
-                data['warnings'].append('⚠️ PDF may contain metadata')
-        elif ext in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']:
-            data['file_type'] = 'Image'; img = Image.open(BytesIO(content)); data['metadata'].update({'width': img.width, 'height': img.height, 'format': img.format})
-            if img.getexif(): data['warnings'].append('⚠️ Image contains EXIF metadata')
-    except Exception as e: data['warnings'].append('Could not parse metadata: ' + str(e))
-    log_scan('file', f.filename, 'metadata analyzed', 'Info')
-    return jsonify(data)
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
 
-@app.route('/api/log-scan', methods=['POST'])
-@login_required
-def api_log_scan():
-    """استقبال السجلات من الأدوات المحلية وحفظها"""
-    data = request.get_json() or {}
-    scan_type = data.get('scan_type', 'unknown')
-    target = data.get('target', '-')
-    result_summary = data.get('result_summary', 'Completed')
-    risk_level = data.get('risk_level', 'Info')
-    
-    # استخدام دالة log_scan الموجودة مسبقاً في الكود لحفظ البيانات
-    log_scan(scan_type, target, result_summary, risk_level)
-    return jsonify({'success': True})
+        f = request.files['file']
+        filename = f.filename or "unknown"
+        content = f.read()
 
-@app.route('/api/scans/recent', methods=['GET'])
-@login_required
-def api_recent_scans():
-    """جلب السجلات فوراً لتحديث الجدول بشكل حي"""
-    user_id = session.get("user_id")
-    if not user_id:
-        return jsonify({'scans': []})
-        
-    conn = get_db()
-    if session.get("role") == "admin":
-        scans = conn.execute("""
-            SELECT scan_history.*, users.username AS owner_username 
-            FROM scan_history 
-            LEFT JOIN users ON scan_history.user_id = users.id 
-            ORDER BY scan_history.id DESC LIMIT 15
-        """).fetchall()
-    else:
-        scans = conn.execute("""
-            SELECT * FROM scan_history 
-            WHERE user_id = ? ORDER BY id DESC LIMIT 15
-        """, (user_id,)).fetchall()
-    conn.close()
-    
-    scans_list = []
-    for s in scans:
-        d = dict(s)
-        if 'owner_username' not in d:
-            d['owner_username'] = 'زائر'
-        scans_list.append(d)
-        
-    return jsonify({'scans': scans_list})
+        if not content:
+            return jsonify({'error': 'الملف فارغ'}), 400
+
+        if len(content) > MAX_ANALYZE_FILE_SIZE:
+            return jsonify({'error': 'حجم الملف كبير. الحد الأقصى 25MB.'}), 400
+
+        detected = detect_file_type(content, filename)
+        entropy = calculate_entropy(content)
+
+        hashes = {
+            'md5': hashlib.md5(content).hexdigest(),
+            'sha1': hashlib.sha1(content).hexdigest(),
+            'sha256': hashlib.sha256(content).hexdigest(),
+            'sha512': hashlib.sha512(content).hexdigest()
+        }
+
+        metadata = {}
+        signature = detected.get("signature")
+        ext = detected.get("extension", "")
+
+        if signature == "HTML" or ext in {"html", "htm"}:
+            metadata = extract_html_metadata(content)
+        elif signature == "PDF" or ext == "pdf":
+            metadata = extract_pdf_metadata(content)
+        elif signature in {"PNG", "JPEG", "GIF", "WEBP"} or ext in {"jpg", "jpeg", "png", "gif", "webp"}:
+            metadata = extract_image_metadata(content)
+        elif signature in {"ZIP", "DOCX", "XLSX", "PPTX"} or ext in {"zip", "docx", "xlsx", "pptx"}:
+            metadata = extract_zip_metadata(content)
+        else:
+            metadata = {
+                "extension": ext or "unknown",
+                "mime_guess": detected.get("mime", "application/octet-stream")
+            }
+
+        warnings = build_file_warnings(filename, detected, entropy, metadata)
+
+        if detected["description"].startswith("Windows Executable") or entropy >= 7.5:
+            risk = "High Risk"
+            score = 35
+        elif warnings:
+            risk = "Suspicious"
+            score = 65
+        else:
+            risk = "Low Risk"
+            score = 92
+
+        safe_log_scan('file', filename, f'Type: {detected["description"]}', risk)
+
+        return jsonify({
+            'basic': {
+                'filename': filename,
+                'extension': ext,
+                'size_bytes': len(content),
+                'size_human': human_size(len(content)),
+                'browser_last_modified': request.form.get("client_last_modified", ""),
+                'server_analysis_time': datetime.utcnow().isoformat() + "Z"
+            },
+            'filename': filename,
+            'size': len(content),
+            'size_human': human_size(len(content)),
+            'file_type': detected["description"],
+            'entropy': entropy,
+            'type_detection': detected,
+            'hashes': hashes,
+            'metadata': metadata,
+            'deep_metadata': {},
+            'warnings': warnings or ["✅ لم يتم اكتشاف مؤشرات خطورة واضحة في بنية الملف."],
+            'risk': risk,
+            'security': {
+                'score': score,
+                'risk': risk,
+                'warnings': warnings or ["✅ لم يتم اكتشاف مؤشرات خطورة واضحة في بنية الملف."],
+                'note': 'هذا تحليل ساكن Static Analysis وليس حكماً نهائياً على سلامة الملف.'
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': f'File analyzer internal error: {str(e)}'}), 500
 # ==================== QUIZ & THREAT LIBRARY MODULES ====================
 
 @app.route("/threat-library")
@@ -2204,6 +2850,62 @@ def api_chatbot():
             "حدث خطأ أثناء معالجة السؤال. حاول مرة أخرى.",
             "error"
         )), 500
+# ============================================================
+# SET-CDP Dashboard Counters API
+# نفس أرقام لوحة التحكم + سجل النشاط من قاعدة البيانات
+# ============================================================
+
+@app.route("/api/get-stats")
+def api_get_stats():
+    try:
+        return jsonify(get_dashboard_counts())
+    except Exception as e:
+        return jsonify({
+            "captures": 0,
+            "training": 0,
+            "clones": 0,
+            "scans": 0,
+            "tools": 10,
+            "users": 0,
+            "quiz": 0,
+            "error": str(e)
+        }), 500
+
+
+@app.route("/api/scans/recent")
+def api_scans_recent():
+    try:
+        user_id = session.get("user_id")
+        is_admin = session.get("role") == "admin" or session.get("is_admin") is True
+
+        if not user_id:
+            return jsonify({"scans": [], "is_admin": False})
+
+        conn = get_db()
+        try:
+            if is_admin:
+                rows = conn.execute("""
+                    SELECT scan_history.*, users.username AS owner_username
+                    FROM scan_history
+                    LEFT JOIN users ON scan_history.user_id = users.id
+                    ORDER BY scan_history.id DESC LIMIT 15
+                """).fetchall()
+            else:
+                rows = conn.execute("""
+                    SELECT *
+                    FROM scan_history
+                    WHERE user_id = ?
+                    ORDER BY id DESC LIMIT 15
+                """, (user_id,)).fetchall()
+
+            scans = [dict(row) for row in rows]
+            return jsonify({"scans": scans, "is_admin": bool(is_admin)})
+        finally:
+            conn.close()
+
+    except Exception as e:
+        return jsonify({"scans": [], "is_admin": False, "error": str(e)}), 500
+
 # ==================== MAIN EXECUTION ====================
 if __name__ == '__main__':
     print('SET-CDP running at http://127.0.0.1:5000')

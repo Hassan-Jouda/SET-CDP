@@ -6,61 +6,298 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/static/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
+    body {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .reports-page {
+      max-width: 1250px;
+      margin: auto;
+    }
+
     .report-hero {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(15,118,110,.22), transparent 35%),
+        linear-gradient(135deg, #020617, #0f172a, #1e293b);
       color: white;
-      padding: 35px;
-      border-radius: 18px;
+      padding: 38px 30px;
+      border-radius: 26px;
+      margin-bottom: 26px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report-hero::before {
+      content: "SET-CDP";
+      position: absolute;
+      left: 25px;
+      bottom: -20px;
+      font-size: 90px;
+      font-weight: 950;
+      color: rgba(255,255,255,.04);
+      letter-spacing: 7px;
+      pointer-events: none;
+    }
+
+    .report-hero h1 {
+      color: #38bdf8;
+      font-weight: 950;
+      margin-bottom: 10px;
+      font-size: 36px;
+    }
+
+    .report-hero p {
+      color: #cbd5e1;
+      line-height: 1.9;
+      margin-bottom: 0;
+      max-width: 850px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-rounded {
+      border-radius: 14px;
+      font-weight: 850;
+      padding: 10px 15px;
+    }
+
+    .executive-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-right: 6px solid #0ea5e9;
+      border-radius: 20px;
+      padding: 22px;
       margin-bottom: 25px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+      color: #334155;
+      box-shadow: 0 10px 28px rgba(15,23,42,.06);
+      line-height: 1.9;
+    }
+
+    .executive-box h5 {
+      color: #0f172a;
+      font-weight: 950;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .report-stat {
       background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 5px 16px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 10px 28px rgba(15,23,42,.06);
       height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: .25s;
+    }
+
+    .report-stat:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 35px rgba(15,23,42,.10);
+    }
+
+    .stat-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 17px;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 23px;
+      flex-shrink: 0;
     }
 
     .report-stat h2 {
-      font-weight: 800;
+      font-weight: 950;
       color: #0f172a;
-      margin-bottom: 5px;
+      margin-bottom: 3px;
+      font-size: 32px;
+      line-height: 1;
     }
 
     .report-stat span {
       color: #64748b;
       font-size: 14px;
+      font-weight: 800;
     }
 
     .chart-card {
       background: white;
-      border-radius: 16px;
-      border: 1px solid #e5e7eb;
-      padding: 20px;
-      box-shadow: 0 5px 16px rgba(0,0,0,0.06);
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      padding: 22px;
+      box-shadow: 0 10px 28px rgba(15,23,42,.06);
       height: 100%;
+      position: relative;
     }
 
-    .executive-box {
+    .chart-card h5 {
+      font-weight: 950;
+      color: #0f172a;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      min-height: 280px;
+    }
+
+    .chart-message {
       background: #f8fafc;
-      border-right: 5px solid #0ea5e9;
+      border: 1px dashed #cbd5e1;
+      color: #64748b;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      font-weight: 800;
+      display: none;
+    }
+
+    .report-table-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 22px;
+      box-shadow: 0 12px 35px rgba(15,23,42,.08);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .report-table-header {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .report-table-header h4 {
+      margin: 0;
+      font-weight: 950;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .report-table-header h4 i {
+      color: #0ea5e9;
+    }
+
+    .search-box {
+      max-width: 340px;
+      width: 100%;
+    }
+
+    .search-box input {
       border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 25px;
-      color: #334155;
+      padding: 11px 14px;
+      border-color: #cbd5e1;
+    }
+
+    .search-box input:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14,165,233,.13);
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table thead th {
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-color: #dbeafe;
+      padding: 14px;
+      font-size: 13px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .table tbody td {
+      padding: 14px;
+      border-color: #e2e8f0;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    .text-ltr {
+      direction: ltr;
+      text-align: left;
+    }
+
+    .badge-soft {
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 850;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .risk-high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .risk-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .risk-low {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-dark-soft {
+      background: #0f172a;
+      color: white;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-weight: 850;
+      font-size: 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 46px 20px;
+      color: #94a3b8;
+    }
+
+    .empty-state i {
+      font-size: 46px;
+      margin-bottom: 12px;
+      opacity: .55;
     }
 
     @media print {
       nav,
-      .no-print {
+      .top-navbar,
+      .no-print,
+      .search-box {
         display: none !important;
       }
 
@@ -68,66 +305,158 @@
         background: white !important;
       }
 
+      .reports-page {
+        max-width: 100% !important;
+      }
+
       .report-hero,
       .report-stat,
-      .chart-card {
+      .chart-card,
+      .executive-box,
+      .report-table-card {
         box-shadow: none !important;
+      }
+
+      .report-hero {
+        border-radius: 0 !important;
+      }
+
+      canvas {
+        max-height: 260px !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .report-hero {
+        text-align: center;
+        padding: 30px 18px;
+      }
+
+      .report-hero h1 {
+        font-size: 28px;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .report-table-header {
+        align-items: stretch;
+      }
+
+      .search-box {
+        max-width: 100%;
       }
     }
   </style>
 </head>
 
 <body>
+
 {% include 'base_nav.html' %}
 
-<main class="container py-5">
+<main class="container py-5 reports-page">
 
   <section class="report-hero">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
-        <h1 class="fw-bold mb-2">Reports Center</h1>
-        <p class="mb-0 text-light">تقرير شامل عن نشاط منصة SET-CDP: الفحوصات، المحاكاة، الامتحانات، والنسخ التدريبية.</p>
+        <h1>
+          <i class="fas fa-chart-pie"></i>
+          Reports Center
+        </h1>
+        <p>
+          تقرير شامل عن نشاط منصة SET-CDP: الفحوصات الدفاعية، تحليل الملفات، محاولات التوعية التدريبية،
+          سيناريوهات المحاكاة، ونتائج امتحان التوعية الأمنية.
+        </p>
       </div>
 
-      <button class="btn btn-danger no-print" onclick="window.print()">Export PDF</button>
+      <div class="hero-actions no-print">
+        <button class="btn btn-danger btn-rounded" onclick="window.print()">
+          <i class="fas fa-file-pdf"></i>
+          Export PDF
+        </button>
+
+        <a href="/dashboard" class="btn btn-outline-light btn-rounded">
+          <i class="fas fa-chart-line"></i>
+          Dashboard
+        </a>
+
+        <a href="/" class="btn btn-outline-light btn-rounded">
+          <i class="fas fa-toolbox"></i>
+          Tools
+        </a>
+      </div>
     </div>
   </section>
 
   <section class="executive-box">
-    <h5 class="fw-bold">Executive Summary</h5>
+    <h5>
+      <i class="fas fa-clipboard-list text-primary"></i>
+      Executive Summary
+    </h5>
+
     <p class="mb-0">
-      نفذت المنصة {{ stats.scans }} عملية فحص أمني، منها {{ stats.files }} تحليل ملفات،
-      و {{ stats.ssl }} فحص SSL، إضافة إلى {{ stats.training }} محاولة تدريبية
-      و {{ stats.quiz }} نتيجة امتحان توعوي. هذا يعكس دمج الجانب الدفاعي والتحليلي والتوعوي في منصة واحدة.
+      نفذت المنصة
+      <strong>{{ stats.scans|default(0) }}</strong>
+      عملية فحص أمني، منها
+      <strong>{{ stats.files|default(0) }}</strong>
+      تحليل ملفات،
+      و
+      <strong>{{ stats.ssl|default(0) }}</strong>
+      فحص SSL، إضافة إلى
+      <strong>{{ stats.training|default(0) }}</strong>
+      محاولة تدريبية و
+      <strong>{{ stats.quiz|default(0) }}</strong>
+      نتيجة امتحان توعوي. هذا يعكس دمج الجانب الدفاعي والتحليلي والتوعوي في منصة واحدة.
     </p>
   </section>
 
   <section class="row g-3 mb-4">
-    <div class="col-md-3 col-6">
+    <div class="col-lg-3 col-md-6">
       <div class="report-stat">
-        <h2>{{ stats.scans }}</h2>
-        <span>عدد الفحوصات</span>
+        <div class="stat-icon" style="background: linear-gradient(135deg,#0ea5e9,#0284c7);">
+          <i class="fas fa-magnifying-glass-chart"></i>
+        </div>
+        <div>
+          <h2>{{ stats.scans|default(0) }}</h2>
+          <span>عدد الفحوصات</span>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-3 col-6">
+    <div class="col-lg-3 col-md-6">
       <div class="report-stat">
-        <h2>{{ stats.files }}</h2>
-        <span>تحليل الملفات</span>
+        <div class="stat-icon" style="background: linear-gradient(135deg,#6366f1,#312e81);">
+          <i class="fas fa-file-shield"></i>
+        </div>
+        <div>
+          <h2>{{ stats.files|default(0) }}</h2>
+          <span>تحليل الملفات</span>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-3 col-6">
+    <div class="col-lg-3 col-md-6">
       <div class="report-stat">
-        <h2>{{ stats.training }}</h2>
-        <span>محاولات تدريب</span>
+        <div class="stat-icon" style="background: linear-gradient(135deg,#f97316,#dc2626);">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <div>
+          <h2>{{ stats.training|default(0) }}</h2>
+          <span>محاولات تدريب</span>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-3 col-6">
+    <div class="col-lg-3 col-md-6">
       <div class="report-stat">
-        <h2>{{ stats.quiz }}</h2>
-        <span>نتائج الامتحان</span>
+        <div class="stat-icon" style="background: linear-gradient(135deg,#22c55e,#0f766e);">
+          <i class="fas fa-award"></i>
+        </div>
+        <div>
+          <h2>{{ stats.quiz|default(0) }}</h2>
+          <span>نتائج الامتحان</span>
+        </div>
       </div>
     </div>
   </section>
@@ -135,165 +464,369 @@
   <section class="row g-4 mb-4">
     <div class="col-lg-6">
       <div class="chart-card">
-        <h5 class="fw-bold">Scans per Day</h5>
-        <canvas id="scansChart"></canvas>
+        <h5>
+          <i class="fas fa-chart-line text-primary"></i>
+          Scans per Day
+        </h5>
+
+        <div class="chart-wrapper">
+          <canvas id="scansChart"></canvas>
+          <div id="scansChartMessage" class="chart-message">لا توجد بيانات كافية لعرض الرسم.</div>
+        </div>
       </div>
     </div>
 
     <div class="col-lg-6">
       <div class="chart-card">
-        <h5 class="fw-bold">Training Attempts</h5>
-        <canvas id="attemptsChart"></canvas>
+        <h5>
+          <i class="fas fa-chart-column text-warning"></i>
+          Training Attempts
+        </h5>
+
+        <div class="chart-wrapper">
+          <canvas id="attemptsChart"></canvas>
+          <div id="attemptsChartMessage" class="chart-message">لا توجد بيانات كافية لعرض الرسم.</div>
+        </div>
       </div>
     </div>
 
     <div class="col-lg-6">
       <div class="chart-card">
-        <h5 class="fw-bold">Scan Types Distribution</h5>
-        <canvas id="typesChart"></canvas>
+        <h5>
+          <i class="fas fa-chart-pie text-success"></i>
+          Scan Types Distribution
+        </h5>
+
+        <div class="chart-wrapper">
+          <canvas id="typesChart"></canvas>
+        </div>
       </div>
     </div>
 
     <div class="col-lg-6">
       <div class="chart-card">
-        <h5 class="fw-bold">Platform Modules</h5>
-        <canvas id="modulesChart"></canvas>
+        <h5>
+          <i class="fas fa-circle-nodes text-danger"></i>
+          Platform Modules
+        </h5>
+
+        <div class="chart-wrapper">
+          <canvas id="modulesChart"></canvas>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="card shadow-sm mb-4">
-    <div class="card-body">
-      <h4 class="fw-bold mb-3">آخر الفحوصات</h4>
+  <section class="report-table-card">
+    <div class="report-table-header">
+      <h4>
+        <i class="fas fa-clock-rotate-left"></i>
+        آخر الفحوصات
+      </h4>
 
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-          <thead class="table-primary">
-            <tr>
-              <th>النوع</th>
-              <th>الهدف</th>
-              <th>النتيجة</th>
-              <th>المستوى</th>
-              <th>الوقت</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for s in recent_scans %}
-            <tr>
-              <td>{{ s.scan_type }}</td>
-              <td class="text-break">{{ s.target }}</td>
-              <td>{{ s.result_summary }}</td>
-              <td>{{ s.risk_level }}</td>
-              <td>{{ s.timestamp }}</td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="5" class="text-center text-muted">لا توجد فحوصات حتى الآن.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="search-box no-print">
+        <input type="text" id="scanSearch" class="form-control" placeholder="بحث داخل الفحوصات..." oninput="filterTable('scanSearch', 'scansTable')">
       </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="scansTable">
+        <thead>
+          <tr>
+            <th>النوع</th>
+            <th>الهدف</th>
+            <th>النتيجة</th>
+            <th>المستوى</th>
+            <th>الوقت</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for s in recent_scans %}
+          <tr>
+            <td>
+              <span class="badge-dark-soft">
+                {{ s.scan_type }}
+              </span>
+            </td>
+
+            <td class="text-break text-ltr" style="max-width: 280px;">
+              {{ s.target }}
+            </td>
+
+            <td>
+              {{ s.result_summary }}
+            </td>
+
+            <td>
+              {% set level = s.risk_level|string %}
+              {% if level in ['Critical', 'High Risk', 'Insecure', 'Error', 'Weak', 'High'] %}
+                <span class="badge-soft risk-high">
+                  <i class="fas fa-triangle-exclamation"></i>
+                  {{ s.risk_level }}
+                </span>
+              {% elif level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon', 'Medium'] %}
+                <span class="badge-soft risk-medium">
+                  <i class="fas fa-circle-exclamation"></i>
+                  {{ s.risk_level }}
+                </span>
+              {% else %}
+                <span class="badge-soft risk-low">
+                  <i class="fas fa-circle-check"></i>
+                  {{ s.risk_level }}
+                </span>
+              {% endif %}
+            </td>
+
+            <td class="text-ltr">
+              <small class="text-muted">{{ s.timestamp }}</small>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <h5 class="fw-bold">لا توجد فحوصات حتى الآن</h5>
+                <p class="mb-0">عند تنفيذ أدوات الفحص ستظهر آخر النتائج هنا.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </section>
 
-  <section class="card shadow-sm">
-    <div class="card-body">
-      <h4 class="fw-bold mb-3">آخر نتائج الامتحان</h4>
+  <section class="report-table-card">
+    <div class="report-table-header">
+      <h4>
+        <i class="fas fa-award"></i>
+        آخر نتائج الامتحان
+      </h4>
 
-      <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-          <thead class="table-success">
-            <tr>
-              <th>الاسم</th>
-              <th>العلامة</th>
-              <th>النسبة</th>
-              <th>الحالة</th>
-              <th>الوقت</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for q in recent_quiz %}
-            <tr>
-              <td>{{ q.student_name }}</td>
-              <td>{{ q.score }}/{{ q.total }}</td>
-              <td>{{ q.percentage }}%</td>
-              <td>{{ q.status }}</td>
-              <td>{{ q.timestamp }}</td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="5" class="text-center text-muted">لا توجد نتائج امتحان حتى الآن.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="search-box no-print">
+        <input type="text" id="quizSearch" class="form-control" placeholder="بحث داخل نتائج الامتحان..." oninput="filterTable('quizSearch', 'quizTable')">
       </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" id="quizTable">
+        <thead>
+          <tr>
+            <th>الاسم</th>
+            <th>العلامة</th>
+            <th>النسبة</th>
+            <th>الحالة</th>
+            <th>الوقت</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for q in recent_quiz %}
+          <tr>
+            <td class="fw-bold">
+              <i class="fas fa-user text-primary"></i>
+              {{ q.student_name }}
+            </td>
+
+            <td>
+              <span class="badge-dark-soft">
+                {{ q.score }}/{{ q.total }}
+              </span>
+            </td>
+
+            <td>
+              {% if q.percentage|float >= 70 %}
+                <span class="badge-soft risk-low">
+                  <i class="fas fa-arrow-trend-up"></i>
+                  {{ q.percentage }}%
+                </span>
+              {% elif q.percentage|float >= 50 %}
+                <span class="badge-soft risk-medium">
+                  <i class="fas fa-triangle-exclamation"></i>
+                  {{ q.percentage }}%
+                </span>
+              {% else %}
+                <span class="badge-soft risk-high">
+                  <i class="fas fa-arrow-trend-down"></i>
+                  {{ q.percentage }}%
+                </span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if q.percentage|float >= 70 %}
+                <span class="badge-soft risk-low">
+                  <i class="fas fa-circle-check"></i>
+                  {{ q.status }}
+                </span>
+              {% else %}
+                <span class="badge-soft risk-high">
+                  <i class="fas fa-circle-xmark"></i>
+                  {{ q.status }}
+                </span>
+              {% endif %}
+            </td>
+
+            <td class="text-ltr">
+              <small class="text-muted">{{ q.timestamp }}</small>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <h5 class="fw-bold">لا توجد نتائج امتحان حتى الآن</h5>
+                <p class="mb-0">عند تقديم المستخدمين للامتحان ستظهر النتائج هنا.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </section>
 
 </main>
 
 <script>
-fetch("/api/chart-data")
-.then(r => r.json())
-.then(data => {
-  new Chart(document.getElementById("scansChart"), {
-    type: "line",
-    data: {
-      labels: data.scans_per_day.map(x => x.day),
-      datasets: [{
-        label: "Scans per Day",
-        data: data.scans_per_day.map(x => x.count),
-        tension: 0.35
-      }]
-    }
-  });
+  function filterTable(inputId, tableId) {
+    const input = document.getElementById(inputId);
+    const table = document.getElementById(tableId);
 
-  new Chart(document.getElementById("attemptsChart"), {
-    type: "bar",
-    data: {
-      labels: data.attempts_per_day.map(x => x.day),
-      datasets: [{
-        label: "Training Attempts",
-        data: data.attempts_per_day.map(x => x.count)
-      }]
-    }
-  });
+    if (!input || !table) return;
 
-  new Chart(document.getElementById("typesChart"), {
-    type: "doughnut",
-    data: {
-      labels: ["Website", "SSL", "File", "Email", "URL"],
-      datasets: [{
-        data: [
-          {{ stats.website }},
-          {{ stats.ssl }},
-          {{ stats.files }},
-          {{ stats.email }},
-          {{ stats.url }}
-        ]
-      }]
-    }
-  });
+    const query = input.value.toLowerCase().trim();
+    const rows = table.querySelectorAll("tbody tr");
 
-  new Chart(document.getElementById("modulesChart"), {
-    type: "polarArea",
-    data: {
-      labels: ["Scans", "Files", "Training", "Clones", "Quiz"],
-      datasets: [{
-        data: [
-          {{ stats.scans }},
-          {{ stats.files }},
-          {{ stats.training }},
-          {{ stats.clones }},
-          {{ stats.quiz }}
-        ]
-      }]
+    rows.forEach(function(row) {
+      const text = row.innerText.toLowerCase();
+
+      if (!query || text.includes(query)) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  }
+
+  function showChartMessage(canvasId, messageId) {
+    const canvas = document.getElementById(canvasId);
+    const message = document.getElementById(messageId);
+
+    if (canvas) canvas.style.display = "none";
+    if (message) message.style.display = "block";
+  }
+
+  function hasChartData(items) {
+    return Array.isArray(items) && items.length > 0 && items.some(x => Number(x.count || 0) > 0);
+  }
+
+  function createCharts(data) {
+    const scansPerDay = Array.isArray(data.scans_per_day) ? data.scans_per_day : [];
+    const attemptsPerDay = Array.isArray(data.attempts_per_day) ? data.attempts_per_day : [];
+
+    if (hasChartData(scansPerDay)) {
+      new Chart(document.getElementById("scansChart"), {
+        type: "line",
+        data: {
+          labels: scansPerDay.map(x => x.day),
+          datasets: [{
+            label: "Scans per Day",
+            data: scansPerDay.map(x => x.count),
+            tension: 0.35,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    } else {
+      showChartMessage("scansChart", "scansChartMessage");
     }
-  });
-});
+
+    if (hasChartData(attemptsPerDay)) {
+      new Chart(document.getElementById("attemptsChart"), {
+        type: "bar",
+        data: {
+          labels: attemptsPerDay.map(x => x.day),
+          datasets: [{
+            label: "Training Attempts",
+            data: attemptsPerDay.map(x => x.count)
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    } else {
+      showChartMessage("attemptsChart", "attemptsChartMessage");
+    }
+
+    new Chart(document.getElementById("typesChart"), {
+      type: "doughnut",
+      data: {
+        labels: ["Website", "SSL", "File", "Email", "URL"],
+        datasets: [{
+          data: [
+            {{ stats.website|default(0)|int }},
+            {{ stats.ssl|default(0)|int }},
+            {{ stats.files|default(0)|int }},
+            {{ stats.email|default(0)|int }},
+            {{ stats.url|default(0)|int }}
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+    new Chart(document.getElementById("modulesChart"), {
+      type: "polarArea",
+      data: {
+        labels: ["Scans", "Files", "Training", "Clones", "Quiz"],
+        datasets: [{
+          data: [
+            {{ stats.scans|default(0)|int }},
+            {{ stats.files|default(0)|int }},
+            {{ stats.training|default(0)|int }},
+            {{ stats.clones|default(0)|int }},
+            {{ stats.quiz|default(0)|int }}
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+  }
+
+  fetch("/api/chart-data")
+    .then(response => response.json())
+    .then(data => {
+      createCharts(data || {});
+    })
+    .catch(() => {
+      showChartMessage("scansChart", "scansChartMessage");
+      showChartMessage("attemptsChart", "attemptsChartMessage");
+
+      createCharts({
+        scans_per_day: [],
+        attempts_per_day: []
+      });
+    });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/script.js"></script>
 
 </body>
 </html>

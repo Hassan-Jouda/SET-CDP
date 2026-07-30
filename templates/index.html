@@ -3,179 +3,988 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SET-CDP | Cyber Security Dashboard</title>
-  
+  <title>SET-CDP | Advanced Penetration & Defense Platform</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="/static/style.css">
 
   <style>
-    .hero {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #fff;
-      padding: 50px 0;
-      border-bottom: 4px solid #38bdf8;
+    /* ============================================================
+       SET-CDP Main Tools Page - Offensive/Defensive UI
+       يعتمد على متغيرات الثيم الموجودة في base_nav.html
+       ============================================================ */
+
+    :root {
+      --page-accent: #38bdf8;
+      --page-accent-2: #22c55e;
+      --page-danger: #ef4444;
+      --page-warning: #f59e0b;
+      --page-purple: #a855f7;
+      --page-radius: 18px;
+      --page-radius-sm: 12px;
+      --page-glow: 0 18px 50px rgba(56, 189, 248, 0.13);
     }
-    .tool-card {
-      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
-    .tool-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+
+    /* تأثيرات إضاءة الخلفية */
+    html[data-theme="dark"] body,
+    body.cyber-body {
+      background:
+        radial-gradient(circle at 12% 10%, rgba(239, 68, 68, 0.08), transparent 28%),
+        radial-gradient(circle at 88% 22%, rgba(56, 189, 248, 0.08), transparent 25%),
+        radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.08), transparent 26%),
+        var(--set-bg, #020617) !important;
+      color: var(--set-text, #e5e7eb);
     }
-    .tool-card .card-title {
-      font-size: 1.1rem;
-      font-weight: 800;
+
+    html[data-theme="light"] body {
+      background:
+        radial-gradient(circle at 10% 10%, rgba(239, 68, 68, 0.08), transparent 26%),
+        radial-gradient(circle at 92% 14%, rgba(14, 165, 233, 0.08), transparent 24%),
+        var(--set-bg, #f8fafc) !important;
+      color: var(--set-text, #0f172a);
+    }
+
+    ::-webkit-scrollbar { width: 9px; }
+    ::-webkit-scrollbar-track { background: var(--set-bg-soft, #0f172a); }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #ef4444, #38bdf8);
+      border-radius: 999px;
+    }
+
+    /* ============================================================
+       Hero Section - Red/Blue Team Vibe
+       ============================================================ */
+
+    .cyber-hero {
+      --mx: 50%;
+      --my: 50%;
+      --accent-hue: 350; /* Red Hue for Offensive Vibe */
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      padding: 82px 0 64px;
+      border-bottom: 1px solid rgba(239, 68, 68, 0.24);
+      background:
+        linear-gradient(rgba(239, 68, 68, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.12), transparent 45%),
+        rgba(2, 6, 23, 0.74);
+      background-size: 38px 38px, 38px 38px, auto, auto;
+      box-shadow: 0 18px 55px rgba(239, 68, 68, 0.10);
+      cursor: crosshair;
+    }
+
+    html[data-theme="light"] .cyber-hero {
+      background:
+        linear-gradient(rgba(239, 68, 68, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, 0.07) 1px, transparent 1px),
+        radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.10), transparent 45%),
+        rgba(255, 255, 255, 0.74);
       color: #0f172a;
     }
+
+    .cyber-hero::before {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      z-index: -2;
+      background:
+        conic-gradient(from 180deg at 50% 50%,
+          rgba(239, 68, 68, 0.08),
+          rgba(56, 189, 248, 0.07),
+          rgba(168, 85, 247, 0.07),
+          rgba(239, 68, 68, 0.08));
+      filter: blur(24px);
+      animation: heroAura 12s linear infinite;
+      pointer-events: none;
+    }
+
+    .cyber-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      background:
+        radial-gradient(
+          420px circle at var(--mx) var(--my),
+          hsla(var(--accent-hue), 95%, 60%, 0.27),
+          rgba(56, 189, 248, 0.08) 38%,
+          transparent 74%
+        );
+      mix-blend-mode: screen;
+    }
+
+    .cyber-hero.hero-hover::after { opacity: 1; }
+
+    @keyframes heroAura {
+      from { transform: rotate(0deg) scale(1.05); }
+      to { transform: rotate(360deg) scale(1.05); }
+    }
+
+    .cyber-scanline {
+      position: absolute;
+      left: 0;
+      top: -10%;
+      width: 100%;
+      height: 3px;
+      z-index: 1;
+      background: rgba(239, 68, 68, 0.62);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.9);
+      animation: scanlineAnim 4.8s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes scanlineAnim {
+      0% { top: -10%; opacity: 0; }
+      12% { opacity: 1; }
+      88% { opacity: 1; }
+      100% { top: 112%; opacity: 0; }
+    }
+
+    .cyber-hero .container { position: relative; z-index: 3; }
+
+    .hero-kicker {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+      border-radius: 999px; border: 1px solid rgba(239, 68, 68, 0.28);
+      background: rgba(239, 68, 68, 0.10); color: #ef4444; font-weight: 900;
+      font-size: 13px; margin-bottom: 16px; backdrop-filter: blur(10px);
+    }
+
+    .hero-title {
+      color: var(--set-text, #ffffff); font-weight: 950; letter-spacing: -0.5px;
+      text-shadow: 0 0 24px rgba(239, 68, 68, 0.45); transition: transform 0.18s ease, text-shadow 0.18s ease;
+    }
+
+    .hero-title i {
+      color: #ef4444; text-shadow: 0 0 26px rgba(239, 68, 68, 0.95);
+    }
+
+    .cyber-subtitle {
+      color: var(--set-muted, #94a3b8); letter-spacing: 1.4px;
+      font-family: "Courier New", Courier, monospace; font-weight: 700;
+      transition: transform 0.18s ease, text-shadow 0.18s ease;
+    }
+
+    .hero-description {
+      max-width: 830px; margin: 0 auto; color: var(--set-text-soft, #cbd5e1);
+      line-height: 1.9; font-size: 15.5px;
+    }
+
+    .cyber-badges {
+      display: flex; justify-content: center; gap: 13px; flex-wrap: wrap;
+      margin-top: 26px; transition: transform 0.18s ease;
+    }
+
+    .cyber-badge {
+      padding: 10px 22px; border-radius: 999px; font-weight: 900; font-size: 13.5px;
+      letter-spacing: 0.6px; backdrop-filter: blur(8px); border: 1px solid transparent;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease; cursor: default;
+    }
+
+    .cyber-badge:hover { transform: translateY(-4px); }
+
+    .badge-red { background: rgba(239, 68, 68, 0.12); color: #fb7185; border-color: rgba(239, 68, 68, 0.32); box-shadow: 0 0 18px rgba(239, 68, 68, 0.12); }
+    .badge-blue { background: rgba(14, 165, 233, 0.12); color: #38bdf8; border-color: rgba(14, 165, 233, 0.34); box-shadow: 0 0 18px rgba(14, 165, 233, 0.12); }
+    .badge-green { background: rgba(34, 197, 94, 0.12); color: #22c55e; border-color: rgba(34, 197, 94, 0.34); box-shadow: 0 0 18px rgba(34, 197, 94, 0.12); }
+
+    /* ============================================================
+       Layout Helpers
+       ============================================================ */
+    .dashboard-shell { position: relative; margin-top: -24px; z-index: 5; }
+
     .stat-card {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-      height: 100%;
+      position: relative; overflow: hidden; height: 100%; padding: 20px;
+      border-radius: var(--page-radius); background: var(--set-card, rgba(15, 23, 42, 0.72));
+      border: 1px solid rgba(56, 189, 248, 0.18); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
+
+    .stat-card::before {
+      content: ""; position: absolute; inset-inline-start: 0; top: 0;
+      width: 5px; height: 100%; background: linear-gradient(180deg, #ef4444, #38bdf8); opacity: 0.9;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px); border-color: rgba(239, 68, 68, 0.42); box-shadow: 0 18px 42px rgba(239, 68, 68, 0.12);
+    }
+
+    .stat-icon {
+      width: 42px; height: 42px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.20); margin-bottom: 10px; font-size: 18px;
+    }
+
     .stat-card h3 {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #38bdf8;
-      margin-bottom: 5px;
+      margin: 0; font-size: 2.25rem; font-weight: 950; color: #38bdf8; text-shadow: 0 0 18px rgba(56, 189, 248, 0.32);
+      direction: ltr !important;
+      unicode-bidi: isolate !important;
     }
-    .stat-card span {
-      color: #64748b;
-      font-weight: 600;
+
+    .stat-card span { color: var(--set-muted, #94a3b8); font-weight: 800; font-size: 13.5px; }
+
+    .quick-actions {
+      padding: 16px; border-radius: var(--page-radius); background: var(--set-card, #0f172a);
+      border: 1px solid rgba(239, 68, 68, 0.16); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
     }
+
+    .btn-cyber {
+      position: relative; overflow: hidden; border-radius: 13px; min-height: 45px; font-weight: 900;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-cyber::after {
+      content: ""; position: absolute; inset: 0; transform: translateX(110%);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent); transition: transform 0.45s ease;
+    }
+
+    .btn-cyber:hover { transform: translateY(-2px); box-shadow: 0 0 18px currentColor; }
+    .btn-cyber:hover::after { transform: translateX(-110%); }
+
+    .section-head { text-align: center; margin-bottom: 28px; }
+    .section-chip {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 999px;
+      background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.20);
+      color: #ef4444; font-weight: 900; font-size: 13px; margin-bottom: 13px;
+    }
+
+    .section-title {
+      color: var(--set-text, #ffffff); font-weight: 950; margin-bottom: 8px; text-shadow: 0 0 14px rgba(239, 68, 68, 0.22);
+    }
+    .section-subtitle { color: var(--set-muted, #94a3b8); max-width: 680px; margin: 0 auto; line-height: 1.8; }
+
+    /* ============================================================
+       Tools Cards - Cyberpunk UI
+       ============================================================ */
+    .tool-card {
+      position: relative; height: 100%; overflow: hidden; border-radius: var(--page-radius);
+      background: var(--set-card, rgba(15, 23, 42, 0.76)); border: 1px solid rgba(56, 189, 248, 0.18);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.17); transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .tool-card::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(circle at 15% 0%, rgba(56, 189, 248, 0.12), transparent 34%), radial-gradient(circle at 90% 10%, rgba(239, 68, 68, 0.08), transparent 30%);
+      opacity: 0.84;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-7px); border-color: rgba(239, 68, 68, 0.48); box-shadow: 0 20px 50px rgba(239, 68, 68, 0.12);
+    }
+
+    .tool-card .card-body { position: relative; z-index: 2; padding: 22px; }
+    .tool-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+    
+    .tool-icon {
+      width: 48px; min-width: 48px; height: 48px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center;
+      color: white; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15); font-size: 20px;
+    }
+
+    .tool-icon.blue { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
+    .tool-icon.green { background: linear-gradient(135deg, #22c55e, #059669); }
+    .tool-icon.yellow { background: linear-gradient(135deg, #f59e0b, #f97316); }
+    .tool-icon.red { background: linear-gradient(135deg, #ef4444, #be123c); }
+    .tool-icon.cyan { background: linear-gradient(135deg, #06b6d4, #0284c7); }
+    .tool-icon.gray { background: linear-gradient(135deg, #64748b, #334155); }
+    .tool-icon.purple { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+    .tool-icon.light { background: linear-gradient(135deg, #f8fafc, #94a3b8); color: #0f172a; }
+
+    .tool-card .card-title { margin: 0; color: var(--set-text, #f8fafc); font-size: 1.08rem; font-weight: 950; }
+    .tool-card .tool-desc { margin: 6px 0 0; color: var(--set-muted, #94a3b8); font-size: 13.5px; line-height: 1.7; }
+
+    .tool-meta { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0 14px; }
+    .tool-pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 850;
+      color: var(--set-text-soft, #cbd5e1); background: rgba(148, 163, 184, 0.10); border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .tool-control-group { margin-top: auto; }
+    .form-control, .form-select {
+      min-height: 44px; border-radius: 13px !important; background: var(--set-input, #111827) !important;
+      border-color: var(--set-border, #334155) !important; color: var(--set-input-text, #f8fafc) !important;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    }
+    textarea.form-control { min-height: 90px; resize: vertical; }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: #ef4444 !important; box-shadow: 0 0 0 0.22rem rgba(239, 68, 68, 0.18) !important; transform: translateY(-1px);
+    }
+    
+    .input-group-text {
+      border-radius: 13px !important; background: var(--set-bg-soft, #0f172a) !important;
+      border-color: var(--set-border, #334155) !important; color: var(--set-muted, #94a3b8) !important; font-weight: 900;
+    }
+
+    .tool-help { color: var(--set-muted, #94a3b8); font-size: 12.5px; margin-top: 8px; line-height: 1.7; }
+
+    /* ============================================================
+       Result UI
+       ============================================================ */
     .result-box {
-      display: none;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 14px;
-      color: #334155;
-      font-size: 13.5px;
-      line-height: 1.7;
-      direction: rtl;
-      text-align: right;
-      overflow-wrap: anywhere;
+      display: none; border-radius: 15px; padding: 14px; color: var(--set-text, #e2e8f0);
+      font-size: 13.5px; line-height: 1.75; direction: rtl; text-align: right; overflow-wrap: anywhere;
+      background: var(--set-bg-soft, rgba(2, 6, 23, 0.82)); border: 1px solid rgba(56, 189, 248, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
-    .result-box.show { display: block; }
-    .result-box pre {
-      direction: ltr; text-align: left; background: #0f172a; color: #e2e8f0;
-      border-radius: 8px; padding: 10px; margin: 8px 0 0; font-size: 12px; overflow-x: auto;
+    .result-box.show { display: block; animation: resultPop 0.22s ease; }
+    @keyframes resultPop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ============================================================
+       History Section (Logs)
+       ============================================================ */
+    .table-cyber { --bs-table-bg: transparent; --bs-table-color: var(--set-text-soft, #cbd5e1); border-color: var(--set-border, #334155); }
+    .table-cyber thead th { background-color: rgba(15, 23, 42, 0.9) !important; color: #ef4444 !important; border-bottom: 2px solid #ef4444; white-space: nowrap; }
+    html[data-theme="light"] .table-cyber thead th { background-color: #fef2f2 !important; color: #b91c1c !important; }
+    .table-cyber tbody tr:hover { background-color: rgba(239, 68, 68, 0.05); color: var(--set-text, #fff); }
+
+    .history-card { border-radius: 14px; background: rgba(15, 23, 42, 0.80); backdrop-filter: blur(10px); }
+    html[data-theme="light"] .history-card { background: rgba(255, 255, 255, 0.90); }
+
+    @media (max-width: 768px) {
+      .cyber-hero { padding: 62px 0 48px; }
+      .hero-title { font-size: 1.8rem; }
     }
-    .copy-btn {
-      border: none; background: #38bdf8; color: #0f172a; border-radius: 6px;
-      padding: 5px 10px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px;
+
+
+    /* ============================================================
+       Creative Tools Arrangement Upgrade
+       يحافظ على نفس نصوص الأدوات لكن يغيّر طريقة الظهور والترتيب بصرياً
+       ============================================================ */
+
+    .creative-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 18px;
+      align-items: stretch;
     }
+
+    .creative-tools-grid > [class*="col-"] {
+      width: auto !important;
+      max-width: none !important;
+      flex: none !important;
+      grid-column: span 6;
+      padding: 0 !important;
+    }
+
+    .creative-tools-grid > [class*="col-"]:nth-child(1) { grid-column: span 7; }
+    .creative-tools-grid > [class*="col-"]:nth-child(2) { grid-column: span 5; }
+    .creative-tools-grid > [class*="col-"]:nth-child(5) { grid-column: span 7; }
+    .creative-tools-grid > [class*="col-"]:nth-child(6) { grid-column: span 5; }
+    .creative-tools-grid > [class*="col-"]:nth-child(9) { grid-column: span 12; }
+
+    .tools-creative-panel {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--page-radius);
+      padding: 22px;
+      margin-bottom: 22px;
+      background:
+        linear-gradient(135deg, rgba(239, 68, 68, 0.11), rgba(56, 189, 248, 0.09)),
+        var(--set-card, rgba(15, 23, 42, 0.75));
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.14);
+    }
+
+    .tools-creative-panel::after {
+      content: "SET-CDP";
+      position: absolute;
+      left: 22px;
+      bottom: -12px;
+      font-size: 74px;
+      font-weight: 950;
+      letter-spacing: 4px;
+      color: rgba(148, 163, 184, 0.055);
+      direction: ltr;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .tools-panel-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tools-panel-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      font-weight: 950;
+      color: var(--set-text, #fff);
+    }
+
+    .tools-panel-title span {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      background: linear-gradient(135deg, #ef4444, #0ea5e9);
+      box-shadow: 0 0 22px rgba(239, 68, 68, 0.28);
+    }
+
+    .tool-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tool-tab {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(148, 163, 184, 0.08);
+      color: var(--set-text-soft, #cbd5e1);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12.5px;
+      font-weight: 900;
+      text-decoration: none;
+      transition: 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .tool-tab:hover {
+      color: #fff;
+      background: rgba(239, 68, 68, 0.20);
+      border-color: rgba(239, 68, 68, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .tool-tab i { margin-inline-end: 4px; }
+
+    .tool-card {
+      border-radius: 22px !important;
+      min-height: 100%;
+    }
+
+    .tool-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.055), transparent);
+      transform: translateX(120%);
+      transition: transform .65s ease;
+    }
+
+    .tool-card:hover::after { transform: translateX(-120%); }
+
+    .tool-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .tool-index {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--set-muted, #94a3b8);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.5px;
+      direction: ltr;
+    }
+
+    .tool-index b {
+      color: #ef4444;
+      font-size: 14px;
+    }
+
+    .tool-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.10);
+      border: 1px solid rgba(34, 197, 94, 0.22);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .tool-status i {
+      font-size: 7px;
+      filter: drop-shadow(0 0 6px #22c55e);
+    }
+
+    .tool-icon {
+      width: 52px !important;
+      min-width: 52px !important;
+      height: 52px !important;
+      border-radius: 18px !important;
+    }
+
+    .tool-card .card-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tool-card .card-title {
+      letter-spacing: .1px;
+    }
+
+    .tool-control-group {
+      padding-top: 4px;
+    }
+
+    .result-box.show {
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 14px 35px rgba(0,0,0,.16);
+    }
+
+    @media (max-width: 992px) {
+      .creative-tools-grid > [class*="col-"] {
+        grid-column: span 12 !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .tools-creative-panel::after { display: none; }
+      .tools-panel-title { font-size: 1.1rem; }
+    }
+
   </style>
 </head>
-<body class="bg-light">
+
+<body class="cyber-body">
 
 {% include 'base_nav.html' %}
 
-<header class="hero text-center mb-5 shadow-sm">
+<header class="cyber-hero text-center mb-5">
+  <div class="cyber-scanline"></div>
+
+  <!-- حاوية الجزيئات لتأثير الماوس -->
+  <div class="cyber-particles-layer"></div>
+
   <div class="container">
-    <h1 class="fw-bold mb-3"><i class="fas fa-shield-alt text-info"></i> منصة أدوات التحقق والفحص السيبراني</h1>
-    <p class="lead text-light mb-4">Red Teaming + Blue Teaming + Awareness Training</p>
-    <div class="d-flex justify-content-center gap-2 flex-wrap">
-      <span class="badge bg-danger px-3 py-2 fs-6 rounded-pill">Red Teaming</span>
-      <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">Blue Teaming</span>
-      <span class="badge bg-success px-3 py-2 fs-6 rounded-pill">Awareness</span>
+    <div class="hero-kicker">
+      <i class="fas fa-crosshairs"></i>
+      SET-CDP Offensive & Defensive Security Workspace
+    </div>
+
+    <h1 class="hero-title fw-bold mb-3">
+      <i class="fas fa-skull text-danger"></i>
+      منصة اختبار الاختراق والدفاع السيبراني المتقدم
+    </h1>
+
+    <p class="cyber-subtitle mb-3 text-danger">Red Teaming + Blue Teaming + Advanced Exploitation</p>
+
+    <p class="hero-description">
+      ترسانة متكاملة لتنفيذ هجمات محاكاة متقدمة (Red Teaming)، وتحليل الثغرات الأمنية (Blue Teaming)، وفحص الروابط والملفات لاكتشاف الهندسة الاجتماعية، مع مركز عمليات مصغر (Mini-SOC) لرصد الاختراقات.
+    </p>
+
+    <div class="cyber-badges">
+      <span class="cyber-badge badge-blue"><i class="fas fa-magnifying-glass-chart me-1"></i> Vulnerability Assessment</span>
+      <span class="cyber-badge badge-red"><i class="fas fa-biohazard me-1"></i> Red Teaming Simulation</span>
+      <span class="cyber-badge badge-green"><i class="fas fa-crosshairs me-1"></i> Threat Hunting</span>
     </div>
   </div>
 </header>
 
-<main class="container py-5">
-  
+<main class="container py-4 dashboard-shell">
+
+  <!-- الإحصائيات -->
   <section class="row g-3 mb-4">
-    <div class="col-md-3"><div class="stat-card"><h3 id="statCaptures">{{ captures|length if captures is defined else 0 }}</h3><span>محاولات تدريب</span></div></div>
-    <div class="col-md-3"><div class="stat-card"><h3 id="statClones">{{ clones|length if clones is defined else 0 }}</h3><span>نسخ تدريبية</span></div></div>
-    <div class="col-md-3"><div class="stat-card"><h3 id="statScans">{{ scans|length if scans is defined else 0 }}</h3><span>فحوصات</span></div></div>
-    <div class="col-md-3"><div class="stat-card"><h3>10+</h3><span>أدوات أمنية</span></div></div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon text-danger" style="background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.2);"><i class="fas fa-skull-crossbones"></i></div>
+        <h3 id="statCaptures" class="text-danger" dir="ltr">{{ stats.captures if stats is defined else 0 }}</h3>
+        <span>محاولات اختراق (Payloads)</span>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon text-danger" style="background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.2);"><i class="fas fa-copy"></i></div>
+        <h3 id="statClones" class="text-danger" dir="ltr">{{ stats.clones if stats is defined else 0 }}</h3>
+        <span>صفحات مستنسخة (Clones)</span>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon text-info" style="background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.2);"><i class="fas fa-radar"></i></div>
+        <h3 id="statScans" class="text-info" dir="ltr">{{ stats.scans if stats is defined else (scans|length if scans is defined else 0) }}</h3>
+        <span>عمليات فحص واكتشاف</span>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon text-warning" style="background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.2);"><i class="fas fa-screwdriver-wrench"></i></div>
+        <h3 id="statTools" class="text-warning" dir="ltr">{{ stats.tools if stats is defined else 10 }}+</h3>
+        <span>أدوات هجوم ودفاع</span>
+      </div>
+    </div>
   </section>
 
-  <section class="row g-3 mb-4">
-    <div class="col-md-3"><a class="btn btn-primary w-100 fw-bold py-2 shadow-sm" href="/attack"><i class="fas fa-shield-halved me-1"></i> المحاكاة التعليمية</a></div>
-    <div class="col-md-3"><a class="btn btn-outline-primary w-100 fw-bold py-2 shadow-sm" href="/dashboard"><i class="fas fa-tachometer-alt me-1"></i> لوحة التحكم</a></div>
-    <div class="col-md-3"><a class="btn btn-outline-secondary w-100 fw-bold py-2 shadow-sm" href="/ready_templates"><i class="fas fa-layer-group me-1"></i> القوالب الجاهزة</a></div>
-    <div class="col-md-3"><button class="btn btn-dark w-100 fw-bold py-2 shadow-sm" onclick="refreshHistory()"><i class="fas fa-sync-alt me-1"></i> تحديث السجل</button></div>
+  <!-- أزرار التنقل الرئيسية -->
+  <section class="quick-actions mb-5" style="border-color: rgba(239,68,68,0.16);">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <a class="btn btn-danger w-100 fw-bold py-2 shadow-sm btn-cyber" href="/attack">
+          <i class="fas fa-bug me-1"></i> تنفيذ الهجمات (Attack Vector)
+        </a>
+      </div>
+      <div class="col-md-3">
+        <a class="btn btn-outline-info w-100 fw-bold py-2 shadow-sm btn-cyber" href="/dashboard">
+          <i class="fas fa-network-wired me-1"></i> مركز العمليات (C2 / SOC)
+        </a>
+      </div>
+      <div class="col-md-3">
+        <a class="btn btn-outline-warning w-100 fw-bold py-2 shadow-sm btn-cyber" href="/ready_templates">
+          <i class="fas fa-users-viewfinder me-1"></i> قوالب الهندسة الاجتماعية
+        </a>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-outline-success w-100 fw-bold py-2 shadow-sm btn-cyber" onclick="refreshHistory()">
+          <i class="fas fa-sync-alt me-1"></i> تحديث سجل العمليات
+        </button>
+      </div>
+    </div>
   </section>
 
-  <div class="section-head mt-5 mb-4 text-center">
-    <h2 class="fw-bold text-dark"><i class="fas fa-toolbox text-primary"></i> أدوات الفحص والتحقق (Blue Teaming)</h2>
-    <p class="text-muted">نتائج مرتبة وواضحة لفحص المواقع، SSL، الروابط، الملفات، وكلمات المرور.</p>
+  <!-- عنوان قسم الأدوات - Creative Command Panel -->
+  <div class="tools-creative-panel mt-5">
+    <div class="tools-panel-top">
+      <div>
+        <div class="section-chip"><i class="fas fa-crosshairs"></i> Blue & Red Teaming Arsenal</div>
+        <h2 class="tools-panel-title">
+          <span><i class="fas fa-terminal"></i></span>
+          ترسانة الاستطلاع والهجوم
+        </h2>
+        <p class="section-subtitle mt-3">
+          أدوات متقدمة لتنفيذ الاستطلاع النشط (Active Reconnaissance)، واكتشاف الثغرات، وتحليل البنية التحتية للأنظمة المستهدفة، واستخراج وتحليل البيانات (OSINT).
+        </p>
+      </div>
+    </div>
+
+    <div class="tool-tabs">
+      <a href="#scanUrl" class="tool-tab"><i class="fas fa-radar"></i> Recon</a>
+      <a href="#sslDomain" class="tool-tab"><i class="fas fa-certificate"></i> Crypto</a>
+      <a href="#passwordInput" class="tool-tab"><i class="fas fa-key"></i> Password</a>
+      <a href="#emailInput" class="tool-tab"><i class="fas fa-envelope"></i> SocEng</a>
+      <a href="#fileInput" class="tool-tab"><i class="fas fa-file-code"></i> Forensics</a>
+      <a href="#urlCheckInput" class="tool-tab"><i class="fas fa-link"></i> URL Intel</a>
+      <a href="#headerUrlInput" class="tool-tab"><i class="fas fa-server"></i> Server Surface</a>
+    </div>
   </div>
 
-  <section class="row g-4">
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-globe text-primary me-2"></i> Website Security Scanner</h5><p class="text-muted small mb-3">يفحص HTTPS و Security Headers ويعطي Security Score.</p><div class="mt-auto"><input id="scanUrl" class="form-control mb-2 bg-light" placeholder="https://example.com" type="url"><button class="btn btn-primary w-100 fw-bold" onclick="scanWebsite()">ابدأ الفحص</button><div id="scanResult" class="result-box mt-3"></div></div></div></div></div>
-    
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-lock text-success me-2"></i> SSL Inspector</h5><p class="text-muted small mb-3">يفحص شهادة SSL وتاريخ الانتهاء والجهة المصدرة.</p><div class="mt-auto"><input id="sslDomain" class="form-control mb-2 bg-light" placeholder="example.com"><button class="btn btn-success w-100 fw-bold" onclick="checkSSL()">فحص الشهادة</button><div id="sslResult" class="result-box mt-3"></div></div></div></div></div>
-    
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-key text-warning me-2"></i> Password Strength Analyzer</h5><p class="text-muted small mb-3">يقيم قوة كلمة المرور محلياً (لا يتم حفظها).</p><div class="mt-auto"><input id="passwordInput" type="password" class="form-control mb-2 bg-light" placeholder="اكتب كلمة للتقييم فقط"><button class="btn btn-warning text-dark w-100 fw-bold" onclick="checkPassword()">تحليل القوة</button><div id="passwordResult" class="result-box mt-3"></div></div></div></div></div>
-    
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-envelope-open-text text-danger me-2"></i> Email Phishing Detector</h5><p class="text-muted small mb-3">يبحث عن كلمات وروابط مشبوهة داخل نص البريد أو الرسالة.</p><div class="mt-auto"><textarea id="emailInput" rows="2" class="form-control mb-2 bg-light" placeholder="الصق نص البريد أو الرسالة هنا"></textarea><button class="btn btn-danger w-100 fw-bold" onclick="checkEmail()">تحليل الرسالة</button><div id="emailResult" class="result-box mt-3"></div></div></div></div></div>
-    
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-file-shield text-info me-2"></i> File Hash & Metadata Analyzer</h5><p class="text-muted small mb-3">يحسب Hashes للصور وملفات PDF محلياً.</p><div class="mt-auto"><input id="fileInput" type="file" class="form-control mb-2 bg-light"><button class="btn btn-info text-white w-100 fw-bold" onclick="analyzeFile()">تحليل الملف</button><div id="fileResult" class="result-box mt-3"></div></div></div></div></div>
-    
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-link text-secondary me-2"></i> URL Safety Checker</h5><p class="text-muted small mb-3">يفحص الرابط بحثاً عن مؤشرات تصيد متقدمة.</p><div class="mt-auto"><input id="urlCheckInput" class="form-control mb-2 bg-light" placeholder="https://example.com" type="url"><button class="btn btn-secondary w-100 fw-bold" onclick="checkURL()">فحص الرابط</button><div id="urlResult" class="result-box mt-3"></div></div></div></div></div>
-    
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-random text-success me-2"></i> Secure Password Generator</h5><p class="text-muted small mb-3">يولد كلمة مرور قوية عشوائية ويمكن نسخها.</p><div class="mt-auto"><div class="input-group mb-2"><span class="input-group-text bg-light border-end-0">طول الكلمة</span><input id="genLength" type="number" class="form-control bg-light border-start-0" value="16" min="8" max="64"></div><button class="btn btn-success w-100 fw-bold mb-2" onclick="generatePassword()">توليد كلمة مرور</button><div id="generatedPasswordResult" class="result-box mt-3"></div></div></div></div></div>
+  <!-- الأدوات -->
+  <section class="creative-tools-grid">
 
-    <div class="col-lg-6"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-search-plus text-dark me-2"></i> URL Expander</h5><p class="text-muted small mb-3">يفك الروابط المختصرة ويعرض الرابط النهائي وسلسلة التحويلات.</p><div class="mt-auto"><input id="expandUrlInput" class="form-control mb-2 bg-light" placeholder="https://bit.ly/example" type="url"><button class="btn btn-dark w-100 fw-bold" onclick="expandUrl()">فك الرابط</button><div id="expandUrlResult" class="result-box mt-3"></div></div></div></div></div>
+    <!-- Tool 1: Infrastructure Scanner -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon blue"><i class="fas fa-globe"></i></div>
+            <div>
+              <h5 class="card-title text-info">Target Recon & Vuln Scanner</h5>
+              <p class="tool-desc">فحص البنية التحتية، تحديد الثغرات ونقاط الضعف في السيرفر واستكشاف الهيدرز.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-radar"></i> Recon</span>
+            <span class="tool-pill"><i class="fas fa-server"></i> Enumeration</span>
+            <span class="tool-pill"><i class="fas fa-bug"></i> Vuln Check</span>
+          </div>
+          <div class="tool-control-group">
+            <input id="scanUrl" class="form-control mb-2" placeholder="https://target-domain.com" type="url">
+            <button class="btn btn-info text-white w-100 fw-bold btn-cyber" onclick="scanWebsite()">
+              <i class="fas fa-magnifying-glass-chart"></i> بدء الاستطلاع (Scan)
+            </button>
+            <div id="scanResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="col-lg-12"><div class="card tool-card h-100"><div class="card-body d-flex flex-column"><h5 class="card-title"><i class="fas fa-shield-virus text-primary me-2"></i> Header Security Analyzer</h5><p class="text-muted small mb-3">فحص عميق للـ Response Headers مثل CSP و HSTS و X-Frame-Options.</p><div class="mt-auto"><div class="input-group mb-2"><input id="headerUrlInput" class="form-control bg-light" placeholder="https://example.com" type="url"><button class="btn btn-primary fw-bold px-4" onclick="analyzeHeaders()">تحليل الهيدرز</button></div><div id="headerAnalyzerResult" class="result-box mt-3"></div></div></div></div></div>
+    <!-- Tool 2: SSL Interceptor -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon green"><i class="fas fa-lock-open"></i></div>
+            <div>
+              <h5 class="card-title text-success">Crypto/SSL Interceptor</h5>
+              <p class="tool-desc">تحليل شهادات التشفير لكشف بروتوكولات التشفير الضعيفة والقابلة للاعتراض.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-certificate"></i> TLS/SSL</span>
+            <span class="tool-pill"><i class="fas fa-key"></i> Cipher Weakness</span>
+            <span class="tool-pill"><i class="fas fa-user-secret"></i> MITM</span>
+          </div>
+          <div class="tool-control-group">
+            <input id="sslDomain" class="form-control mb-2" placeholder="target-domain.com">
+            <button class="btn btn-success w-100 fw-bold btn-cyber" onclick="checkSSL()">
+              <i class="fas fa-unlock-keyhole"></i> تحليل الشهادة (Inspect)
+            </button>
+            <div id="sslResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool 3: Password Cracker -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon yellow"><i class="fas fa-unlock"></i></div>
+            <div>
+              <h5 class="card-title text-warning">Brute-Force Strength Tester</h5>
+              <p class="tool-desc">قياس مقاومة كلمات المرور لهجمات التخمين (Brute-Force) والقواميس.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-ruler"></i> Entropy</span>
+            <span class="tool-pill"><i class="fas fa-book"></i> Dictionary</span>
+            <span class="tool-pill"><i class="fas fa-skull"></i> Cracking</span>
+          </div>
+          <div class="tool-control-group">
+            <input id="passwordInput" type="password" class="form-control mb-2" placeholder="أدخل الكلمة المستهدفة لاختبارها">
+            <button class="btn btn-warning text-dark w-100 fw-bold btn-cyber" onclick="checkPassword()">
+              <i class="fas fa-hammer"></i> اختبار الصلابة (Crack Test)
+            </button>
+            <div id="passwordResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool 4: Email Payload Extractor -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon red"><i class="fas fa-envelope-open-text"></i></div>
+            <div>
+              <h5 class="card-title text-danger">SocEng Payload Extractor</h5>
+              <p class="tool-desc">تحليل رسائل التصيد لاستخراج الحمولات (Payloads) وروابط الاختراق المخبأة.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-link"></i> Extraction</span>
+            <span class="tool-pill"><i class="fas fa-users-viewfinder"></i> SocEng</span>
+            <span class="tool-pill"><i class="fas fa-spider"></i> Pattern Match</span>
+          </div>
+          <div class="tool-control-group">
+            <textarea id="emailInput" rows="2" class="form-control mb-2" placeholder="ألصق رسالة الضحية لاستخراج البيانات"></textarea>
+            <button class="btn btn-danger w-100 fw-bold btn-cyber" onclick="checkEmail()">
+              <i class="fas fa-biohazard"></i> تحليل الرسالة (Analyze)
+            </button>
+            <div id="emailResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool 5: Malware Forensics -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon cyan"><i class="fas fa-file-code"></i></div>
+            <div>
+              <h5 class="card-title text-info">Malware & Forensics Sandbox</h5>
+              <p class="tool-desc">الهندسة العكسية المصغرة: استخراج الهاش، الانتروبي، والـ Metadata للبحث عن البرمجيات الخبيثة.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-hashtag"></i> Hash Dump</span>
+            <span class="tool-pill"><i class="fas fa-fingerprint"></i> Magic Bytes</span>
+            <span class="tool-pill"><i class="fas fa-bug"></i> Malware Pack</span>
+          </div>
+          <div class="tool-control-group">
+            <input id="fileInput" type="file" class="form-control mb-2">
+            <button class="btn btn-info text-white w-100 fw-bold btn-cyber" onclick="analyzeFile()">
+              <i class="fas fa-microchip"></i> فحص الحمولة (Analyze Payload)
+            </button>
+            <div class="tool-help"><i class="fas fa-circle-info"></i> الحد الأقصى للحمولة المرفوعة 25MB (لتحليل الـ Static).</div>
+            <div id="fileResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool 6: URL Obfuscation -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon gray"><i class="fas fa-link"></i></div>
+            <div>
+              <h5 class="card-title text-secondary">URL Obfuscation Detector</h5>
+              <p class="tool-desc">الاستطلاع السلبي للروابط وكشف أساليب التمويه (Obfuscation) وإخفاء الهوية.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-globe"></i> OSINT</span>
+            <span class="tool-pill"><i class="fas fa-mask"></i> Spoofing</span>
+            <span class="tool-pill"><i class="fas fa-eye-slash"></i> Obfuscation</span>
+          </div>
+          <div class="tool-control-group">
+            <input id="urlCheckInput" class="form-control mb-2" placeholder="https://suspicious-target.com" type="url">
+            <button class="btn btn-secondary w-100 fw-bold btn-cyber" onclick="checkURL()">
+              <i class="fas fa-user-ninja"></i> تحليل الرابط (Investigate)
+            </button>
+            <div id="urlResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool 7: Key Generator -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon green"><i class="fas fa-key"></i></div>
+            <div>
+              <h5 class="card-title text-success">Cryptographic Key Generator</h5>
+              <p class="tool-desc">توليد مفاتيح تشفير وكلمات مرور معقدة مضادة لهجمات التخمين.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-dice"></i> RNG</span>
+            <span class="tool-pill"><i class="fas fa-shield"></i> Defense</span>
+            <span class="tool-pill"><i class="fas fa-sliders"></i> Bit-Length</span>
+          </div>
+          <div class="tool-control-group">
+            <div class="input-group mb-2">
+              <span class="input-group-text border-end-0 bg-dark text-success border-success">Bit-Length</span>
+              <input id="genLength" type="number" class="form-control border-start-0 border-success text-success bg-dark" value="16" min="8" max="64">
+            </div>
+            <button class="btn btn-success w-100 fw-bold mb-2 btn-cyber" onclick="generatePassword()">
+              <i class="fas fa-user-lock"></i> توليد مفتاح (Generate)
+            </button>
+            <div id="generatedPasswordResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool 8: Trace Route -->
+    <div class="col-lg-6">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon light"><i class="fas fa-search-location"></i></div>
+            <div>
+              <h5 class="card-title text-light">Obfuscation Tracer</h5>
+              <p class="tool-desc">تتبع سلاسل التحويل (Redirect Chains) لكشف الوجهات الخفية للمخترقين.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-route"></i> Trace</span>
+            <span class="tool-pill"><i class="fas fa-location-arrow"></i> Target IP</span>
+            <span class="tool-pill"><i class="fas fa-eye"></i> De-obfuscate</span>
+          </div>
+          <div class="tool-control-group">
+            <input id="expandUrlInput" class="form-control mb-2" placeholder="https://bit.ly/hidden-payload" type="url">
+            <button class="btn btn-light text-dark w-100 fw-bold btn-cyber" onclick="expandUrl()">
+              <i class="fas fa-shoe-prints"></i> تتبع المسار (Trace)
+            </button>
+            <div id="expandUrlResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool 9: Exploit Surface -->
+    <div class="col-lg-12">
+      <div class="card tool-card">
+        <div class="card-body d-flex flex-column">
+          <div class="tool-header">
+            <div class="tool-icon purple"><i class="fas fa-skull"></i></div>
+            <div>
+              <h5 class="card-title" style="color: var(--page-purple);">Server Exploit Surface Analyzer</h5>
+              <p class="tool-desc">اكتشاف غياب السياسات الأمنية (CSP, HSTS) لتسهيل هجمات XSS و Clickjacking.</p>
+            </div>
+          </div>
+          <div class="tool-meta">
+            <span class="tool-pill"><i class="fas fa-server"></i> Server Footprint</span>
+            <span class="tool-pill"><i class="fas fa-code"></i> XSS Surface</span>
+            <span class="tool-pill"><i class="fas fa-window-restore"></i> Clickjacking</span>
+          </div>
+          <div class="tool-control-group">
+            <div class="input-group mb-2">
+              <input id="headerUrlInput" class="form-control" placeholder="https://target-server.com" type="url">
+              <button class="btn fw-bold px-4 btn-cyber text-white" style="background: var(--page-purple);" onclick="analyzeHeaders()">
+                <i class="fas fa-fire"></i> تحليل السيرفر (Exploit Scan)
+              </button>
+            </div>
+            <div id="headerAnalyzerResult" class="result-box mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </section>
 
+  <!-- سجل النشاطات -->
   {% if session.get('user_id') %}
-  <section class="card shadow-sm mt-5 mb-4 border-info" style="border-radius: 14px;">
+  <section class="card shadow-lg mt-5 mb-4 border-danger history-card" style="border-radius: 14px;">
     <div class="card-body p-4">
-      <h3 class="mb-3 text-info fw-bold"><i class="fas fa-history me-2"></i> سجل نشاطي الأخير</h3>
-      <p class="text-muted mb-4">يعرض آخر عمليات الفحص والتحليل التي قمت بإجرائها (يتم التحديث تلقائياً).</p>
+      <h3 class="mb-3 text-danger fw-bold"><i class="fas fa-clipboard-list me-2"></i> سجل عمليات الاختراق والتحليل (Logs)</h3>
+      <p class="text-secondary mb-4">يعرض آخر العمليات (Operations) التي قمت بإجرائها على الأهداف المستهدفة.</p>
 
-      <div class="table-responsive rounded border border-light">
-        <table class="table table-bordered table-hover align-middle mb-0">
-          <thead class="table-info text-secondary">
+      <div class="table-responsive rounded border border-secondary">
+        <table class="table table-cyber table-hover align-middle mb-0 font-monospace">
+          <thead>
             <tr>
-              <th>ID</th>
-              <th>نوع العملية</th>
-              <th>الهدف / الرابط</th>
-              <th>النتيجة</th>
+              <th>Op ID</th>
+              <th>نوع العملية (Vector)</th>
+              <th>الهدف (Target)</th>
+              <th>النتيجة (Status)</th>
               <th>مستوى الخطورة</th>
-              <th>الوقت</th>
-              {% if session.get('role') == 'admin' %}
-                <th>المستخدم</th>
-              {% endif %}
+              <th>الوقت (Timestamp)</th>
+              {% if session.get('role') == 'admin' %}<th>المنفذ (Operator)</th>{% endif %}
             </tr>
           </thead>
           <tbody id="historyBody">
             {% for s in scans %}
             <tr>
               <td>{{ s.id }}</td>
-              <td><span class="badge bg-secondary">{{ s.scan_type | upper }}</span></td>
-              <td class="text-break" style="max-width: 250px;" dir="ltr">{{ s.target }}</td>
+              <td><span class="badge bg-secondary text-uppercase"><i class="fas fa-terminal me-1"></i>{{ s.scan_type }}</span></td>
+              <td class="text-break" style="max-width: 250px; color: var(--page-accent);" dir="ltr">{{ s.target }}</td>
               <td>{{ s.result_summary }}</td>
               <td>
-                <span class="badge 
-                  {% if s.risk_level in ['Critical', 'High Risk', 'Insecure', 'Error', 'Weak'] %}bg-danger
-                  {% elif s.risk_level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon', 'Medium'] %}bg-warning text-dark
-                  {% else %}bg-success{% endif %}">
+                <span class="badge {% if s.risk_level in ['Critical', 'High Risk', 'Insecure', 'Error', 'Weak'] %}bg-danger{% elif s.risk_level in ['Moderate', 'Medium Risk', 'Suspicious', 'Expiring Soon', 'Medium'] %}bg-warning text-dark{% else %}bg-success{% endif %}">
                   {{ s.risk_level }}
                 </span>
               </td>
-              <td><small class="text-muted" dir="ltr">{{ s.timestamp }}</small></td>
-              
-              {% if session.get('role') == 'admin' %}
-                <td><small class="fw-bold">{{ s.owner_username or 'زائر غير مسجل' }}</small></td>
-              {% endif %}
+              <td><small class="text-secondary" dir="ltr">{{ s.timestamp }}</small></td>
+              {% if session.get('role') == 'admin' %}<td><small class="fw-bold text-info"><i class="fas fa-user-ninja me-1"></i>{{ s.owner_username or 'زائر' }}</small></td>{% endif %}
             </tr>
             {% else %}
             <tr>
-              <td colspan="{% if session.get('role') == 'admin' %}7{% else %}6{% endif %}" class="text-center text-muted py-5">
-                لا توجد عمليات فحص حديثة في سجلك.
+              <td colspan="{% if session.get('role') == 'admin' %}7{% else %}6{% endif %}" class="text-center text-secondary py-5">
+                لا توجد عمليات مسجلة في قاعدة البيانات.
               </td>
             </tr>
             {% endfor %}
@@ -185,230 +994,150 @@
     </div>
   </section>
   {% else %}
-  <div class="alert alert-info mt-5 text-center shadow-sm border-0 py-4" style="border-radius: 14px; background-color: #f0f9ff; color: #0369a1;">
-      <i class="fas fa-info-circle fs-3 mb-2"></i><br>
-      يرجى <a href="/login" class="alert-link fw-bold text-decoration-underline">تسجيل الدخول</a> لحفظ وعرض سجل الفحوصات الخاص بك والوصول لكافة الميزات التدريبية.
+  <div class="alert mt-5 text-center shadow-sm py-4" style="border-radius: 14px; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
+      <i class="fas fa-lock fs-3 mb-2"></i><br>
+      الوصول مقيد (Access Denied). يرجى <a href="/login" class="alert-link fw-bold text-white text-decoration-underline">تسجيل الدخول</a> للوصول إلى سجل العمليات.
   </div>
   {% endif %}
 
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- جلب وظائف الـ JavaScript الأساسية المتطورة من ملف script.js -->
+<script src="/static/script.js"></script>
+
+
 
 <script>
-function escapeHtml(value) {
-  return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-}
+/* ============================================================
+   Creative Tool Labels
+   يضيف أرقام وحالة جاهزية لكل كرت بدون تغيير نصوص الأدوات الأصلية
+   ============================================================ */
+(function () {
+  const labels = [
+    "INFRASTRUCTURE",
+    "CRYPTO",
+    "PASSWORD",
+    "SOCIAL ENGINEERING",
+    "FORENSICS",
+    "URL INTEL",
+    "KEYGEN",
+    "TRACE",
+    "SERVER SURFACE"
+  ];
 
-function setResult(id, html, type = 'info') {
-  const box = document.getElementById(id);
-  if (!box) return;
-  const border = type === 'danger' ? '#fecaca' : type === 'success' ? '#bbf7d0' : type === 'warning' ? '#fde68a' : '#bae6fd';
-  const bg = type === 'danger' ? '#fef2f2' : type === 'success' ? '#f0fdf4' : type === 'warning' ? '#fffbeb' : '#f0f9ff';
-  box.style.borderColor = border; box.style.background = bg; box.classList.add('show'); box.innerHTML = html;
-}
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".creative-tools-grid .tool-card .card-body").forEach(function (body, index) {
+      if (body.querySelector(".tool-topline")) return;
 
-function normalizeUrl(raw) {
-  const value = String(raw || '').trim();
-  if (!value) return '';
-  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
-}
+      const line = document.createElement("div");
+      line.className = "tool-topline";
+      line.innerHTML = `
+        <span class="tool-index"><b>${String(index + 1).padStart(2, "0")}</b> / ${labels[index] || "MODULE"}</span>
+        <span class="tool-status"><i class="fas fa-circle"></i> Ready</span>
+      `;
+      body.prepend(line);
+    });
+  });
+})();
+</script>
 
-async function postJson(url, payload) {
-  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || data.message || `HTTP ${res.status}`);
-  return data;
-}
+<script>
+/* ============================================================
+   Hero Mouse Neon Interaction (Optimized)
+   ============================================================ */
+(function () {
+  const hero = document.querySelector(".cyber-hero");
+  if (!hero) return;
 
-function scoreBadge(level) {
-  const clean = escapeHtml(level || 'Info');
-  let cls = 'bg-success';
-  if (/high|critical|danger|insecure|error|weak/i.test(clean)) cls = 'bg-danger';
-  else if (/medium|moderate|warning|suspicious/i.test(clean)) cls = 'bg-warning text-dark';
-  return `<span class="badge ${cls} rounded-pill px-3">${clean}</span>`;
-}
+  let particlesLayer = hero.querySelector(".cyber-particles-layer");
+  if (!particlesLayer) {
+    particlesLayer = document.createElement("div");
+    particlesLayer.className = "cyber-particles-layer";
+    hero.prepend(particlesLayer);
+  }
 
-async function logScan(scanType, target, resultSummary, riskLevel) {
-  try {
-    await postJson('/api/log-scan', { scan_type: scanType, target: target || '-', result_summary: resultSummary || 'Completed', risk_level: riskLevel || 'Info' });
-  } catch (e) { console.warn('Logging skipped:', e.message); }
-}
+  let raf = null;
+  let lastParticleTime = 0;
+  let lastRippleTime = 0;
+  let latestEvent = null;
 
-async function refreshHistory() {
-  const body = document.getElementById('historyBody');
-  if (!body) return;
-  try {
-    const res = await fetch('/api/scans/recent');
-    const data = await res.json();
-    const scans = Array.isArray(data.scans) ? data.scans : [];
-    
-    const isAdmin = {{ 'true' if session.get('role') == 'admin' else 'false' }};
-    const colCount = isAdmin ? 7 : 6;
+  function getPoint(event) {
+    const rect = hero.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+    const y = Math.max(0, Math.min(rect.height, event.clientY - rect.top));
+    const hue = 350; // اللون الأحمر (الهجومي)
+    return { x, y, hue, rect };
+  }
 
-    if (!scans.length) {
-      body.innerHTML = `<tr><td colspan="${colCount}" class="text-center text-muted py-5">لا توجد عمليات فحص حديثة في سجلك.</td></tr>`;
-      return;
+  function applyMousePosition(event) {
+    const point = getPoint(event);
+
+    hero.classList.add("hero-hover");
+    hero.style.setProperty("--mx", `${point.x}px`);
+    hero.style.setProperty("--my", `${point.y}px`);
+    hero.style.setProperty("--accent-hue", point.hue);
+
+    const moveX = ((point.x / point.rect.width) - 0.5) * 10;
+    const moveY = ((point.y / point.rect.height) - 0.5) * 8;
+
+    const title = hero.querySelector(".hero-title");
+    const subtitle = hero.querySelector(".cyber-subtitle");
+    const badges = hero.querySelector(".cyber-badges");
+
+    if (title) title.style.transform = `translate(${moveX * -0.35}px, ${moveY * -0.35}px)`;
+    if (subtitle) subtitle.style.transform = `translate(${moveX * -0.2}px, ${moveY * -0.2}px)`;
+    if (badges) badges.style.transform = `translate(${moveX * -0.12}px, ${moveY * -0.12}px)`;
+
+    const now = Date.now();
+    if (now - lastParticleTime > 45) { lastParticleTime = now; createParticle(point.x, point.y, point.hue); }
+    if (now - lastRippleTime > 260) { lastRippleTime = now; createRipple(point.x, point.y, point.hue); }
+  }
+
+  function createParticle(x, y, hue) {
+    const particle = document.createElement("span");
+    const size = 3 + Math.random() * 5;
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 30 + Math.random() * 75;
+
+    particle.className = "cyber-particle";
+    particle.style.setProperty("--x", `${x}px`);
+    particle.style.setProperty("--y", `${y}px`);
+    particle.style.setProperty("--hue", hue);
+    particle.style.setProperty("--size", `${size}px`);
+    particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+
+    particlesLayer.appendChild(particle);
+    particle.addEventListener("animationend", () => particle.remove(), { once: true });
+  }
+
+  function createRipple(x, y, hue) {
+    const ripple = document.createElement("span");
+    ripple.className = "cyber-ripple";
+    ripple.style.setProperty("--x", `${x}px`);
+    ripple.style.setProperty("--y", `${y}px`);
+    ripple.style.setProperty("--hue", hue);
+
+    particlesLayer.appendChild(ripple);
+    ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
+  }
+
+  hero.addEventListener("mousemove", function (event) {
+    latestEvent = event;
+    if (!raf) {
+      raf = requestAnimationFrame(function () {
+        raf = null;
+        if (latestEvent) applyMousePosition(latestEvent);
+      });
     }
-    
-    body.innerHTML = scans.map(s => {
-      let badgeCls = 'bg-success';
-      if (/high|critical|danger|insecure|error|weak/i.test(s.risk_level)) badgeCls = 'bg-danger';
-      else if (/medium|moderate|warning|suspicious|expiring/i.test(s.risk_level)) badgeCls = 'bg-warning text-dark';
-      
-      return `<tr>
-        <td>${escapeHtml(s.id)}</td>
-        <td><span class="badge bg-secondary text-uppercase">${escapeHtml(s.scan_type)}</span></td>
-        <td class="text-break" style="max-width: 250px;" dir="ltr">${escapeHtml(s.target)}</td>
-        <td>${escapeHtml(s.result_summary)}</td>
-        <td><span class="badge ${badgeCls}">${escapeHtml(s.risk_level)}</span></td>
-        <td><small class="text-muted" dir="ltr">${escapeHtml(s.timestamp)}</small></td>
-        ${isAdmin ? `<td><small class="fw-bold">${escapeHtml(s.owner_username || 'زائر غير مسجل')}</small></td>` : ''}
-      </tr>`;
-    }).join('');
-  } catch (e) { console.warn('History update failed:', e); }
-}
+  });
 
-async function scanWebsite() {
-  const url = normalizeUrl(document.getElementById('scanUrl')?.value);
-  if (!url) return setResult('scanResult', 'أدخل رابطاً.', 'warning');
-  setResult('scanResult', 'جاري الفحص...', 'info');
-  try {
-    const data = await postJson('/api/scan-website', { url });
-    let detailsHtml = '';
-    if (data.score !== undefined) detailsHtml += `<strong>التقييم (Score):</strong> ${escapeHtml(data.score)}%<br>`;
-    if (data.missing && data.missing.length) detailsHtml += `<strong>هيدرز مفقودة:</strong> ${escapeHtml(data.missing.join(', '))}<br>`;
-    
-    const finalLevel = data.level || 'Completed';
-    setResult('scanResult', `<strong>النتيجة:</strong> ${scoreBadge(finalLevel)}<br><strong>الرابط:</strong> <span dir="ltr">${escapeHtml(data.url || url)}</span><br>${detailsHtml}`, finalLevel === 'Secure' ? 'success' : (finalLevel === 'Insecure' ? 'danger' : 'warning'));
-    
-    await logScan('website_scan', url, `Score: ${data.score}%`, finalLevel);
-    await refreshHistory();
-  } catch (e) { setResult('scanResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
-}
-
-async function checkSSL() {
-  const domain = String(document.getElementById('sslDomain')?.value || '').trim().replace(/^https?:\/\//, '').split('/')[0];
-  if (!domain) return setResult('sslResult', 'أدخل اسم النطاق.', 'warning');
-  setResult('sslResult', 'جاري فحص الشهادة...', 'info');
-  try {
-    const data = await postJson('/api/ssl-check', { domain });
-    const finalLevel = data.status || 'Checked';
-    setResult('sslResult', `<strong>الحالة:</strong> ${scoreBadge(finalLevel)}<br><strong>أيام متبقية:</strong> ${escapeHtml(data.days_left)} يوم<br>${data.issuer ? `<strong>المُصدر:</strong> ${escapeHtml(data.issuer)}<br>` : ''}${data.expires ? `<strong>تاريخ الانتهاء:</strong> <span dir="ltr">${escapeHtml(data.expires)}</span>` : ''}`, finalLevel === 'Valid' ? 'success' : 'danger');
-    
-    await logScan('ssl_check', domain, `Days left: ${data.days_left}`, finalLevel);
-    await refreshHistory();
-  } catch (e) { setResult('sslResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
-}
-
-async function analyzeHeaders() {
-  const url = normalizeUrl(document.getElementById('headerUrlInput')?.value);
-  if (!url) return setResult('headerAnalyzerResult', 'أدخل رابطاً.', 'warning');
-  setResult('headerAnalyzerResult', 'جاري التحليل...', 'info');
-  try {
-    const data = await postJson('/api/header-analyzer', { url });
-    const finalLevel = data.level || data.status || 'Checked';
-    setResult('headerAnalyzerResult', `<strong>التقييم:</strong> ${scoreBadge(finalLevel)}<br><strong>الملخص:</strong> تم التحليل بدرجة ${escapeHtml(data.score)}%<br>${data.missing && data.missing.length ? `<strong>الهيدرز المفقودة:</strong> ${escapeHtml(data.missing.join(', '))}` : 'جميع الهيدرز الأساسية موجودة.'}`, finalLevel === 'Secure' ? 'success' : 'warning');
-    
-    await logScan('header_analyzer', url, `Score: ${data.score}%`, finalLevel);
-    await refreshHistory();
-  } catch (e) { setResult('headerAnalyzerResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
-}
-
-async function expandUrl() {
-  const url = normalizeUrl(document.getElementById('expandUrlInput')?.value);
-  if (!url) return setResult('expandUrlResult', 'أدخل رابطاً.', 'warning');
-  setResult('expandUrlResult', 'جاري فك الرابط...', 'info');
-  try {
-    const data = await postJson('/api/expand-url', { url });
-    const finalLevel = data.risk || 'Checked';
-    setResult('expandUrlResult', `<strong>الرابط الأصلي:</strong> <span dir="ltr">${escapeHtml(url)}</span><br><strong>الرابط النهائي:</strong> <span dir="ltr">${escapeHtml(data.final_url || '-')}</span><br><strong>التقييم:</strong> ${scoreBadge(finalLevel)}`, finalLevel === 'Safe' ? 'success' : 'warning');
-    
-    await logScan('url_expander', url, `Final: ${data.final_url || '-'}`, finalLevel);
-    await refreshHistory();
-  } catch (e) { setResult('expandUrlResult', `حدث خطأ: ${escapeHtml(e.message)}`, 'danger'); }
-}
-
-function checkPassword() {
-  const pwd = document.getElementById('passwordInput')?.value || '';
-  if (!pwd) return setResult('passwordResult', 'اكتب كلمة.', 'warning');
-  let score = 0;
-  if (pwd.length >= 12) score += 25;
-  if (/[a-z]/.test(pwd)) score += 10; if (/[A-Z]/.test(pwd)) score += 15;
-  if (/\d/.test(pwd)) score += 15; if (/[^A-Za-z0-9]/.test(pwd)) score += 20;
-  if (pwd.length >= 16) score += 15;
-  if (/password|123456/i.test(pwd)) score -= 25;
-  score = Math.max(0, Math.min(100, score));
-  const level = score >= 80 ? 'Strong' : score >= 55 ? 'Medium' : 'Weak';
-  setResult('passwordResult', `<strong>القوة:</strong> ${scoreBadge(level)}<br><strong>Score:</strong> ${score}/100`, level === 'Strong' ? 'success' : level === 'Medium' ? 'warning' : 'danger');
-  
-  logScan('password_strength', 'Local Check', `Score: ${score}/100`, level).then(refreshHistory);
-}
-
-function checkEmail() {
-  const text = document.getElementById('emailInput')?.value || '';
-  if (!text.trim()) return setResult('emailResult', 'الصق النص.', 'warning');
-  let score = 0;
-  let notes = [];
-  
-  const dangerRegex = /urgent|password|login|winner|click here|عاجل|كلمة المرور|تسجيل الدخول|اربح|اضغط هنا|تحقق من حسابك|سيتم إغلاق حسابك/i;
-  if (dangerRegex.test(text)) { score += 40; notes.push('يحتوي كلمات مستعجلة أو حساسة.'); }
-  if (/https?:\/\//i.test(text)) { score += 20; notes.push('يحتوي على روابط.'); }
-  if (/@/i.test(text) && /https?:\/\/[^\s]*@[^\s]*/.test(text)) { score += 30; notes.push('رابط مشبوه يحتوي @.'); }
-  
-  const level = score >= 50 ? 'High Risk' : score >= 20 ? 'Suspicious' : 'Low Risk';
-  setResult('emailResult', `<strong>التقييم:</strong> ${scoreBadge(level)}<br><strong>Score:</strong> ${score}/100<br><strong>الملاحظات:</strong> ${notes.join(' ')}`, score >= 50 ? 'danger' : 'success');
-  
-  logScan('email_phishing', 'Local Text Analysis', `Score: ${score}/100`, level).then(refreshHistory);
-}
-
-async function analyzeFile() {
-  const file = document.getElementById('fileInput')?.files?.[0];
-  if (!file) return setResult('fileResult', 'اختر ملفاً.', 'warning');
-  setResult('fileResult', 'جاري الحساب...', 'info');
-  try {
-    const buffer = await file.arrayBuffer();
-    const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', buffer))).map(b => b.toString(16).padStart(2, '0')).join('');
-    setResult('fileResult', `<strong>الملف:</strong> ${escapeHtml(file.name)}<br><strong>SHA-256:</strong><pre>${hash}</pre><button class="copy-btn" onclick="navigator.clipboard.writeText('${hash}')">نسخ</button>`, 'success');
-    
-    await logScan('file_hash', file.name, 'SHA-256 Calculated', 'Info');
-    await refreshHistory();
-  } catch (e) { setResult('fileResult', `فشل: ${escapeHtml(e.message)}`, 'danger'); }
-}
-
-function checkURL() {
-  const raw = normalizeUrl(document.getElementById('urlCheckInput')?.value || '');
-  if (!raw) return setResult('urlResult', 'أدخل رابطاً.', 'warning');
-  let score = 0;
-  let notes = [];
-  try {
-    const u = new URL(raw);
-    if (u.protocol !== 'https:') { score += 30; notes.push('لا يستخدم HTTPS.'); }
-    if (/\b\d{1,3}(\.\d{1,3}){3}\b/.test(u.hostname)) { score += 40; notes.push('استخدام IP بدل النطاق.'); }
-    if (u.hostname.includes('xn--')) { score += 30; notes.push('نطاق Punycode.'); }
-    if ((u.hostname.match(/-/g) || []).length >= 3) { score += 20; notes.push('شرطات كثيرة.'); }
-    if (/bit\.ly|tinyurl|t\.co|goo\.gl|is\.gd|cutt\.ly|shorturl/i.test(u.hostname)) { score += 30; notes.push('رابط مختصر.'); }
-    if (u.href.includes('@')) { score += 40; notes.push('يحتوي رمز @ لإخفاء النطاق.'); }
-    if (u.pathname.length > 50) { score += 10; notes.push('مسار طويل جداً.'); }
-
-    const level = score >= 50 ? 'High Risk' : score >= 25 ? 'Suspicious' : 'Safe';
-    setResult('urlResult', `<strong>الرابط:</strong> <span dir="ltr">${escapeHtml(raw)}</span><br><strong>التقييم:</strong> ${scoreBadge(level)}<br><strong>الملاحظات:</strong> ${notes.length ? notes.join(' ') : 'لا توجد مؤشرات واضحة.'}`, score >= 50 ? 'danger' : 'success');
-    
-    logScan('url_safety', raw, `Score: ${score}`, level).then(refreshHistory);
-  } catch { setResult('urlResult', 'الرابط غير صالح.', 'warning'); }
-}
-
-function generatePassword() {
-  const len = Math.max(8, Math.min(64, Number(document.getElementById('genLength')?.value || 16)));
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*()-_=+[]{}';
-  let password = '';
-  const array = new Uint32Array(len);
-  crypto.getRandomValues(array);
-  for (let i = 0; i < len; i++) password += chars[array[i] % chars.length];
-  setResult('generatedPasswordResult', `<strong>كلمة المرور:</strong><pre>${escapeHtml(password)}</pre>`, 'success');
-  
-  logScan('password_generator', 'Local Gen', `Length: ${len}`, 'Info').then(refreshHistory);
-}
+  hero.addEventListener("mouseleave", function () {
+    hero.classList.remove("hero-hover");
+    hero.querySelectorAll(".hero-title, .cyber-subtitle, .cyber-badges").forEach(el => el.style.transform = "");
+  });
+})();
 </script>
 </body>
 </html>

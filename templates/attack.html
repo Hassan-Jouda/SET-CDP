@@ -3,120 +3,561 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>الاختبار التعليمي | SET-CDP</title>
+    <title>ترسانة الهجوم والمحاكاة | SET-CDP</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        body {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        html[data-theme="dark"] body, body.cyber-body {
+            background: var(--set-bg, #020617) !important;
+            color: var(--set-text, #e5e7eb);
+        }
+
+        .hero-attack {
+            background: linear-gradient(135deg, #0f172a, #1e293b, #7f1d1d);
+            color: white;
+            padding: 45px 20px;
+            border-bottom: 4px solid #ef4444;
+            margin-bottom: 35px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-attack::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.1), transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-attack h1 {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: #fca5a5;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .hero-attack p {
+            color: #cbd5e1;
+            font-size: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .alert-security {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-right: 6px solid #ef4444;
+            color: #ef4444;
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 18px 20px;
+        }
+
+        html[data-theme="light"] .alert-security {
+            background: #fff1f2;
+            color: #991b1b;
+        }
+
+        .attack-card {
+            background: var(--set-card, white);
+            border: 1px solid var(--set-border, #e2e8f0);
+            border-radius: 18px;
+            padding: 24px;
+            height: 100%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+        }
+
+        html[data-theme="dark"] .attack-card {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .attack-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .card-clone { border-top: 4px solid #3b82f6; }
+        .card-templates { border-top: 4px solid #10b981; }
+        .card-qr { border-top: 4px solid #f59e0b; }
+        .card-usb { border-top: 4px solid #ef4444; }
+
+        .card-icon-title {
+            font-weight: 900;
+            font-size: 22px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-label {
+            font-weight: 800;
+            color: var(--set-text-soft, #334155);
+            font-size: 14px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px 15px;
+            border: 1px solid var(--set-border, #cbd5e1);
+            background: var(--set-input, #fff);
+            color: var(--set-input-text, #0f172a);
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: monospace;
+        }
+
+        .form-control:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+
+        .input-group-text {
+            background: var(--set-bg-soft, #f8fafc);
+            border-color: var(--set-border, #cbd5e1);
+            color: var(--set-muted, #64748b);
+        }
+
+        .btn-custom {
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .template-btn {
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-family: monospace;
+        }
+
+        .template-btn-full {
+            grid-column: span 2;
+        }
+
+        .history-card {
+            border-radius: 18px;
+            border: 1px solid var(--set-border, #e2e8f0);
+            background: var(--set-card, white);
+            overflow: hidden;
+        }
+        
+        .list-group-item {
+            background: transparent;
+            border-color: var(--set-border, #e2e8f0);
+            border-left: none;
+            border-right: none;
+            padding: 18px 22px;
+            transition: background 0.2s;
+            color: var(--set-text, #0f172a);
+        }
+
+        .list-group-item:hover {
+            background: var(--set-bg-soft, #f8fafc);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--set-muted, #94a3b8);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .highlight-new {
+            animation: highlightFade 3s ease-out forwards;
+        }
+        
+        @keyframes highlightFade {
+            0% { background-color: rgba(239, 68, 68, 0.15); }
+            100% { background-color: transparent; }
+        }
+
+        @keyframes slideDownFade {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #cloneResult {
+            animation: slideDownFade 0.4s ease-out;
+        }
+
+        .details-box {
+            background: var(--set-bg-soft, #f1f5f9);
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border: 1px solid var(--set-border, #e2e8f0);
+        }
+        
+        .details-box div {
+            margin-bottom: 6px;
+            color: var(--set-text-soft, #475569);
+            font-size: 13.5px;
+            font-family: monospace;
+        }
+        
+        .details-box div:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .template-grid { grid-template-columns: 1fr; }
+            .template-btn-full { grid-column: span 1; }
+        }
+    </style>
 </head>
-<body style="background: #f8fafc;">
+<body class="cyber-body">
 
 {% include 'base_nav.html' %}
 
-<main class="container py-5">
-    <div class="alert alert-warning shadow-sm border-warning mb-4">
-        <strong><i class="fas fa-exclamation-triangle"></i> تنويه أمني:</strong> نحن غير مسؤولين عن أي استخدام غير قانوني لهذه الأدوات. تأكد من الحصول على إذن صريح قبل إجراء أي اختبار اختراق. هذه الأدوات مخصصة لأغراض تعليمية فقط!
+<header class="hero-attack">
+    <div class="container">
+        <h1><i class="fas fa-crosshairs"></i> مركز العمليات الهجومية (Red Teaming)</h1>
+        <p>
+            بيئة متقدمة لتوليد حمولات الاختراق (Payloads)، استنساخ صفحات التصيد الموجه (Spear Phishing)، ومحاكاة هجمات الهندسة الاجتماعية المتطورة.
+        </p>
+    </div>
+</header>
+
+<main class="container mb-5">
+    
+    <div class="alert alert-security shadow-sm mb-5 font-monospace">
+        <i class="fas fa-skull-crossbones fs-5 me-2"></i> 
+        <strong>قواعد الاشتباك (Rules of Engagement):</strong> نحن غير مسؤولين عن أي استخدام غير مصرح به. هذه الترسانة مصممة لمحاكاة التهديدات المتقدمة (Adversary Simulation) وتقييم الدفاعات بموجب تصريح رسمي.
     </div> 
 
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-primary">
-                <div class="card-body">
-                    <h3 class="mb-3 text-primary"><i class="fas fa-clone"></i> استنساخ  لموقع</h3>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">الرابط المستهدف:</label>
-                        <input id="cloneUrl" class="form-control" placeholder="https://example.com/login">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">اسم السيناريو:</label>
-                        <input id="cloneName" class="form-control" placeholder="مثال: university_test">
-                    </div>
-                    <button class="btn btn-primary w-100" onclick="cloneSite()"><i class="fas fa-magic"></i> إنشاء نسخة اختراق</button>
-                    <pre id="cloneResult" class="mt-3 text-success fw-bold"></pre>
+    <div class="row g-4 mb-4">
+        <!-- أداة الاستنساخ -->
+        <div class="col-lg-6">
+            <div class="attack-card card-clone border-danger">
+                <div class="card-icon-title text-danger">
+                    <i class="fas fa-spider"></i> استنساخ الأهداف (Credential Harvesting)
                 </div>
+                <p class="text-muted small mb-4 font-monospace">استنساخ دقيق لصفحات الدخول المستهدفة لسرقة الجلسات (Sessions) والبيانات الحساسة.</p>
+                
+                <div class="mb-3">
+                    <label class="form-label">الهدف الأصلي (Target URL)</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 rounded-start-0 rounded-end-3" style="border-radius: 0 12px 12px 0;"><i class="fas fa-bullseye"></i></span>
+                        <input id="cloneUrl" class="form-control border-start-0 rounded-start-3 rounded-end-0" placeholder="https://target.com/login" dir="ltr" style="text-align: left;">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">معرف الهجوم (Payload Path)</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 rounded-start-0 rounded-end-3" style="border-radius: 0 12px 12px 0;"><i class="fas fa-mask"></i></span>
+                        <input id="cloneName" class="form-control border-start-0 rounded-start-3 rounded-end-0" placeholder="مثال: secure_auth_gateway" dir="ltr" style="text-align: left;">
+                    </div>
+                </div>
+                <button id="btnClone" class="btn btn-danger btn-custom w-100 position-relative z-2" onclick="cloneSite()">
+                    <i class="fas fa-bolt me-1"></i> توليد فخ الاختراق (Deploy Trap)
+                </button>
+                
+                <div id="cloneResult" style="display: none; position: relative; z-1;"></div>
             </div>
         </div>
 
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-success">
-                <div class="card-body">
-                    <h3 class="mb-3 text-success"><i class="fas fa-layer-group"></i> القوالب الجاهزة</h3>
-                    <p class="text-muted">اختر أحد السيناريوهات الجاهزة لبدء الاختبار الفوري:</p>
-                    <div class="d-grid gap-2">
-                        <a class="btn btn-outline-primary" target="_blank" href="/social/facebook"><i class="fab fa-facebook"></i>  Facebook</a>
-                        <a class="btn btn-outline-danger" target="_blank" href="/social/instagram"><i class="fab fa-instagram"></i>  Instagram</a>
-                        <a class="btn btn-outline-info" target="_blank" href="/social/linkedin"><i class="fab fa-linkedin"></i>  LinkedIn</a>
-                        <a class="btn btn-outline-secondary" target="_blank" href="/social/university"><i class="fas fa-university"></i>  بوابة الجامعة</a>
-                        <a class="btn btn-outline-dark" target="_blank" href="/social/fake_popup"><i class="fas fa-window-restore"></i> النافذة المنبثقة الوهمية (UI Redressing)</a>
-                    </div>
+        <!-- القوالب الجاهزة -->
+        <div class="col-lg-6">
+            <div class="attack-card card-templates border-primary">
+                <div class="card-icon-title text-primary">
+                    <i class="fas fa-users-viewfinder"></i> حمولات الهندسة الاجتماعية (Pre-built Payloads)
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-warning">
-                <div class="card-body">
-                    <h3 class="mb-3 text-warning"><i class="fas fa-qrcode"></i> اداة التصيد (Quishing)</h3>
-                    <p class="text-muted" style="font-size: 14px;">قم بتوليد رمز QR يوجه الضحية إلى إحدى نسخ الاختراق لاختبار الوعي عند استخدام الهواتف.</p>
-                    <div class="input-group mb-3">
-                        <input type="text" id="qrUrlInput" class="form-control" placeholder="ضع الرابط هنا...">
-                        <button class="btn btn-warning" onclick="generateQR()">توليد الرمز</button>
-                    </div>
-                    
-                    <div id="qrResult" class="text-center mt-3" style="display: none;">
-                        <img id="qrImage" src="" alt="QR Code" class="img-fluid border p-2 bg-white rounded shadow-sm" style="max-width: 180px;">
-                        <p class="mt-2 text-success fw-bold small"><i class="fas fa-check-circle"></i> الرمز جاهز للمسح الكاميرا</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-danger">
-                <div class="card-body">
-                    <h3 class="mb-3 text-danger"><i class="fas fa-usb"></i> محاكاة هجوم مادي (USB Drop)</h3>
-                    <p class="text-muted" style="font-size: 14px;">
-                        ينشئ النظام ملف (Batch) يبدو هاماً. عند فتحه، يرسل تنبيهاً صامتاً يحمل اسم جهاز الضحية كإثبات للاختراق.
-                    </p>
-                    <label class="form-label fw-bold">رابط السيرفر للاستقبال:</label>
-                    <input type="text" id="usbServerUrl" class="form-control mb-3" placeholder="http://127.0.0.1:5000">
-                    <button class="btn btn-danger w-100" onclick="generateUSB()"><i class="fas fa-download"></i> إنشاء وتحميل ملف الاختبار</button>
+                <p class="text-muted small mb-4 font-monospace">نشر سريع لسيناريوهات هجومية جاهزة لاختبار ضعف الكادر البشري.</p>
+                
+                <div class="template-grid">
+                    <a class="btn btn-outline-primary template-btn" target="_blank" href="/social/facebook">
+                        <i class="fab fa-facebook fs-5"></i> Facebook Exploit
+                    </a>
+                    <a class="btn btn-outline-danger template-btn" target="_blank" href="/social/instagram">
+                        <i class="fab fa-instagram fs-5"></i> Instagram Exploit
+                    </a>
+                    <a class="btn btn-outline-info template-btn" target="_blank" href="/social/linkedin">
+                        <i class="fab fa-linkedin fs-5"></i> LinkedIn Exploit
+                    </a>
+                    <a class="btn btn-outline-secondary template-btn" target="_blank" href="/social/university">
+                        <i class="fas fa-university fs-5"></i> University Portal
+                    </a>
+                    <a class="btn btn-outline-dark template-btn template-btn-full" target="_blank" href="/social/fake_popup">
+                        <i class="fas fa-window-restore fs-5"></i> هجوم النافذة المنبثقة (UI Redressing / iframe Injection)
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-secondary mt-2 mb-5">
-        <div class="card-body">
-            <h3 class="mb-3 text-secondary"><i class="fas fa-server"></i> روابط النسخ التي قمت بإنشائها</h3>
+    <div class="row g-4 mb-5">
+        <!-- أداة Quishing -->
+        <div class="col-lg-6">
+            <div class="attack-card card-qr border-warning">
+                <div class="card-icon-title text-warning">
+                    <i class="fas fa-qrcode"></i> هجمات الاستجابة السريعة (Quishing)
+                </div>
+                <p class="text-muted small mb-4 font-monospace">توليد رموز QR خبيثة لتجاوز الفلاتر الأمنية وتوجيه الضحايا إلى خوادم القيادة والسيطرة (C2).</p>
+                
+                <div class="input-group mb-3">
+                    <input type="text" id="qrUrlInput" class="form-control rounded-end-3 rounded-start-0" placeholder="أدخل رابط خادم الاستغلال (Exploit URL)..." dir="ltr" style="text-align: left;">
+                    <button id="btnQr" class="btn btn-warning fw-bold px-4 rounded-start-3 rounded-end-0 text-dark" onclick="generateQR()">توليد (Weaponize)</button>
+                </div>
+                
+                <div id="qrResult" class="text-center mt-4" style="display: none;">
+                    <div class="d-inline-block p-3 bg-white border rounded-4 shadow-sm">
+                        <img id="qrImage" src="" alt="Malicious QR" class="img-fluid" style="max-width: 160px;">
+                    </div>
+                    <p class="mt-3 text-success fw-bold font-monospace"><i class="fas fa-check-circle"></i> الحمولة جاهزة للمسح (Payload Ready)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- محاكاة USB -->
+        <div class="col-lg-6">
+            <div class="attack-card card-usb border-danger">
+                <div class="card-icon-title text-danger">
+                    <i class="fas fa-usb"></i> هجمات الاختراق المادي (USB Drop / HID Payload)
+                </div>
+                <p class="text-muted small mb-4 font-monospace">
+                    توليد ملفات تنفيذية (Batch/PowerShell) تعمل كـ Beacons لاختراق الأجهزة وفتح قناة اتصال عكسية (Reverse Shell) صامتة.
+                </p>
+                
+                <label class="form-label">خادم الاستماع (C2 Listener URL)</label>
+                <div class="input-group mb-4">
+                    <span class="input-group-text border-end-0 rounded-start-0 rounded-end-3" style="border-radius: 0 12px 12px 0;"><i class="fas fa-satellite-dish"></i></span>
+                    <input type="text" id="usbServerUrl" class="form-control border-start-0 rounded-start-3 rounded-end-0 text-danger" placeholder="http://127.0.0.1:5000" dir="ltr" style="text-align: left;">
+                </div>
+                <button id="btnUsb" class="btn btn-danger btn-custom w-100" onclick="generateUSB()">
+                    <i class="fas fa-download me-1"></i> تجهيز الحمولة (Download Payload)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- سجل الروابط المستنسخة -->
+    <div class="card history-card shadow-sm mb-5 border-danger">
+        <div class="card-header border-bottom py-3" style="background: rgba(239, 68, 68, 0.05); border-color: var(--set-border) !important;">
+            <h4 class="mb-0 fw-bold text-danger font-monospace"><i class="fas fa-list-check me-2"></i> سجل العمليات الهجومية (Active Clones)</h4>
+        </div>
+        <div class="card-body p-0" id="clonesListContainer">
             {% if clones %}
-            <div class="list-group">
+            <div class="list-group list-group-flush" id="clonesListGroup">
                 {% for c in clones %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="list-group-item d-flex justify-content-between align-items-start">
                     <div>
-                        <a target="_blank" href="/view-clone/{{ c.clone_name }}" class="fw-bold fs-5 text-decoration-none">
-                            {{ c.clone_name }}
-                        </a>
-                        <br>
-                        <small class="text-muted">الرابط الأصلي: {{ c.source_url }}</small>
+                        <h5 class="mb-2 font-monospace">
+                            <a target="_blank" href="/view-clone/{{ c.clone_name }}" class="fw-bold text-danger text-decoration-none">
+                                <i class="fas fa-link me-1"></i> {{ c.clone_name }}
+                            </a>
+                        </h5>
+                        <div class="text-muted small font-monospace">
+                            <div class="mb-1"><i class="fas fa-crosshairs me-1"></i> <strong class="text-info">الهدف الأصلي:</strong> <span dir="ltr">{{ c.source_url }}</span></div>
+                            <div><i class="fas fa-clock me-1"></i> <strong>وقت النشر:</strong> <span dir="ltr">{{ c.timestamp or 'سابقاً' }}</span></div>
+                        </div>
                     </div>
-                    <span class="badge bg-primary rounded-pill">نشط</span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-3 py-2 fw-bold mt-1 font-monospace">
+                        <i class="fas fa-circle-dot fa-xs me-1 heartbeat-icon"></i> Active
+                    </span>
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-            <p class="text-muted text-center my-3">لم تقم بإنشاء أي نسخ اختراق حتى الآن.</p>
+            <div class="empty-state font-monospace" id="clonesEmptyState">
+                <i class="fas fa-ghost"></i>
+                <h5>لا توجد عمليات نشطة</h5>
+                <p>لم تقم بنشر أي فخاخ تصيد حتى الآن. قم ببدء عملية استنساخ لجمع البيانات.</p>
+            </div>
             {% endif %}
         </div>
     </div>
+
 </main>
 
+<style>
+    .heartbeat-icon {
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+</style>
+
 <script>
-// سكربت إنشاء QR Code
+// دالة مساعدة لنسخ النص
+function copyToClipboard(elementId, btnElement) {
+    const copyText = document.getElementById(elementId);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); 
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        const originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btnElement.classList.replace('btn-danger', 'btn-dark');
+        setTimeout(() => {
+            btnElement.innerHTML = originalHtml;
+            btnElement.classList.replace('btn-dark', 'btn-danger');
+        }, 2000);
+    });
+}
+
+// إضافة النسخة الجديدة للسجل السفلي برمجياً لكي يظهر التفصيل بشكل جميل
+function addCloneToHistory(name, sourceUrl, finalUrl) {
+    const listContainer = document.getElementById('clonesListContainer');
+    const emptyState = document.getElementById('clonesEmptyState');
+    let listGroup = document.getElementById('clonesListGroup');
+
+    if (emptyState) {
+        emptyState.remove();
+        listContainer.innerHTML = '<div class="list-group list-group-flush" id="clonesListGroup"></div>';
+        listGroup = document.getElementById('clonesListGroup');
+    }
+
+    const now = new Date();
+    const timeString = now.getFullYear() + "-" + 
+                       String(now.getMonth() + 1).padStart(2, '0') + "-" + 
+                       String(now.getDate()).padStart(2, '0') + " " + 
+                       String(now.getHours()).padStart(2, '0') + ":" + 
+                       String(now.getMinutes()).padStart(2, '0');
+
+    const newItem = document.createElement('div');
+    newItem.className = 'list-group-item d-flex justify-content-between align-items-start highlight-new';
+    newItem.innerHTML = `
+        <div>
+            <h5 class="mb-2 font-monospace">
+                <a target="_blank" href="${finalUrl}" class="fw-bold text-danger text-decoration-none">
+                    <i class="fas fa-link me-1"></i> ${name}
+                </a>
+            </h5>
+            <div class="text-muted small font-monospace">
+                <div class="mb-1"><i class="fas fa-crosshairs me-1"></i> <strong class="text-info">الهدف الأصلي:</strong> <span dir="ltr">${sourceUrl}</span></div>
+                <div><i class="fas fa-clock me-1"></i> <strong>وقت النشر:</strong> <span dir="ltr">${timeString}</span></div>
+            </div>
+        </div>
+        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-3 py-2 fw-bold mt-1 font-monospace">
+            <i class="fas fa-circle-dot fa-xs me-1 heartbeat-icon"></i> Active
+        </span>
+    `;
+    listGroup.prepend(newItem);
+}
+
+// أداة الاستنساخ وعرض النتيجة تحت الزر مباشرة
+function cloneSite() {
+    const url = document.getElementById('cloneUrl').value.trim();
+    const name = document.getElementById('cloneName').value.trim();
+    const resultBox = document.getElementById('cloneResult');
+    const btn = document.getElementById('btnClone');
+
+    if (!url || !name) return alert('يرجى تحديد الهدف ومسار الحمولة.');
+    
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري استنساخ الهدف (Cloning Target)...';
+    btn.disabled = true;
+    
+    // إظهار صندوق التحميل تحت الزر
+    resultBox.style.display = 'block';
+    resultBox.className = 'mt-3 text-center rounded p-3 bg-dark text-danger fw-bold border border-danger border-opacity-50 font-monospace';
+    resultBox.innerHTML = '<i class="fas fa-cog fa-spin fs-4 mb-2 d-block"></i> جاري بناء الفخ وتجهيز خادم الاستقبال...';
+    
+    fetch('/api/clone-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url, name: name })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            const fullLocalUrl = window.location.origin + data.url;
+            
+            const now = new Date();
+            const timeString = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            
+            // عرض النتيجة تحت الزر مباشرة بتنسيق أنيق
+            resultBox.className = 'mt-3 text-start rounded p-4 shadow-sm border border-danger border-opacity-50';
+            resultBox.style.backgroundColor = "var(--set-card)";
+            resultBox.innerHTML = `
+                <div class="text-center text-danger fw-bold mb-3 border-bottom pb-3 font-monospace">
+                    <i class="fas fa-skull fs-3 mb-2 d-block drop-glow-danger"></i> تم الاستنساخ وتجهيز الفخ (Trap Deployed)!
+                </div>
+                
+                <div class="details-box text-end font-monospace" style="background: var(--set-bg-soft); border-color: var(--set-border);">
+                    <div><i class="fas fa-mask me-2 text-danger"></i> <strong>معرف الهجوم:</strong> <span class="fw-bold text-info">${name}</span></div>
+                    <div><i class="fas fa-bullseye me-2 text-danger"></i> <strong>الهدف الأصلي:</strong> <span dir="ltr">${url}</span></div>
+                    <div><i class="fas fa-clock me-2 text-danger"></i> <strong>تاريخ النشر:</strong> <span dir="ltr">${timeString}</span></div>
+                </div>
+
+                <label class="form-label text-danger fw-bold small mb-2 mt-3 text-end d-block font-monospace">رابط الاستغلال (Exploit URL):</label>
+                <div class="input-group font-monospace" dir="ltr">
+                    <input type="text" class="form-control bg-dark fw-bold text-danger border-danger" value="${fullLocalUrl}" id="newCloneLink" readonly>
+                    <button class="btn btn-danger px-3" onclick="copyToClipboard('newCloneLink', this)" title="نسخ الرابط">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                    <a href="${data.url}" target="_blank" class="btn btn-outline-danger px-3" title="فتح الصفحة">
+                        <i class="fas fa-external-link-alt"></i> Open
+                    </a>
+                </div>
+            `;
+            
+            // إضافة النتيجة للسجل السفلي
+            addCloneToHistory(name, url, data.url);
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        } else {
+            resultBox.className = 'mt-3 text-center rounded p-3 bg-danger bg-opacity-10 text-danger fw-bold border border-danger border-opacity-25 font-monospace';
+            resultBox.innerHTML = '<i class="fas fa-exclamation-triangle fs-4 mb-2 d-block"></i> خطأ: ' + data.error;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        resultBox.className = 'mt-3 text-center rounded p-3 bg-danger bg-opacity-10 text-danger fw-bold border border-danger border-opacity-25 font-monospace';
+        resultBox.innerHTML = '<i class="fas fa-wifi fs-4 mb-2 d-block"></i> حدث خطأ في الاتصال بالخادم.';
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
 function generateQR() {
     const url = document.getElementById('qrUrlInput').value.trim();
-    if (!url) return alert('الرجاء إدخال رابط صالح');
+    if (!url) return alert('الرجاء إدخال رابط صالح لتوليد الحمولة.');
+
+    const btn = document.getElementById('btnQr');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
 
     fetch('/api/generate-qr', {
         method: 'POST',
@@ -131,13 +572,22 @@ function generateQR() {
         } else {
             alert('حدث خطأ: ' + data.error);
         }
-    }).catch(err => console.error(err));
+    })
+    .catch(err => console.error(err))
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
 }
 
-// سكربت إنشاء USB Drop
 function generateUSB() {
     let url = document.getElementById('usbServerUrl').value.trim();
     if (!url) { url = window.location.origin; }
+
+    const btn = document.getElementById('btnUsb');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+    btn.disabled = true;
 
     fetch('/api/generate-usb', {
         method: 'POST',
@@ -152,38 +602,19 @@ function generateUSB() {
             link.href = window.URL.createObjectURL(blob);
             link.download = data.filename;
             link.click();
-            alert('تم تحميل ملف الاختبار بنجاح.');
         } else {
             alert('حدث خطأ: ' + data.error);
         }
-    }).catch(err => console.error(err));
-}
-
-// سكربت أداة الاستنساخ الموجود مسبقاً (تم ربطه بالزر)
-function cloneSite() {
-    const url = document.getElementById('cloneUrl').value;
-    const name = document.getElementById('cloneName').value;
-    if (!url) return alert('أدخل الرابط');
-    
-    document.getElementById('cloneResult').innerText = 'جاري الاستنساخ... يرجى الانتظار.';
-    
-    fetch('/api/clone-site', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url, name: name })
     })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success) {
-            document.getElementById('cloneResult').innerHTML = `نجاح! <a target="_blank" href="${data.url}">اضغط هنا لفتح النسخة</a>`;
-            setTimeout(()=> location.reload(), 2000);
-        } else {
-            document.getElementById('cloneResult').innerText = 'خطأ: ' + data.error;
-        }
+    .catch(err => console.error(err))
+    .finally(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     });
 }
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/script.js"></script>
 </body>
 </html>

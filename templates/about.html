@@ -1,226 +1,729 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>من نحن | SET-CDP</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>من نحن | SET-CDP Offensive Security Platform</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
 
-    <style>
-        body {
-            background: #f8fafc;
-        }
+  <style>
+    /* ============================================================
+       SET-CDP About Page - Cyber Lab + Command Center Merge
+       مزيج بين صفحة Cyber Lab وصفحة Command Center
+       يدعم Dark / Light عبر متغيرات base_nav.html
+       ============================================================ */
 
-        .about-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 15px 50px;
-        }
+    :root {
+      --team-red: #ef4444;
+      --team-blue: #0ea5e9;
+      --team-purple: #a855f7;
+      --team-green: #22c55e;
+      --team-yellow: #f59e0b;
+      --about-radius: 20px;
+      --about-radius-sm: 14px;
+      --about-glow: 0 18px 55px rgba(14, 165, 233, 0.13);
+      --about-danger-glow: 0 18px 55px rgba(239, 68, 68, 0.12);
+    }
 
-        .about-hero {
-            background: linear-gradient(135deg, #0f172a, #1e293b, #0f766e);
-            color: white;
-            border-radius: 20px;
-            padding: 45px 25px;
-            text-align: center;
-            box-shadow: 0 14px 35px rgba(15, 23, 42, 0.25);
-            margin-bottom: 28px;
-        }
+    html,
+    body {
+      min-height: 100%;
+    }
 
-        .about-hero h1 {
-            color: #38bdf8;
-            font-size: 34px;
-            font-weight: 900;
-            margin-bottom: 10px;
-        }
+    body {
+      background:
+        radial-gradient(circle at 12% 10%, rgba(239, 68, 68, 0.08), transparent 30%),
+        radial-gradient(circle at 88% 22%, rgba(14, 165, 233, 0.09), transparent 26%),
+        radial-gradient(circle at 52% 100%, rgba(168, 85, 247, 0.08), transparent 28%),
+        var(--set-bg, #020617) !important;
+      color: var(--set-text, #e5e7eb) !important;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      overflow-x: hidden;
+    }
 
-        .about-hero p {
-            color: #cbd5e1;
-            max-width: 850px;
-            margin: auto;
-            line-height: 1.9;
-        }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.75;
+      background:
+        linear-gradient(rgba(56, 189, 248, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, 0.035) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
 
-        .section-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 18px;
-            padding: 25px;
-            margin-bottom: 22px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-        }
+    html[data-theme="light"] body {
+      background:
+        radial-gradient(circle at 12% 10%, rgba(239, 68, 68, 0.06), transparent 30%),
+        radial-gradient(circle at 88% 22%, rgba(14, 165, 233, 0.10), transparent 26%),
+        radial-gradient(circle at 52% 100%, rgba(168, 85, 247, 0.06), transparent 28%),
+        var(--set-bg, #f8fafc) !important;
+    }
 
-        .section-title {
-            color: #0f172a;
-            font-weight: 900;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .about-container {
+      max-width: 1280px;
+      margin: 30px auto 0;
+      padding: 0 15px 55px;
+    }
 
-        .section-title i {
-            color: #0ea5e9;
-        }
+    /* ============================================================
+       Hero
+       ============================================================ */
 
-        .text-block {
-            color: #475569;
-            line-height: 2;
-            font-size: 15px;
-        }
+    .ops-hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      padding: 64px 30px;
+      margin-bottom: 26px;
+      color: #ffffff;
+      background:
+        linear-gradient(rgba(56, 189, 248, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, 0.055) 1px, transparent 1px),
+        radial-gradient(circle at 12% 18%, rgba(239, 68, 68, 0.18), transparent 34%),
+        radial-gradient(circle at 88% 25%, rgba(14, 165, 233, 0.17), transparent 34%),
+        radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.12), transparent 34%),
+        linear-gradient(135deg, #020617, #0f172a, #07111f);
+      background-size: 38px 38px, 38px 38px, auto, auto, auto, auto;
+      border: 1px solid rgba(148, 163, 184, 0.20);
+      box-shadow: var(--about-glow), var(--about-danger-glow);
+    }
 
-        .team-grid,
-        .values-grid,
-        .tech-grid,
-        .roadmap-grid {
-            display: grid;
-            gap: 18px;
-        }
+    .ops-hero::before {
+      content: "SET-CDP";
+      position: absolute;
+      left: 30px;
+      bottom: -25px;
+      direction: ltr;
+      font-size: 104px;
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: 6px;
+      color: rgba(255, 255, 255, 0.045);
+      pointer-events: none;
+    }
 
-        .team-grid {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        }
+    .ops-hero::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--team-red), var(--team-purple), var(--team-blue), var(--team-green));
+    }
 
-        .values-grid,
-        .roadmap-grid {
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
 
-        .tech-grid {
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-        }
+    .sys-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(239, 68, 68, 0.34);
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      padding: 7px 15px;
+      border-radius: 999px;
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
 
-        .member-card,
-        .value-card,
-        .tech-card,
-        .roadmap-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 15px;
-            padding: 18px;
-            transition: 0.25s;
-        }
+    .hero-title {
+      color: #ffffff !important;
+      font-weight: 950;
+      font-size: 42px;
+      margin-bottom: 15px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 28px rgba(56, 189, 248, 0.35);
+    }
 
-        .member-card:hover,
-        .value-card:hover,
-        .tech-card:hover,
-        .roadmap-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 22px rgba(0,0,0,0.08);
-        }
+    .hero-title .prompt {
+      color: var(--team-green);
+      font-family: "Courier New", monospace;
+      margin-inline-end: 8px;
+    }
 
-        .member-icon {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: #0f172a;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 23px;
-            margin-bottom: 12px;
-        }
+    .hero-title .cursor {
+      display: inline-block;
+      width: 12px;
+      height: 34px;
+      background: var(--team-red);
+      vertical-align: bottom;
+      margin-inline-start: 5px;
+      animation: blink 1s step-end infinite;
+    }
 
-        .member-card h3 {
-            margin: 0;
-            font-size: 20px;
-            color: #0f172a;
-            font-weight: 800;
-        }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
 
-        .member-role {
-            color: #0ea5e9;
-            font-weight: 700;
-            margin: 6px 0 10px;
-        }
+    .hero-desc {
+      color: #cbd5e1 !important;
+      max-width: 930px;
+      margin: 0 auto;
+      line-height: 2;
+      font-size: 15.5px;
+    }
 
-        .member-card p,
-        .value-card p,
-        .roadmap-card p {
-            color: #64748b;
-            line-height: 1.8;
-            margin: 0;
-            font-size: 14px;
-        }
+    .team-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+    }
 
-        .value-card h4,
-        .roadmap-card h4 {
-            color: #0f172a;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
+    .team-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 17px;
+      border-radius: 14px;
+      font-weight: 900;
+      font-size: 13px;
+      font-family: "Courier New", monospace;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(10px);
+    }
 
-        .tech-card {
-            text-align: center;
-        }
+    .red-team {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.30);
+    }
 
-        .tech-card i {
-            font-size: 28px;
-            color: #0ea5e9;
-            margin-bottom: 10px;
-        }
+    .blue-team {
+      background: rgba(14, 165, 233, 0.12);
+      color: #7dd3fc;
+      border: 1px solid rgba(14, 165, 233, 0.30);
+    }
 
-        .tech-card h4 {
-            color: #0f172a;
-            font-size: 16px;
-            margin-bottom: 8px;
-            font-weight: 800;
-        }
+    .purple-team {
+      background: rgba(168, 85, 247, 0.12);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.30);
+    }
 
-        .tech-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.9;
-        }
+    .green-team {
+      background: rgba(34, 197, 94, 0.12);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.30);
+    }
 
-        .problem-solution {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 18px;
-        }
+    /* ============================================================
+       Panels
+       ============================================================ */
 
-        .problem-box {
-            border-right: 5px solid #ef4444;
-        }
+    .intel-panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--set-card, #0f172a) !important;
+      border: 1px solid var(--set-border, #334155) !important;
+      color: var(--set-text, #e5e7eb) !important;
+      border-radius: var(--about-radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 12px 34px var(--set-shadow, rgba(0, 0, 0, 0.32));
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
 
-        .solution-box {
-            border-right: 5px solid #22c55e;
-        }
+    .intel-panel:hover {
+      transform: translateY(-3px);
+      border-color: rgba(56, 189, 248, 0.38) !important;
+      box-shadow: 0 18px 45px rgba(14, 165, 233, 0.10);
+    }
 
-        .notice-box {
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
-            border-right: 5px solid #f97316;
-            border-radius: 15px;
-            padding: 18px;
-            color: #7c2d12;
-            line-height: 1.9;
-        }
+    .intel-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.72;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(14, 165, 233, 0.09), transparent 28%),
+        radial-gradient(circle at 100% 0%, rgba(239, 68, 68, 0.07), transparent 26%);
+    }
 
-        .footer-note {
-            text-align: center;
-            color: #64748b;
-            margin-top: 25px;
-            font-size: 14px;
-        }
+    .intel-panel > * {
+      position: relative;
+      z-index: 2;
+    }
 
-        @media (max-width: 768px) {
-            .about-hero h1 {
-                font-size: 25px;
-            }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      border-bottom: 1px dashed var(--set-border, #334155);
+      padding-bottom: 14px;
+    }
 
-            .section-card {
-                padding: 18px;
-            }
-        }
-    </style>
+    .panel-header i {
+      font-size: 23px;
+    }
+
+    .panel-header h2 {
+      color: var(--set-text, #f8fafc) !important;
+      font-size: 22px;
+      font-weight: 950;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .text-block {
+      color: var(--set-text-soft, #cbd5e1) !important;
+      line-height: 2;
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .muted-text {
+      color: var(--set-muted, #94a3b8) !important;
+    }
+
+    /* ============================================================
+       Cards / grids
+       ============================================================ */
+
+    .cap-grid,
+    .ops-grid,
+    .tech-grid,
+    .roadmap-grid,
+    .values-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .cap-grid,
+    .ops-grid,
+    .values-grid,
+    .roadmap-grid {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .tech-grid {
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
+
+    .cap-card,
+    .op-card,
+    .tech-card,
+    .value-card,
+    .roadmap-card,
+    .mini-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--set-bg-soft, #0b1220) !important;
+      color: var(--set-text, #e5e7eb) !important;
+      border: 1px solid var(--set-border, #334155) !important;
+      border-radius: var(--about-radius-sm);
+      padding: 20px;
+      height: 100%;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .cap-card:hover,
+    .op-card:hover,
+    .tech-card:hover,
+    .value-card:hover,
+    .roadmap-card:hover,
+    .mini-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(148, 163, 184, 0.42) !important;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+    }
+
+    .cap-card::before {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .cap-card.red::before { background: var(--team-red); }
+    .cap-card.blue::before { background: var(--team-blue); }
+    .cap-card.purple::before { background: var(--team-purple); }
+    .cap-card.green::before { background: var(--team-green); }
+
+    .cap-icon,
+    .op-avatar,
+    .tech-card i {
+      font-size: 28px;
+      margin-bottom: 14px;
+    }
+
+    .cap-card.red .cap-icon { color: var(--team-red); }
+    .cap-card.blue .cap-icon { color: var(--team-blue); }
+    .cap-card.purple .cap-icon { color: var(--team-purple); }
+    .cap-card.green .cap-icon { color: var(--team-green); }
+
+    .cap-card h4,
+    .op-card h3,
+    .tech-card h4,
+    .value-card h4,
+    .roadmap-card h4,
+    .mini-card h3 {
+      color: var(--set-text, #f8fafc) !important;
+      font-weight: 950;
+      margin-bottom: 10px;
+      line-height: 1.55;
+    }
+
+    .cap-card h4,
+    .value-card h4,
+    .roadmap-card h4,
+    .tech-card h4 {
+      font-size: 17px;
+    }
+
+    .cap-card p,
+    .op-card p,
+    .value-card p,
+    .roadmap-card p,
+    .mini-card p {
+      color: var(--set-muted, #94a3b8) !important;
+      line-height: 1.85;
+      margin: 0;
+      font-size: 13.8px;
+    }
+
+    .op-card {
+      text-align: center;
+    }
+
+    .op-card::after {
+      content: "CORE TEAM";
+      position: absolute;
+      right: -28px;
+      top: 22px;
+      background: rgba(14, 165, 233, 0.88);
+      color: white;
+      font-size: 10px;
+      font-weight: 950;
+      padding: 4px 32px;
+      transform: rotate(45deg);
+      font-family: "Courier New", monospace;
+      letter-spacing: 1px;
+    }
+
+    .op-avatar {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 15px;
+      border-radius: 22px;
+      background: rgba(148, 163, 184, 0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(148, 163, 184, 0.30);
+    }
+
+    .op-card:nth-child(1) .op-avatar {
+      color: var(--team-purple);
+      border-color: rgba(168, 85, 247, 0.45);
+      box-shadow: 0 0 22px rgba(168, 85, 247, 0.18);
+    }
+
+    .op-card:nth-child(2) .op-avatar {
+      color: var(--team-blue);
+      border-color: rgba(14, 165, 233, 0.45);
+      box-shadow: 0 0 22px rgba(14, 165, 233, 0.18);
+    }
+
+    .op-card:nth-child(3) .op-avatar {
+      color: var(--team-red);
+      border-color: rgba(239, 68, 68, 0.45);
+      box-shadow: 0 0 22px rgba(239, 68, 68, 0.18);
+    }
+
+    .op-role {
+      font-size: 13px;
+      font-weight: 900;
+      font-family: "Courier New", monospace;
+      margin-bottom: 12px;
+      color: var(--team-blue);
+    }
+
+    .tech-card {
+      text-align: center;
+    }
+
+    .tech-card i {
+      color: var(--team-blue);
+      display: block;
+    }
+
+    .tech-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      color: var(--set-muted, #94a3b8) !important;
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .problem-solution {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .problem-box {
+      border-right: 5px solid var(--team-red) !important;
+    }
+
+    .solution-box {
+      border-right: 5px solid var(--team-green) !important;
+    }
+
+    /* ============================================================
+       Workflow
+       ============================================================ */
+
+    .killchain {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .kc-phase {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      background: var(--set-bg-soft, #0b1220);
+      border: 1px solid var(--set-border, #334155);
+      border-radius: var(--about-radius-sm);
+      padding: 18px;
+      position: relative;
+    }
+
+    .kc-num {
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--set-card, #0f172a);
+      border: 1px solid var(--set-border, #334155);
+      color: var(--team-blue);
+      font-weight: 950;
+      font-family: "Courier New", monospace;
+      direction: ltr;
+    }
+
+    .kc-content h4 {
+      color: var(--set-text, #f8fafc) !important;
+      font-size: 16px;
+      font-weight: 950;
+      margin-bottom: 5px;
+    }
+
+    .kc-content p {
+      color: var(--set-muted, #94a3b8) !important;
+      font-size: 13.5px;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .roe-box {
+      background:
+        repeating-linear-gradient(45deg, rgba(245, 158, 11, 0.055), rgba(245, 158, 11, 0.055) 10px, transparent 10px, transparent 20px),
+        var(--set-bg-soft, #0f172a) !important;
+      border: 1px dashed var(--team-yellow) !important;
+      border-right: 6px solid var(--team-yellow) !important;
+      border-radius: var(--about-radius-sm);
+      padding: 22px;
+      color: var(--set-text-soft, #cbd5e1) !important;
+      line-height: 2;
+    }
+
+    .roe-box strong {
+      color: var(--team-yellow);
+      font-family: "Courier New", monospace;
+    }
+
+    /* ============================================================
+       Footer
+       ============================================================ */
+
+    .cmd-footer {
+      position: relative;
+      overflow: hidden;
+      margin-top: 40px;
+      padding: 40px 0 22px;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(239, 68, 68, 0.12), transparent 32%),
+        radial-gradient(circle at 88% 30%, rgba(14, 165, 233, 0.12), transparent 30%),
+        linear-gradient(135deg, #020617, #0f172a);
+      border-top: 1px solid rgba(148, 163, 184, 0.18);
+      color: #e5e7eb;
+      border-radius: 24px 24px 0 0;
+    }
+
+    .cmd-footer::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(56, 189, 248, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.045) 1px, transparent 1px);
+      background-size: 34px 34px;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    .footer-inner {
+      position: relative;
+      z-index: 2;
+    }
+
+    .footer-brand {
+      font-family: "Courier New", monospace;
+      font-weight: 950;
+      font-size: 20px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      direction: ltr;
+      justify-content: flex-end;
+    }
+
+    .footer-brand i {
+      color: var(--team-red);
+    }
+
+    .cmd-footer p {
+      color: #cbd5e1;
+      font-size: 13.5px;
+      line-height: 1.85;
+    }
+
+    .foot-links h5 {
+      font-size: 15px;
+      font-weight: 950;
+      color: #ffffff;
+      font-family: "Courier New", monospace;
+      margin-bottom: 14px;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .foot-links ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .foot-links li {
+      margin-bottom: 10px;
+      color: #cbd5e1;
+      font-size: 13.5px;
+    }
+
+    .foot-links a {
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .foot-links a:hover {
+      color: #38bdf8;
+      transform: translateX(-2px);
+    }
+
+    .foot-links i {
+      width: 22px;
+      color: var(--team-purple);
+    }
+
+    .footer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(34, 197, 94, 0.26);
+      background: rgba(34, 197, 94, 0.10);
+      color: #86efac;
+      font-size: 12.5px;
+      font-weight: 850;
+    }
+
+    .foot-bottom {
+      border-top: 1px solid rgba(148, 163, 184, 0.18);
+      margin-top: 30px;
+      padding-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12.5px;
+      color: #94a3b8;
+      font-family: "Courier New", monospace;
+    }
+
+    @media (max-width: 768px) {
+      .about-container {
+        margin-top: 18px;
+      }
+
+      .ops-hero {
+        padding: 44px 18px;
+        border-radius: 22px;
+      }
+
+      .hero-title {
+        font-size: 28px;
+      }
+
+      .hero-title .cursor {
+        height: 24px;
+      }
+
+      .intel-panel {
+        padding: 20px;
+      }
+
+      .problem-solution {
+        grid-template-columns: 1fr;
+      }
+
+      .kc-phase {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .footer-brand {
+        justify-content: flex-start;
+      }
+
+      .foot-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -229,345 +732,441 @@
 
 <main class="about-container">
 
-    <section class="about-hero">
-        <h1><i class="fas fa-shield-halved"></i> من نحن</h1>
-        <p>
-            منصة SET-CDP هي مشروع تخرج أكاديمي متكامل في مجال الأمن السيبراني،
-            تجمع بين أدوات الفحص الدفاعي، ومحاكاة التهديدات، والتوعية الأمنية،
-            والاختبارات التعليمية ضمن بيئة آمنة وأخلاقية.
-        </p>
-    </section>
+  <!-- Hero -->
+  <section class="ops-hero">
+    <div class="hero-content">
+      <div class="sys-badge">
+        <i class="fas fa-satellite-dish"></i>
+        ROOT_ACCESS_GRANTED
+      </div>
 
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-lightbulb"></i>
-            فكرة المشروع
-        </h2>
-        <p class="text-block">
-            يقوم مشروع SET-CDP على بناء منصة تعليمية أمنية تجمع بين منظور المهاجم
-            ومنظور المدافع. فمن خلال أدوات الفحص والتحليل، يستطيع المستخدم تقييم
-            أمان المواقع والروابط والملفات وكلمات المرور. ومن خلال المحاكاة
-            التعليمية، يتعرف المستخدم على مخاطر الهندسة الاجتماعية والتصيد
-            الإلكتروني بطريقة عملية وآمنة.
-        </p>
-    </section>
+      <h1 class="hero-title">
+        <span class="prompt">root@set-cdp:~#</span>
+        Offensive Security Command Center
+        <span class="cursor"></span>
+      </h1>
 
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-users"></i>
-            فريق العمل
-        </h2>
+      <p class="hero-desc">
+        SET-CDP هي منصة عمليات واختبار اختراق سيبراني تجمع بين محاكاة الاختراق والهجوم، أدوات الاستطلاع والفحص الأمني،
+        تحليل التهديدات، مراقبة الأجهزة، وسجل العمليات داخل بيئة Attack Lab منظمة. الفكرة ليست صفحة تعريفية فقط؛
+        بل منظومة تعرض كيف يفكر فريق Red Team، وكيف يطارد Blue Team المؤشرات، وكيف تتحول النتائج إلى قرارات دفاعية واضحة.
+      </p>
 
-        <div class="team-grid">
-            <div class="member-card">
-                <div class="member-icon">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <h3>حسن جودة</h3>
-                <div class="member-role">المؤسس وصاحب الفكرة</div>
-                <p>
-                    مسؤول عن بناء فكرة المشروع، تحليل المتطلبات، هندسة النظام،
-                    تطوير الرؤية الأمنية، وتجميع مكونات المنصة في نظام متكامل.
-                </p>
-            </div>
+      <div class="team-indicators">
+        <div class="team-badge red-team"><i class="fas fa-skull"></i> Red Team Operations</div>
+        <div class="team-badge blue-team"><i class="fas fa-shield-halved"></i> Blue Team Defense</div>
+        <div class="team-badge purple-team"><i class="fas fa-bolt"></i> Purple Team Operations</div>
+        <div class="team-badge green-team"><i class="fas fa-lock"></i> Authorized Attack Lab</div>
+      </div>
+    </div>
+  </section>
 
-            <div class="member-card">
-                <div class="member-icon">
-                    <i class="fas fa-pen-nib"></i>
-                </div>
-                <h3>إسماعيل النحال</h3>
-                <div class="member-role">مصمم واجهات المستخدم و مبرمج</div>
-                <p>
-                    مسؤول عن تصميم واجهات المستخدم وتجربة الاستخدام، وتحسين الشكل
-                    البصري والتفاعل داخل المنصة.
-                </p>
-            </div>
-
-            <div class="member-card">
-                <div class="member-icon">
-                    <i class="fas fa-code"></i>
-                </div>
-                <h3>بلال الكسيح</h3>
-                <div class="member-role">المبرمج</div>
-                <p>
-                    مسؤول عن تطوير أجزاء النظام البرمجية، ربط الصفحات، تحسين
-                    الوظائف، وتكامل الأدوات مع قاعدة البيانات.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-bullseye"></i>
-            هدف المشروع
-        </h2>
-        <p class="text-block">
-            يهدف المشروع إلى رفع مستوى الوعي الأمني لدى المستخدمين، وتوفير بيئة
-            تعليمية عملية تساعد الطلاب والباحثين على فهم التهديدات السيبرانية
-            الحديثة، وتحليل المخاطر، واستخدام أدوات دفاعية بطريقة سهلة وآمنة.
-        </p>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-eye"></i>
-            الرؤية والرسالة
-        </h2>
-
-        <div class="problem-solution">
-            <div class="section-card" style="margin:0;">
-                <h3 class="section-title">
-                    <i class="fas fa-eye"></i>
-                    الرؤية
-                </h3>
-                <p class="text-block">
-                    أن تكون SET-CDP منصة أكاديمية رائدة تكسر الحاجز بين تعقيدات
-                    الأمن السيبراني ووعي المستخدم، وتساهم في خلق بيئة رقمية أكثر
-                    أماناً.
-                </p>
-            </div>
-
-            <div class="section-card" style="margin:0;">
-                <h3 class="section-title">
-                    <i class="fas fa-message"></i>
-                    الرسالة
-                </h3>
-                <p class="text-block">
-                    تطوير أدوات أمنية تعليمية سهلة الاستخدام، تمكن الطلاب
-                    والمؤسسات من فهم الثغرات من منظور المهاجم والمدافع في آن واحد.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-scale-balanced"></i>
-            القيم الأساسية
-        </h2>
-
-        <div class="values-grid">
-            <div class="value-card">
-                <h4><i class="fas fa-handshake"></i> الأخلاقيات السيبرانية</h4>
-                <p>
-                    نؤمن بأن المعرفة الأمنية قوة يجب أن توجه للحماية والتدريب لا للإضرار.
-                </p>
-            </div>
-
-            <div class="value-card">
-                <h4><i class="fas fa-bell"></i> التوعية الاستباقية</h4>
-                <p>
-                    الوعي هو خط الدفاع الأول، لذلك ترتبط أدوات المنصة برسائل تعليمية وتوصيات أمنية.
-                </p>
-            </div>
-
-            <div class="value-card">
-                <h4><i class="fas fa-gauge-high"></i> البساطة والفعالية</h4>
-                <p>
-                    الأمن لا يجب أن يكون معقداً؛ هدفنا تقديم أدوات قوية بواجهة واضحة وسهلة.
-                </p>
-            </div>
-
-            <div class="value-card">
-                <h4><i class="fas fa-book-open"></i> التعلم المستمر</h4>
-                <p>
-                    الأمن السيبراني مجال متغير، لذلك صممت المنصة لتكون قابلة للتطوير والإضافة.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-triangle-exclamation"></i>
-            المشكلة والحل
-        </h2>
-
-        <div class="problem-solution">
-            <div class="section-card problem-box" style="margin:0;">
-                <h3>المشكلة</h3>
-                <p class="text-block">
-                    مع تزايد هجمات التصيد والاحتيال الرقمي، أصبح العنصر البشري
-                    الحلقة الأضعف في أمن المعلومات. كثير من المستخدمين يفتقرون
-                    إلى تدريب عملي يوضح لهم كيف تبدو الهجمات في الواقع.
-                </p>
-            </div>
-
-            <div class="section-card solution-box" style="margin:0;">
-                <h3>الحل</h3>
-                <p class="text-block">
-                    تقدم SET-CDP بيئة تعليمية تجمع بين الفحص، المحاكاة، التوعية،
-                    الاختبار، بحيث يتعلم المستخدم من التجربة العملية دون تعريض
-                    بياناته أو الآخرين للخطر.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- القسم الجديد الذي تمت إضافته -->
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-satellite-dish"></i>
-            Mini-SOC & Endpoint Monitoring
-        </h2>
-        <p class="text-block">
-            يدعم المشروع وحدة مراقبة أمنية مصغرة Mini-SOC، تتيح متابعة الأجهزة المصرح بها
-            من خلال Endpoint Agent يقوم بإرسال مؤشرات الأداء والحالة بشكل دوري، مثل استهلاك
-            المعالج والذاكرة، عنوان IP المحلي، نظام التشغيل، وحالة الاتصال. تساعد هذه الوحدة
-            في فهم مفهوم المراقبة المركزية والاستجابة الأمنية بطريقة تعليمية آمنة.
-        </p>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-screwdriver-wrench"></i>
-            اللغات والتقنيات والبرامج المستخدمة
-        </h2>
-
-        <div class="tech-grid">
-            <div class="tech-card">
-                <i class="fas fa-code"></i>
-                <h4>لغات البرمجة</h4>
-                <ul>
-                    <li>Python</li>
-                    <li>JavaScript</li>
-                    <li>HTML5</li>
-                    <li>CSS3</li>
-                    <li>SQL</li>
-                </ul>
-            </div>
-
-            <div class="tech-card">
-                <i class="fas fa-layer-group"></i>
-                <h4>أطر العمل والمكتبات</h4>
-                <ul>
-                    <li>Flask</li>
-                    <li>Jinja2</li>
-                    <li>Bootstrap</li>
-                    <li>Chart.js</li>
-                    <li>Font Awesome</li>
-                </ul>
-            </div>
-
-            <div class="tech-card">
-                <i class="fas fa-database"></i>
-                <h4>قواعد البيانات</h4>
-                <ul>
-                    <li>SQLite</li>
-                    <li>DB Browser for SQLite</li>
-                </ul>
-            </div>
-
-            <div class="tech-card">
-                <i class="fas fa-toolbox"></i>
-                <h4>أدوات التطوير</h4>
-                <ul>
-                    <li>Visual Studio Code</li>
-                    <li>Git</li>
-                    <li>Python Environment</li>
-                    <li>Browser DevTools</li>
-                </ul>
-            </div>
-
-            <div class="tech-card">
-                <i class="fas fa-shield-virus"></i>
-                <h4>أدوات الأمن والتحليل</h4>
-                <ul>
-                    <li>SSL Analysis</li>
-                    <li>Header Analyzer</li>
-                    <li>URL Expander</li>
-                    <li>Password Analyzer</li>
-                    <li>File Metadata Analyzer</li>
-                    <!-- الإضافات الجديدة -->
-                    <li>Mini-EDR Live Monitor</li>
-                    <li>Endpoint Agent</li>
-                    <li>Mini-SOC Device Center</li>
-                </ul>
-            </div>
-
-            <div class="tech-card">
-                <i class="fas fa-chart-line"></i>
-                <h4>العرض والتقارير</h4>
-                <ul>
-                    <li>Dashboard Charts</li>
-                    <li>Reports Center</li>
-                    <li>Quiz Results</li>
-                    <li>Export PDF</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-road"></i>
-            خارطة الطريق المستقبلية
-        </h2>
-
-        <div class="roadmap-grid">
-            <div class="roadmap-card">
-                <h4>تحليل تهديدات بالذكاء الاصطناعي</h4>
-                <p>
-                    إضافة وحدة تعتمد على الذكاء الاصطناعي لتقييم مستوى الخطورة واقتراح توصيات أمنية أكثر دقة.
-                </p>
-            </div>
-
-            <div class="roadmap-card">
-                <h4>نظام شهادات إلكترونية</h4>
-                <p>
-                    تطوير شهادات رقمية للطلاب بعد اجتياز اختبارات التوعية الأمنية.
-                </p>
-            </div>
-
-            <div class="roadmap-card">
-                <h4>لوحة ترتيب تعليمية</h4>
-                <p>
-                    إضافة Leaderboard لقياس تقدم الطلاب في التدريب والاختبارات.
-                </p>
-            </div>
-
-            <div class="roadmap-card">
-                <h4>تكامل مع أنظمة SIEM</h4>
-                <p>
-                    إمكانية ربط المنصة مستقبلاً بأنظمة مراقبة وتحليل السجلات الأمنية.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-user-shield"></i>
-            سياسة الخصوصية والأخلاقيات
-        </h2>
-
-        <div class="notice-box">
-            تم تصميم منصة SET-CDP للأغراض الأكاديمية والتدريبية فقط. تلتزم المنصة
-            بمبادئ الاستخدام المسؤول للأمن السيبراني، ولا تهدف إلى جمع كلمات مرور
-            حقيقية أو استهداف أي شخص أو مؤسسة دون تصريح. يتم التعامل مع البيانات
-            التدريبية ضمن بيئة محلية وآمنة، ويُعد الالتزام بالأخلاقيات الأمنية
-            جزءاً أساسياً من هوية المشروع.
-        </div>
-    </section>
-
-    <section class="section-card">
-        <h2 class="section-title">
-            <i class="fas fa-heart"></i>
-            شكر وتقدير
-        </h2>
-        <p class="text-block">
-            يتقدم فريق SET-CDP بالشكر والتقدير لكل من ساهم في دعم هذا المشروع
-            وتقديم الملاحظات والتوجيهات الأكاديمية والتقنية التي ساعدت في تطويره
-            وتحسينه.
-        </p>
-    </section>
-
-    <div class="footer-note">
-        © SET-CDP — Security Education, Testing & Cyber Defense Platform
+  <!-- Mission -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-file-contract text-info"></i>
+      <h2>عقيدة النظام</h2>
     </div>
 
+    <p class="text-block">
+      تعتمد SET-CDP على مبدأ <strong>“فكّر كمهاجم، اصطد المؤشرات، وادخل بعقلية الدفاع الذكي”</strong>.
+      المنصة تجمع أدوات فحص المواقع والروابط والملفات، تحليل كلمات المرور، قراءة الـ Metadata،
+      مراقبة Endpoint، ومكتبة تهديدات، مع سيناريوهات محاكاة تساعد المستخدم على فهم أساليب الخداع الرقمي
+      والهندسة الاجتماعية داخل Attack Lab مضبوط.
+    </p>
+  </section>
+
+  <!-- Capabilities -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-crosshairs text-danger"></i>
+      <h2>قدرات المنصة</h2>
+    </div>
+
+    <div class="cap-grid">
+      <div class="cap-card red">
+        <div class="cap-icon"><i class="fas fa-user-secret"></i></div>
+        <h4>Red Team Operations Lab</h4>
+        <p>
+          بناء سيناريوهات اختراق وهجوم محاكية لفهم التصيد، الهندسة الاجتماعية، الروابط المموهة، ومسارات الخداع الرقمي
+          مع عرض النتائج كمؤشرات تدريبية دون استخدام بيانات حقيقية أو استهداف خارج بيئة التدريب.
+        </p>
+      </div>
+
+      <div class="cap-card blue">
+        <div class="cap-icon"><i class="fas fa-radar"></i></div>
+        <h4>Blue Team Recon & Defense</h4>
+        <p>
+          فحص شهادات SSL، Security Headers، الروابط المختصرة، الملفات، الـ Metadata، وكلمات المرور
+          مع قراءة مستوى الخطورة وAttack Surface وعرض الملاحظات الأمنية بطريقة واضحة.
+        </p>
+      </div>
+
+      <div class="cap-card purple">
+        <div class="cap-icon"><i class="fas fa-satellite-dish"></i></div>
+        <h4>C2 / Mini-SOC Command Center</h4>
+        <p>
+          لوحة مراقبة مصغرة لمتابعة الأجهزة المسجلة عبر Endpoint Agent، تعرض حالة الاتصال، النظام،
+          IP المحلي، استهلاك المعالج والذاكرة، وسجل النشاط الأمني.
+        </p>
+      </div>
+
+      <div class="cap-card green">
+        <div class="cap-icon"><i class="fas fa-clipboard-check"></i></div>
+        <h4>Security Readiness & Exploit Awareness</h4>
+        <p>
+          اختبارات Exploit Awareness وCyber Readiness، شهادات، تقارير، وسجل عمليات يساعد على قياس مستوى الوعي
+          وتتبع التطور من الفحص إلى النتيجة ثم التوصية.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-users-gear" style="color: var(--team-purple);"></i>
+      <h2>Task Force | فريق العمليات</h2>
+    </div>
+
+    <div class="ops-grid">
+      <div class="op-card">
+        <div class="op-avatar"><i class="fas fa-chess-knight"></i></div>
+        <h3>حسن جودة</h3>
+        <div class="op-role">Chief Architect / Red-Blue Commander</div>
+        <p>
+          صاحب الفكرة ومهندس المنصة، مسؤول عن بناء الرؤية، تصميم مسار الأدوات، ربط مفهوم Red/Blue Team،
+          وتطوير اتجاه المشروع كـ Offensive Security Command Center.
+        </p>
+      </div>
+
+      <div class="op-card">
+        <div class="op-avatar"><i class="fas fa-pen-ruler"></i></div>
+        <h3>إسماعيل النحال</h3>
+        <div class="op-role">Tactical UI/UX & Frontend Engineer</div>
+        <p>
+          مسؤول عن تصميم الواجهات وتجربة المستخدم، تحسين صفحات التحكم، ترتيب التفاعل، وتطوير الشكل البصري
+          الذي يعطي المنصة طابع Command Center.
+        </p>
+      </div>
+
+      <div class="op-card">
+        <div class="op-avatar"><i class="fas fa-terminal"></i></div>
+        <h3>بلال الكسيح</h3>
+        <div class="op-role">Backend, APIs & Exploit Tools Developer</div>
+        <p>
+          مسؤول عن تطوير الوظائف، ربط الأدوات بقاعدة البيانات، تحسين الـ APIs، والمساعدة في بناء منطق
+          الفحص والتحليل وسجل العمليات.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem / Solution -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-triangle-exclamation text-warning"></i>
+      <h2>لماذا نحتاج SET-CDP؟</h2>
+    </div>
+
+    <div class="problem-solution">
+      <div class="mini-card problem-box">
+        <h3><i class="fas fa-fire text-danger"></i> المشكلة</h3>
+        <p>
+          المستخدم يتعامل يومياً مع روابط، ملفات، رسائل، مواقع، ونوافذ تسجيل دخول، لكنه غالباً لا يرى
+          مؤشرات الاختراق والخطر. وفي نفس الوقت، أدوات الاختراق والفحص والتدريب تكون متفرقة وغير مرتبطة بسجل أو تقارير واضحة.
+        </p>
+      </div>
+
+      <div class="mini-card solution-box">
+        <h3><i class="fas fa-shield-halved text-success"></i> الحل</h3>
+        <p>
+          SET-CDP تجمع الاستطلاع، الهجوم المحاكى، المراقبة، الاختبارات، التقارير، والإضافات في منصة واحدة،
+          بحيث ينتقل المستخدم من “رؤية الخطر” إلى “تحليله” ثم “فهم طريقة الدفاع والرد”.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-route text-info"></i>
+      <h2>Operational Kill Chain</h2>
+    </div>
+
+    <p class="text-block mb-4">
+      تم تصميم المنصة كمسار عمليات بسيط: اختر هدفاً داخل الـ Lab، نفّذ فحصاً أو هجوماً محاكياً، اقرأ المؤشرات، ثم راجع السجل والتقرير.
+    </p>
+
+    <div class="killchain">
+      <div class="kc-phase">
+        <div class="kc-num">01</div>
+        <div class="kc-content">
+          <h4>Recon / Target Selection</h4>
+          <p>يبدأ المشغل من أدوات الاستطلاع أو Red Team Lab أو Mini-SOC حسب سيناريو العملية.</p>
+        </div>
+      </div>
+
+      <div class="kc-phase">
+        <div class="kc-num">02</div>
+        <div class="kc-content">
+          <h4>Execution / Attack Attack Simulation</h4>
+          <p>يتم تحليل رابط، ملف، موقع، Header، شهادة SSL، أو جهاز مسجل داخل نطاق العملية التدريبية.</p>
+        </div>
+      </div>
+
+      <div class="kc-phase">
+        <div class="kc-num">03</div>
+        <div class="kc-content">
+          <h4>Threat Hunting / IOC Analysis</h4>
+          <p>تعرض المنصة درجة الخطورة، الملاحظات، البيانات التقنية، والنتيجة بطريقة قابلة للفهم.</p>
+        </div>
+      </div>
+
+      <div class="kc-phase">
+        <div class="kc-num">04</div>
+        <div class="kc-content">
+          <h4>Logging / Operation Report</h4>
+          <p>يتم حفظ النشاط في السجل ولوحة التحكم، ويمكن استخدام التقارير لمراجعة مستوى الجاهزية.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-scale-balanced text-success"></i>
+      <h2>قواعد العمل داخل الترسانة</h2>
+    </div>
+
+    <div class="values-grid">
+      <div class="value-card">
+        <h4><i class="fas fa-handshake text-success"></i> قوة مسؤولة</h4>
+        <p>القوة الحقيقية ليست في الهجوم نفسه، بل في فهمه وتحويله إلى دفاع أفضل وسلوك أذكى.</p>
+      </div>
+
+      <div class="value-card">
+        <h4><i class="fas fa-bell text-warning"></i> وعي قبل الخطر</h4>
+        <p>المنصة تعرض مؤشرات الاختراق والخطر مبكراً وتوضح ماذا تعني النتيجة قبل أن يتحول الخطأ إلى مشكلة.</p>
+      </div>
+
+      <div class="value-card">
+        <h4><i class="fas fa-gauge-high text-info"></i> واجهة Command Center</h4>
+        <p>أداة الاختراق والفحص القوية لا يجب أن تكون معقدة؛ لذلك تم تصميم الواجهة لتكون سريعة، واضحة، ومرتبة.</p>
+      </div>
+
+      <div class="value-card">
+        <h4><i class="fas fa-code-branch text-purple"></i> قابلة للتطوير</h4>
+        <p>من فحص الروابط إلى Mini-SOC والإضافات والتقارير، كل جزء قابل للتطوير والإضافة.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-screwdriver-wrench text-info"></i>
+      <h2>Stack تشغيل الترسانة</h2>
+    </div>
+
+    <div class="tech-grid">
+      <div class="tech-card">
+        <i class="fas fa-code"></i>
+        <h4>Languages</h4>
+        <ul>
+          <li>Python</li>
+          <li>JavaScript</li>
+          <li>HTML5 / CSS3</li>
+          <li>SQL</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <i class="fas fa-layer-group"></i>
+        <h4>Frameworks</h4>
+        <ul>
+          <li>Flask</li>
+          <li>Jinja2</li>
+          <li>Bootstrap</li>
+          <li>Chart.js</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <i class="fas fa-database"></i>
+        <h4>Data Layer</h4>
+        <ul>
+          <li>SQLite</li>
+          <li>Scan History</li>
+          <li>Quiz Results</li>
+          <li>Reports Data</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <i class="fas fa-shield-virus"></i>
+        <h4>Offensive & Defensive Tools</h4>
+        <ul>
+          <li>Website Scanner</li>
+          <li>SSL Inspector</li>
+          <li>Header Analyzer</li>
+          <li>File Metadata Analyzer</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <i class="fas fa-user-secret"></i>
+        <h4>Attack Simulation</h4>
+        <ul>
+          <li>Red Team Lab</li>
+          <li>Awareness Scenarios</li>
+          <li>Threat Library</li>
+          <li>Cyber Quiz</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <i class="fas fa-satellite-dish"></i>
+        <h4>SOC / Monitoring</h4>
+        <ul>
+          <li>Mini-EDR</li>
+          <li>Endpoint Agent</li>
+          <li>Device Center</li>
+          <li>Reports Center</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-road text-warning"></i>
+      <h2>التطوير القادم في SET-CDP</h2>
+    </div>
+
+    <div class="roadmap-grid">
+      <div class="roadmap-card">
+        <h4>Threat Scoring بالذكاء الاصطناعي</h4>
+        <p>محرك تقييم ذكي يقرأ نتائج الأدوات ويعطي Risk Score وتوصيات أسرع.</p>
+      </div>
+
+      <div class="roadmap-card">
+        <h4>Certificates & Badges</h4>
+        <p>إصدار شهادات وبادجات للمستخدمين بعد إكمال الاختبارات والتحديات.</p>
+      </div>
+
+      <div class="roadmap-card">
+        <h4>Leaderboard</h4>
+        <p>إظهار ترتيب المستخدمين حسب التقدم، الاختبارات، والأنشطة التدريبية.</p>
+      </div>
+
+      <div class="roadmap-card">
+        <h4>SIEM Integration</h4>
+        <p>ربط المنصة لاحقاً بأنظمة تحليل سجلات خارجية لتوسيع Mini-SOC.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rules -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-lock text-warning"></i>
+      <h2>Rules of Engagement</h2>
+    </div>
+
+    <div class="roe-box">
+      <strong>[AUTHORIZED OPERATIONS ONLY]</strong><br>
+      SET-CDP مصممة كمنصة Red Team / Blue Team داخل نطاق مصرح به. الهدف هو فهم أساليب الاختراق،
+      تحليل المؤشرات، ورفع الجاهزية الدفاعية. يمنع استخدامها ضد أشخاص، أجهزة، أو مؤسسات خارج بيئة التدريب أو دون تصريح.
+      كل النتائج داخل النظام تُعرض كسجلات عمليات ومؤشرات تدريبية تساعد على التحليل والتحسين.
+    </div>
+  </section>
+
+  <!-- Team message -->
+  <section class="intel-panel">
+    <div class="panel-header">
+      <i class="fas fa-heart text-danger"></i>
+      <h2>رسالة الفريق</h2>
+    </div>
+
+    <p class="text-block">
+      تم بناء SET-CDP بروح فريق يحب الأمن السيبراني والتجربة العملية. كل جزء في المنصة تم تطويره
+      ليعطي المستخدم إحساس Lab حقيقي: أدوات، نتائج، مراقبة، تقارير، وتحديات قابلة للتطوير.
+    </p>
+  </section>
+
 </main>
+
+<footer class="cmd-footer">
+  <div class="container footer-inner">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="footer-brand">
+          <i class="fas fa-shield-halved"></i>
+          SET-CDP CYBER ARSENAL
+        </div>
+
+        <p>
+          Offensive Security Command Center يجمع أدوات الفحص، محاكاة الاختراق والهجوم، مراقبة الأجهزة،
+          التوعية، التقارير، والاختبارات داخل منصة واحدة.
+        </p>
+
+        <span class="footer-badge">
+          <i class="fas fa-check-circle"></i>
+          Red Team Operations • Blue Team Defense • Mini-SOC
+        </span>
+      </div>
+
+      <div class="col-lg-2 col-md-4 foot-links">
+        <h5>[ QUICK_LINKS ]</h5>
+        <ul>
+          <li><a href="/"><i class="fas fa-terminal"></i> Tools Center</a></li>
+          <li><a href="/dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="/threat-library"><i class="fas fa-biohazard"></i> Threat Library</a></li>
+          <li><a href="/quiz"><i class="fas fa-user-shield"></i> Cyber Quiz</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-2 col-md-4 foot-links">
+        <h5>[ MODULES ]</h5>
+        <ul>
+          <li><a href="/attack"><i class="fas fa-bug"></i> Red Team Lab</a></li>
+          <li><a href="/edr"><i class="fas fa-satellite-dish"></i> Mini-SOC</a></li>
+          <li><a href="/extensions"><i class="fab fa-chrome"></i> Extensions</a></li>
+          <li><a href="/reports"><i class="fas fa-file-export"></i> Reports</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-3 col-md-4 foot-links">
+        <h5>[ CONTACT ]</h5>
+        <ul>
+          <li>
+            <a href="mailto:ops@set-cdp.local">
+              <i class="fas fa-envelope"></i>
+              ops@set-cdp.local
+            </a>
+          </li>
+          <li>
+            <a href="#" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+              Source Repository
+            </a>
+          </li>
+          <li><span><i class="fas fa-location-dot"></i> Gaza, Palestine</span></li>
+          <li><span><i class="fas fa-graduation-cap"></i> Graduation Project • Cyber Arsenal 2026</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <span>© 2026 SET-CDP — All Rights Reserved.</span>
+      <span>// OFFENSIVE SECURITY LAB //</span>
+    </div>
+  </div>
+</footer>
 
 <script src="/static/script.js"></script>
 
