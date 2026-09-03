@@ -1,481 +1,813 @@
-<!-- =========================================================
-     SET-CDP Floating Awareness Chatbot Widget - Advanced UI
-     File: templates/chatbot_widget.html
-========================================================= -->
 
 <style>
   :root {
-    --setcdp-chat-primary: #0ea5e9;
-    --setcdp-chat-secondary: #0f766e;
-    --setcdp-chat-dark: #020617;
-    --setcdp-chat-slate: #0f172a;
-    --setcdp-chat-border: #e2e8f0;
-    --setcdp-chat-muted: #64748b;
-    --setcdp-chat-bg: #f8fafc;
+    --ops-chat-red: #ef4444;
+    --ops-chat-red-glow: rgba(239, 68, 68, 0.42);
+    --ops-chat-blue: #38bdf8;
+    --ops-chat-blue-glow: rgba(56, 189, 248, 0.42);
+    --ops-chat-cyan: #22d3ee;
+    --ops-chat-green: #22c55e;
+    --ops-chat-purple: #a855f7;
+    --ops-chat-yellow: #f59e0b;
+    --ops-chat-bg: #0f172a;
+    --ops-chat-panel: #020617;
+    --ops-chat-border: #334155;
+    --ops-chat-text: #e2e8f0;
+    --ops-chat-muted: #94a3b8;
+    --ops-chat-shadow: 0 25px 70px rgba(0, 0, 0, 0.62);
   }
 
+  /* =========================================================
+     Floating Button (Cyberpunk Vibe)
+     ========================================================= */
   .setcdp-chatbot-button {
     position: fixed;
-    bottom: 22px;
-    left: 22px;
-    width: 64px;
-    height: 64px;
+    bottom: 30px;
+    left: 30px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    border: none;
-    background:
-      radial-gradient(circle at top left, rgba(255,255,255,0.28), transparent 35%),
-      linear-gradient(135deg, var(--setcdp-chat-primary), var(--setcdp-chat-secondary));
-    color: white;
-    font-size: 26px;
-    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.30);
+    border: 2px solid var(--ops-chat-blue);
+    background: var(--ops-chat-panel);
+    color: var(--ops-chat-blue);
+    font-size: 28px;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.6),
+      0 0 20px var(--ops-chat-blue-glow),
+      inset 0 0 15px rgba(56, 189, 248, 0.2);
     cursor: pointer;
     z-index: 99999;
     display: grid;
     place-items: center;
-    transition: 0.25s ease;
+    transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .setcdp-chatbot-button:hover {
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.40);
+    transform: translateY(-8px) scale(1.08);
+    border-color: var(--ops-chat-red);
+    color: var(--ops-chat-red);
+    box-shadow:
+      0 15px 40px rgba(0, 0, 0, 0.7),
+      0 0 30px var(--ops-chat-red-glow),
+      inset 0 0 20px rgba(239, 68, 68, 0.25);
   }
 
-  .setcdp-chatbot-button .setcdp-chat-notification {
+  /* تأثير الموجات خلف الزر */
+  .setcdp-chatbot-button::before {
+    content: "";
     position: absolute;
-    top: 7px;
-    right: 7px;
-    width: 12px;
-    height: 12px;
-    background: #22c55e;
-    border: 2px solid white;
-    border-radius: 999px;
-    box-shadow: 0 0 0 rgba(34, 197, 94, 0.7);
-    animation: setcdpPulse 1.5s infinite;
+    inset: -8px;
+    border-radius: inherit;
+    border: 1px dashed var(--ops-chat-blue);
+    animation: setcdpOuterRing 3s linear infinite;
+    pointer-events: none;
+    opacity: 0.5;
+    transition: border-color 0.3s ease;
   }
 
-  @keyframes setcdpPulse {
-    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  .setcdp-chatbot-button:hover::before {
+    border-color: var(--ops-chat-red);
+    animation-duration: 1.5s;
+  }
+
+  @keyframes setcdpOuterRing {
+    0% { transform: rotate(0deg) scale(0.9); opacity: 0.8; }
+    50% { transform: rotate(180deg) scale(1.1); opacity: 0.3; }
+    100% { transform: rotate(360deg) scale(0.9); opacity: 0.8; }
+  }
+
+  .setcdp-chat-notification {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    background: var(--ops-chat-green);
+    border: 3px solid var(--ops-chat-panel);
+    border-radius: 999px;
+    box-shadow: 0 0 0 rgba(34, 197, 94, 0.75);
+    animation: setcdpOnlinePulse 1.55s infinite;
+  }
+
+  @keyframes setcdpOnlinePulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.75); }
     70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
     100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
   }
 
+  /* =========================================================
+     Chat Window
+     ========================================================= */
   .setcdp-chatbot-window {
     position: fixed;
-    bottom: 98px;
-    left: 22px;
-    width: 395px;
-    max-width: calc(100vw - 32px);
-    height: 570px;
-    max-height: calc(100vh - 130px);
-    background: #ffffff;
-    border: 1px solid var(--setcdp-chat-border);
-    border-radius: 24px;
-    box-shadow: 0 26px 65px rgba(15, 23, 42, 0.32);
+    bottom: 115px;
+    left: 30px;
+    width: 440px;
+    max-width: calc(100vw - 40px);
+    height: 680px;
+    max-height: calc(100vh - 140px);
+    background:
+      radial-gradient(circle at top left, rgba(34, 211, 238, 0.04), transparent 36%),
+      radial-gradient(circle at bottom right, rgba(239, 68, 68, 0.05), transparent 38%),
+      var(--ops-chat-bg);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 20px;
+    box-shadow: var(--ops-chat-shadow), 0 0 40px rgba(14, 165, 233, 0.1);
     z-index: 99999;
     display: none;
+    flex-direction: column;
     overflow: hidden;
     direction: rtl;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   }
 
   .setcdp-chatbot-window.show {
     display: flex;
-    flex-direction: column;
-    animation: setcdpChatOpen 0.22s ease;
+    animation: setcdpChatOpen 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   @keyframes setcdpChatOpen {
-    from {
-      opacity: 0;
-      transform: translateY(14px) scale(0.97);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(30px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  /* Header */
   .setcdp-chatbot-header {
-    background:
-      radial-gradient(circle at top left, rgba(56,189,248,.28), transparent 35%),
-      linear-gradient(135deg, #020617, #0f172a, #0f766e);
+    background: #050b14;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
     color: white;
-    padding: 16px;
+    padding: 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .setcdp-chatbot-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  .setcdp-chatbot-header::after {
+    content: "";
+    position: absolute;
+    height: 3px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, var(--ops-chat-blue), var(--ops-chat-red), var(--ops-chat-purple));
   }
 
   .setcdp-chatbot-title {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 12px;
     min-width: 0;
+    position: relative;
+    z-index: 2;
   }
 
   .setcdp-chatbot-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 15px;
-    background: rgba(255,255,255,0.13);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--ops-chat-bg), var(--ops-chat-panel));
+    border: 1px solid var(--ops-chat-blue);
     display: grid;
     place-items: center;
-    color: #38bdf8;
-    font-size: 21px;
+    color: var(--ops-chat-blue);
+    font-size: 24px;
     flex-shrink: 0;
+    box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.3);
+    position: relative;
+  }
+
+  .setcdp-chatbot-avatar::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    bottom: -4px;
+    right: -4px;
+    border-radius: 999px;
+    background: var(--ops-chat-green);
+    border: 2px solid #020617;
+    box-shadow: 0 0 10px var(--ops-chat-green);
   }
 
   .setcdp-chatbot-title strong {
     display: block;
-    font-size: 15px;
-    font-weight: 900;
-    white-space: nowrap;
+    font-size: 16px;
+    font-weight: 950;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    direction: ltr;
+    text-shadow: 0 0 10px rgba(255,255,255,0.2);
   }
 
   .setcdp-chatbot-title span {
     display: block;
-    color: #cbd5e1;
-    font-size: 12px;
+    color: var(--ops-chat-blue);
+    font-size: 11.5px;
     margin-top: 3px;
-    white-space: nowrap;
+    font-family: monospace;
   }
 
   .setcdp-chatbot-header-actions {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
+    position: relative;
+    z-index: 2;
   }
 
   .setcdp-chatbot-icon-btn {
-    background: rgba(255,255,255,0.12);
-    border: none;
-    color: white;
-    border-radius: 11px;
-    width: 35px;
-    height: 35px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--ops-chat-muted);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
     cursor: pointer;
     font-size: 15px;
-    transition: 0.2s;
+    transition: 0.2s ease;
   }
 
   .setcdp-chatbot-icon-btn:hover {
-    background: rgba(255,255,255,0.22);
+    background: rgba(239, 68, 68, 0.2);
+    color: #fff;
+    border-color: var(--ops-chat-red);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
   }
 
+  /* Status Bar */
   .setcdp-chatbot-status {
-    background: #ecfdf5;
-    color: #047857;
-    border-bottom: 1px solid #d1fae5;
-    padding: 8px 13px;
-    font-size: 12px;
-    font-weight: 800;
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+    padding: 8px 18px;
+    font-size: 11px;
+    font-weight: 900;
+    font-family: monospace;
     display: flex;
     align-items: center;
-    gap: 7px;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .setcdp-chatbot-status-left,
+  .setcdp-chatbot-status-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .setcdp-chatbot-status-right {
+    color: var(--ops-chat-muted);
+    direction: ltr;
   }
 
   .setcdp-chatbot-status.offline {
-    background: #fef2f2;
-    color: #b91c1c;
-    border-bottom-color: #fecaca;
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-bottom-color: rgba(239, 68, 68, 0.3);
   }
 
   .setcdp-chatbot-status-dot {
     width: 8px;
     height: 8px;
-    background: #22c55e;
+    background: var(--ops-chat-green);
     border-radius: 50%;
+    box-shadow: 0 0 8px var(--ops-chat-green);
+    animation: setcdpOnlinePulse 1.5s infinite;
   }
 
   .setcdp-chatbot-status.offline .setcdp-chatbot-status-dot {
-    background: #ef4444;
+    background: var(--ops-chat-red);
+    box-shadow: 0 0 8px var(--ops-chat-red);
+    animation: none;
   }
 
+  /* Messages */
   .setcdp-chatbot-messages {
     flex: 1;
-    padding: 14px;
+    padding: 18px;
     overflow-y: auto;
-    background:
-      radial-gradient(circle at top right, rgba(14,165,233,.08), transparent 28%),
-      #f8fafc;
+    background: var(--ops-chat-panel);
   }
 
-  .setcdp-chatbot-messages::-webkit-scrollbar {
-    width: 7px;
-  }
-
+  .setcdp-chatbot-messages::-webkit-scrollbar { width: 6px; }
   .setcdp-chatbot-messages::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 99px;
+    background: rgba(100, 116, 139, 0.5);
+    border-radius: 10px;
   }
 
   .setcdp-chatbot-message {
-    margin-bottom: 12px;
+    margin-bottom: 18px;
     display: flex;
   }
 
-  .setcdp-chatbot-message.user {
-    justify-content: flex-start;
-  }
-
-  .setcdp-chatbot-message.bot {
-    justify-content: flex-end;
-  }
+  .setcdp-chatbot-message.user { justify-content: flex-start; }
+  .setcdp-chatbot-message.bot { justify-content: flex-end; }
 
   .setcdp-chatbot-bubble {
-    max-width: 84%;
-    border-radius: 17px;
-    padding: 11px 13px;
-    line-height: 1.75;
-    font-size: 14px;
+    max-width: 88%;
+    border-radius: 16px;
+    padding: 14px 16px;
+    line-height: 1.8;
+    font-size: 13.5px;
     word-wrap: break-word;
+    border: 1px solid transparent;
   }
 
   .setcdp-chatbot-message.user .setcdp-chatbot-bubble {
-    background: linear-gradient(135deg, #0ea5e9, #0284c7);
-    color: white;
-    border-bottom-right-radius: 6px;
-    box-shadow: 0 8px 18px rgba(14,165,233,.18);
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+    border-bottom-right-radius: 4px;
+    box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.1);
   }
 
   .setcdp-chatbot-message.bot .setcdp-chatbot-bubble {
-    background: white;
-    color: #0f172a;
-    border: 1px solid var(--setcdp-chat-border);
-    border-bottom-left-radius: 6px;
-    box-shadow: 0 6px 16px rgba(15,23,42,.06);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95));
+    color: var(--ops-chat-text);
+    border-color: var(--ops-chat-border);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
   }
 
   .setcdp-chatbot-meta {
     display: block;
-    margin-top: 6px;
+    margin-top: 8px;
     font-size: 10px;
-    opacity: 0.7;
+    color: var(--ops-chat-muted);
+    letter-spacing: 0.5px;
+    font-family: monospace;
   }
 
-  .setcdp-chatbot-suggestions {
-    padding: 10px 12px;
-    background: #ffffff;
-    border-top: 1px solid var(--setcdp-chat-border);
-    display: flex;
-    gap: 7px;
-    overflow-x: auto;
-  }
-
-  .setcdp-chatbot-suggestions button,
-  .setcdp-chatbot-inline-suggestions button {
-    border: 1px solid #bae6fd;
-    background: #f0f9ff;
-    color: #0369a1;
-    border-radius: 999px;
-    padding: 7px 10px;
-    font-size: 12px;
-    font-weight: 800;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .setcdp-chatbot-suggestions button:hover,
-  .setcdp-chatbot-inline-suggestions button:hover {
-    background: #0ea5e9;
-    color: white;
-    border-color: #0ea5e9;
-  }
-
+  /* Quick Links */
   .setcdp-chatbot-links {
-    margin-top: 10px;
+    margin-top: 12px;
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
   }
 
   .setcdp-chatbot-link-btn {
     display: inline-block;
     text-decoration: none;
-    background: #0f172a;
-    color: white;
-    border-radius: 10px;
-    padding: 6px 9px;
+    background: rgba(14, 165, 233, 0.15);
+    color: #7dd3fc;
+    border: 1px solid rgba(14, 165, 233, 0.4);
+    border-radius: 8px;
+    padding: 6px 12px;
     font-size: 12px;
     font-weight: 800;
-    transition: 0.2s;
+    transition: 0.2s ease;
   }
 
   .setcdp-chatbot-link-btn:hover {
-    background: #0ea5e9;
+    background: var(--ops-chat-blue);
     color: white;
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
   }
 
   .setcdp-chatbot-inline-suggestions {
-    margin-top: 10px;
+    margin-top: 12px;
     display: flex;
     flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .setcdp-chatbot-inline-suggestions button {
+    background: transparent;
+    color: var(--ops-chat-blue);
+    border: 1px solid rgba(14, 165, 233, 0.4);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .setcdp-chatbot-inline-suggestions button:hover {
+    background: rgba(14, 165, 233, 0.2);
+    color: #fff;
+  }
+
+  /* =========================================================
+     Advanced Suggestions Dock (Bento Style) & Collapse Logic
+     ========================================================= */
+  .setcdp-chatbot-suggestion-dock {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), #020617);
+    border-top: 1px solid var(--ops-chat-border);
+    padding: 15px;
+  }
+
+  .setcdp-suggestion-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: 0.2s ease;
+  }
+  
+  .setcdp-suggestion-head:hover {
+    opacity: 0.8;
+  }
+
+  .setcdp-suggestion-head strong {
+    display: block;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    direction: ltr;
+    font-family: monospace;
+  }
+
+  .setcdp-suggestion-head span {
+    display: block;
+    color: var(--ops-chat-muted);
+    font-size: 11px;
+    margin-top: 4px;
+  }
+
+  .setcdp-suggestion-shuffle {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(14, 165, 233, 0.3);
+    background: rgba(14, 165, 233, 0.1);
+    color: var(--ops-chat-blue);
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .setcdp-suggestion-shuffle:hover {
+    background: var(--ops-chat-blue);
+    color: white;
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);
+  }
+
+  .setcdp-suggestion-content {
+    max-height: 500px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+  }
+
+  .setcdp-chatbot-suggestion-dock.collapsed .setcdp-suggestion-content {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .setcdp-chatbot-suggestion-dock.collapsed .setcdp-suggestion-head {
+    margin-bottom: 0;
+  }
+
+  #setcdpSuggestionToggleIcon {
+    transition: transform 0.3s ease;
+  }
+
+  .setcdp-chatbot-suggestion-dock.collapsed #setcdpSuggestionToggleIcon {
+    transform: rotate(180deg);
+  }
+
+  .setcdp-suggestion-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+
+  .setcdp-suggestion-tabs::-webkit-scrollbar { height: 3px; }
+  .setcdp-suggestion-tabs::-webkit-scrollbar-thumb {
+    background: var(--ops-chat-border);
+    border-radius: 10px;
+  }
+
+  .setcdp-suggestion-tabs button {
+    flex: 0 0 auto;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.6);
+    color: #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
     gap: 6px;
   }
 
-  .setcdp-chatbot-input-area {
-    padding: 12px;
-    background: #fff;
-    border-top: 1px solid var(--setcdp-chat-border);
+  /* Custom Tab Colors */
+  .setcdp-suggestion-tabs button.tab-attack { border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+  .setcdp-suggestion-tabs button.tab-scan { border-color: rgba(56, 189, 248, 0.3); color: #bae6fd; }
+  .setcdp-suggestion-tabs button.tab-soc { border-color: rgba(34, 197, 94, 0.3); color: #bbf7d0; }
+
+  .setcdp-suggestion-tabs button:hover,
+  .setcdp-suggestion-tabs button.active {
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  }
+
+  .setcdp-suggestion-tabs button.tab-attack.active {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: var(--ops-chat-red);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+  }
+
+  .setcdp-suggestion-tabs button.tab-scan.active {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: var(--ops-chat-blue);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+  }
+
+  .setcdp-suggestion-tabs button.tab-soc.active {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: var(--ops-chat-green);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+  }
+
+  /* Grid Chips */
+  .setcdp-suggestion-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-height: 140px;
+    overflow-y: auto;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .setcdp-suggestion-grid::-webkit-scrollbar { width: 4px; }
+  .setcdp-suggestion-grid::-webkit-scrollbar-thumb {
+    background: var(--ops-chat-border);
+    border-radius: 10px;
+  }
+
+  .setcdp-suggestion-chip {
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.8);
+    color: #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.5;
+    text-align: right;
+    cursor: pointer;
+    transition: 0.2s ease;
+    min-height: 55px;
     display: flex;
-    gap: 8px;
+    align-items: center;
+  }
+
+  .setcdp-suggestion-chip:hover {
+    transform: translateY(-2px);
+    color: #fff;
+    background: rgba(56, 189, 248, 0.1);
+    border-color: var(--ops-chat-blue);
+    box-shadow: 0 5px 15px rgba(56, 189, 248, 0.2);
+  }
+
+  .setcdp-suggestion-chip.attack-chip {
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(15, 23, 42, 0.8));
+    border-right: 3px solid var(--ops-chat-red);
+  }
+  .setcdp-suggestion-chip.attack-chip:hover {
+    border-color: var(--ops-chat-red);
+    background: rgba(239, 68, 68, 0.15);
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+  }
+
+  .setcdp-suggestion-chip.scan-chip {
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #bae6fd;
+    border-right: 3px solid var(--ops-chat-blue);
+  }
+
+  .setcdp-suggestion-chip.soc-chip {
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #bbf7d0;
+    border-right: 3px solid var(--ops-chat-green);
+  }
+
+  /* Input */
+  .setcdp-chatbot-input-area {
+    padding: 16px;
+    background: #020617;
+    border-top: 1px solid var(--ops-chat-border);
+    display: flex;
+    gap: 12px;
   }
 
   .setcdp-chatbot-input-area input {
     flex: 1;
-    border: 1px solid #cbd5e1;
-    border-radius: 14px;
-    padding: 11px 12px;
+    background: var(--ops-chat-bg);
+    border: 1px solid var(--ops-chat-border);
+    color: var(--ops-chat-text);
+    border-radius: 12px;
+    padding: 14px 16px;
     outline: none;
     font-size: 14px;
     min-width: 0;
+    transition: 0.2s ease;
   }
 
   .setcdp-chatbot-input-area input:focus {
-    border-color: #0ea5e9;
-    box-shadow: 0 0 0 3px rgba(14,165,233,0.13);
+    border-color: var(--ops-chat-blue);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
   }
 
   .setcdp-chatbot-send-btn {
-    width: 48px;
-    border: none;
-    border-radius: 14px;
-    background: #0f172a;
-    color: white;
+    width: 52px;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 12px;
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--ops-chat-blue);
     cursor: pointer;
-    font-size: 16px;
-    transition: 0.2s;
+    font-size: 18px;
+    transition: 0.2s ease;
     flex-shrink: 0;
+    display: grid;
+    place-items: center;
   }
 
   .setcdp-chatbot-send-btn:hover {
-    background: #0ea5e9;
+    background: var(--ops-chat-blue);
+    color: white;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+    border-color: var(--ops-chat-blue);
   }
 
   .setcdp-chatbot-send-btn:disabled {
-    opacity: 0.6;
+    opacity: 0.4;
     cursor: not-allowed;
+    background: transparent;
+    border-color: var(--ops-chat-muted);
+    color: var(--ops-chat-muted);
+    box-shadow: none;
   }
 
+  /* Typing */
   .setcdp-typing-dots {
     display: inline-flex;
-    gap: 4px;
+    gap: 5px;
     align-items: center;
+    padding: 5px 0;
   }
 
   .setcdp-typing-dots span {
     width: 6px;
     height: 6px;
-    background: #94a3b8;
+    background: var(--ops-chat-blue);
     border-radius: 50%;
     animation: setcdpTypingBlink 1.2s infinite;
   }
-
-  .setcdp-typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  .setcdp-typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-  }
+  .setcdp-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .setcdp-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
   @keyframes setcdpTypingBlink {
-    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-    40% { opacity: 1; transform: translateY(-3px); }
-  }
-
-  .setcdp-chatbot-empty-note {
-    color: #64748b;
-    font-size: 12px;
-    text-align: center;
-    padding: 8px;
+    0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-4px); box-shadow: 0 0 8px var(--ops-chat-blue); }
   }
 
   @media (max-width: 600px) {
-    .setcdp-chatbot-button {
-      left: 16px;
-      bottom: 16px;
-      width: 58px;
-      height: 58px;
-    }
-
-    .setcdp-chatbot-window {
-      left: 16px;
-      bottom: 86px;
-      width: calc(100vw - 32px);
-      height: 540px;
-      max-height: calc(100vh - 105px);
-      border-radius: 20px;
-    }
-
-    .setcdp-chatbot-bubble {
-      max-width: 88%;
-    }
+    .setcdp-chatbot-button { left: 16px; bottom: 16px; width: 60px; height: 60px; font-size: 24px; }
+    .setcdp-chatbot-window { left: 16px; bottom: 85px; width: calc(100vw - 32px); height: 600px; max-height: calc(100vh - 100px); border-radius: 16px; }
+    .setcdp-suggestion-grid { grid-template-columns: 1fr; max-height: 150px; }
   }
 </style>
 
-<button class="setcdp-chatbot-button" id="setcdpChatbotToggle" type="button" title="اسأل SET-CDP">
-  <span class="setcdp-chat-notification"></span>
-  <i class="fas fa-robot"></i>
+<!-- Floating Button -->
+<button class="setcdp-chatbot-button" id="setcdpChatbotToggle" type="button" title="فتح مركز التوجيه التكتيكي" aria-label="فتح المساعد الذكي" aria-expanded="false">
+  <span class="setcdp-chat-notification" id="setcdpChatNotification" aria-hidden="true"></span>
+  <i class="fas fa-user-secret" aria-hidden="true"></i> <!-- أيقونة العميل السري (Red/Blue Teamer) -->
 </button>
 
+<!-- Chat Window -->
 <div class="setcdp-chatbot-window" id="setcdpChatbotWindow">
   <div class="setcdp-chatbot-header">
     <div class="setcdp-chatbot-title">
       <div class="setcdp-chatbot-avatar">
-        <i class="fas fa-robot"></i>
+        <i class="fas fa-robot" aria-hidden="true"></i>
       </div>
       <div>
-        <strong>SET-CDP Assistant</strong>
-        <span>مساعد التوعية السيبرانية</span>
+        <strong>OPS AI COMMANDER</strong>
+        <span>الموجه التكتيكي لعمليات SET-CDP</span>
       </div>
     </div>
 
     <div class="setcdp-chatbot-header-actions">
-      <button class="setcdp-chatbot-icon-btn" id="setcdpChatbotClear" type="button" title="مسح المحادثة">
-        <i class="fas fa-trash"></i>
+      <button class="setcdp-chatbot-icon-btn" id="setcdpChatbotClear" type="button" title="مسح السجل (Wipe Logs)" aria-label="مسح سجل المحادثة">
+        <i class="fas fa-trash" aria-hidden="true"></i>
       </button>
-
-      <button class="setcdp-chatbot-icon-btn" id="setcdpChatbotClose" type="button" title="إغلاق">
-        ×
+      <button class="setcdp-chatbot-icon-btn" id="setcdpChatbotClose" type="button" title="إغلاق النافذة" aria-label="إغلاق نافذة المحادثة">
+        <i class="fas fa-times" aria-hidden="true"></i>
       </button>
     </div>
   </div>
 
   <div class="setcdp-chatbot-status" id="setcdpChatbotStatus">
-    <span class="setcdp-chatbot-status-dot"></span>
-    <span>المساعد جاهز للإجابة</span>
+    <div class="setcdp-chatbot-status-left">
+      <span class="setcdp-chatbot-status-dot"></span>
+      <span>[SYS_ONLINE] المساعد جاهز لتلقي الأوامر</span>
+    </div>
+    <div class="setcdp-chatbot-status-right">
+      AI MODE • ACTIVE
+    </div>
   </div>
 
-  <div class="setcdp-chatbot-messages" id="setcdpChatMessages">
+  <div class="setcdp-chatbot-messages" id="setcdpChatMessages" aria-live="polite" aria-label="سجل المحادثة">
     <div class="setcdp-chatbot-message bot">
       <div class="setcdp-chatbot-bubble">
-        أهلاً بك 👋 أنا مساعد SET-CDP. اسألني عن أدوات الفحص، SSL، الروابط المشبوهة، Mini-EDR، Agent، الإضافات، القوالب، أو نصائح الحماية.
-        <span class="setcdp-chatbot-meta">SET-CDP Assistant</span>
+        [SECURE_CHANNEL_ESTABLISHED]<br>
+        أهلاً بك في غرفة العمليات التكتيكية. يمكنني توجيهك في تنفيذ <strong>هجمات محاكاة مصرح بها (Red Team)</strong>، أو استخدام <strong>أدوات الاستطلاع والفحص (Blue Team)</strong>، أو إدارة <strong>المراقبة الحية (SOC)</strong>. <br><br>كيف يمكنني دعم عمليتك اليوم؟
+        <span class="setcdp-chatbot-meta">OPS AI • SYSTEM</span>
       </div>
     </div>
   </div>
 
-  <div class="setcdp-chatbot-suggestions" id="setcdpMainSuggestions">
-    <button type="button" data-suggestion="ما هي SET-CDP؟">ما هي SET-CDP؟</button>
-    <button type="button" data-suggestion="كيف أفحص رابط؟">فحص رابط</button>
-    <button type="button" data-suggestion="ما هو Mini-EDR؟">Mini-EDR</button>
-    <button type="button" data-suggestion="ما هي CookieShield؟">CookieShield</button>
-    <button type="button" data-suggestion="نصائح حماية">نصائح</button>
+  <!-- Suggestions Center -->
+  <div class="setcdp-chatbot-suggestion-dock" id="setcdpSuggestionDock">
+    <div class="setcdp-suggestion-head" id="setcdpSuggestionHead" title="انقر لطي/توسيع القائمة">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-chevron-down" id="setcdpSuggestionToggleIcon" style="color: var(--ops-chat-blue); font-size: 14px;" aria-hidden="true"></i>
+        <div>
+          <strong>MISSION PROMPTS</strong>
+          <span>أوامر تكتيكية واستفسارات ذكية</span>
+        </div>
+      </div>
+      <button type="button" id="setcdpShuffleSuggestions" class="setcdp-suggestion-shuffle" title="تغيير الاقتراحات">
+        <i class="fas fa-shuffle" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    <div id="setcdpSuggestionContent" class="setcdp-suggestion-content">
+      <div class="setcdp-suggestion-tabs">
+        <button type="button" class="active" data-chat-category="all">
+          <i class="fas fa-layer-group"></i> الكل
+        </button>
+        
+        <!-- إبراز قسم الهجوم والفحص -->
+        <button type="button" class="tab-attack" data-chat-category="attack">
+          <i class="fas fa-skull-crossbones"></i> مسرح الهجوم
+        </button>
+        <button type="button" class="tab-scan" data-chat-category="scan">
+          <i class="fas fa-radar"></i> الاستطلاع (F/A)
+        </button>
+
+        <button type="button" class="tab-soc" data-chat-category="soc">
+          <i class="fas fa-satellite-dish"></i> SOC
+        </button>
+        <button type="button" data-chat-category="files">
+          <i class="fas fa-file-shield"></i> الملفات
+        </button>
+        <button type="button" data-chat-category="extensions">
+          <i class="fas fa-puzzle-piece"></i> الإضافات
+        </button>
+        <button type="button" data-chat-category="awareness">
+          <i class="fas fa-graduation-cap"></i> التقييم
+        </button>
+      </div>
+
+      <div class="setcdp-suggestion-grid" id="setcdpMainSuggestions"></div>
+    </div>
   </div>
 
   <div class="setcdp-chatbot-input-area">
     <input
       id="setcdpChatInput"
       type="text"
-      maxlength="500"
-      placeholder="اكتب سؤالك هنا..."
+      maxlength="1000"
+      dir="auto"
+      aria-label="رسالتك إلى المساعد"
+      placeholder="أدخل الأمر أو الاستفسار الأمني..."
       autocomplete="off"
     >
-
-    <button class="setcdp-chatbot-send-btn" id="setcdpSendButton" type="button" title="إرسال">
-      <i class="fas fa-paper-plane"></i>
+    <button class="setcdp-chatbot-send-btn" id="setcdpSendButton" type="button" title="تنفيذ الأمر (Execute)" aria-label="إرسال الرسالة">
+      <i class="fas fa-terminal" aria-hidden="true"></i>
     </button>
   </div>
 </div>
@@ -483,8 +815,10 @@
 <script>
 (function () {
   const API_ENDPOINT = "/api/chatbot";
-  const STORAGE_KEY = "setcdp_chat_history_v1";
-  const MAX_HISTORY_MESSAGES = 30;
+  const STORAGE_KEY = "setcdp_ai_chat_logs_final";
+  const MAX_HISTORY_MESSAGES = 40;
+  const MAX_MESSAGE_LENGTH = 1000;
+  const REQUEST_TIMEOUT_MS = 30000;
 
   const toggleBtn = document.getElementById("setcdpChatbotToggle");
   const closeBtn = document.getElementById("setcdpChatbotClose");
@@ -495,23 +829,118 @@
   const sendBtn = document.getElementById("setcdpSendButton");
   const statusBox = document.getElementById("setcdpChatbotStatus");
   const suggestionsBox = document.getElementById("setcdpMainSuggestions");
+  const notificationDot = document.getElementById("setcdpChatNotification");
+
+  // المتغيرات لطي/فتح الاقتراحات
+  const suggestionHead = document.getElementById("setcdpSuggestionHead");
+  const suggestionDock = document.getElementById("setcdpSuggestionDock");
+  const shuffleBtn = document.getElementById("setcdpShuffleSuggestions");
 
   if (!toggleBtn || !chatWindow || !messagesBox || !input || !sendBtn) {
     return;
   }
 
+  // تفعيل ميزة الطي والفتح عند النقر على العنوان
+  if (suggestionHead && suggestionDock) {
+    suggestionHead.addEventListener("click", function (e) {
+      // نمنع طي القائمة إذا كان المستخدم قد نقر على زر "تغيير الاقتراحات"
+      if (shuffleBtn && shuffleBtn.contains(e.target)) return;
+      
+      suggestionDock.classList.toggle("collapsed");
+      setTimeout(scrollToBottom, 350); 
+    });
+  }
+
+  // قاعدة بيانات الأسئلة المقترحة - مصممة بدقة لتغطية أدوات الهجوم والدفاع
+  const SETCDP_SUGGESTION_CATALOG = {
+    all: [
+      { text: "كيف أنشر فخ استنساخ لسرقة الجلسات (Credential Harvesting)؟", cls: "attack-chip" },
+      { text: "كيف أستطلع هدفاً عبر Target Recon Scanner؟", cls: "scan-chip" },
+      { text: "كيف يعمل النمط الهجومي (Offensive Mode) المخفي للأدمن؟", cls: "attack-chip" },
+      { text: "اشرح لي كيفية تنفيذ هجوم Quishing لتجاوز الفلاتر.", cls: "attack-chip" },
+      { text: "كيف أراقب الأجهزة الحية عبر Mini-SOC و Endpoint Agent؟", cls: "soc-chip" },
+      { text: "كيف أصنع ملف USB Drop لاختراق مادي (Physical Attack)؟", cls: "attack-chip" },
+      { text: "كيف أقرأ نتيجة File Hash & Metadata Analyzer؟", cls: "" },
+      { text: "كيف تقوم المنصة بتوجيه الضحية للموقع الأصلي بعد سحب الجلسة؟", cls: "attack-chip" }
+    ],
+
+    attack: [
+      { text: "كيف أنفذ استنساخ أهداف (Credential Harvesting)؟", cls: "attack-chip" },
+      { text: "كيف يعمل النمط الهجومي (Transparent Proxying) للأدمن؟", cls: "attack-chip" },
+      { text: "كيف أولد رمز QR ملغم (Quishing) لاختراق الهواتف؟", cls: "attack-chip" },
+      { text: "كيف يعمل هجوم USB Drop لإنشاء اتصال عكسي (Beacon)؟", cls: "attack-chip" },
+      { text: "ما هي القوالب الجاهزة للهندسة الاجتماعية (SocEng Payloads)؟", cls: "attack-chip" },
+      { text: "كيف أقوم بنشر هجوم النافذة المنبثقة (UI Redressing)؟", cls: "attack-chip" },
+      { text: "أين أجد بيانات الضحايا (Sessions) بعد نجاح هجوم الاستنساخ؟", cls: "attack-chip" },
+      { text: "ما هي قواعد الاشتباك (Rules of Engagement) المطلوبة هنا؟", cls: "attack-chip" },
+      { text: "كيف أستخدم خادم القيادة (C2 Listener) في الهجوم المادي؟", cls: "attack-chip" }
+    ],
+
+    scan: [
+      { text: "كيف أستخدم Website Scanner لاستطلاع البنية التحتية؟", cls: "scan-chip" },
+      { text: "كيف أتتبع الروابط المخفية عبر Obfuscation Tracer؟", cls: "scan-chip" },
+      { text: "كيف أكشف الثغرات في ترويسات الخادم (Header Analyzer)؟", cls: "scan-chip" },
+      { text: "كيف أختبر ضعف التشفير والـ MITM عبر SSL Interceptor؟", cls: "scan-chip" },
+      { text: "كيف أحلل رسائل التصيد لاستخراج الحمولات (Payload Extractor)؟", cls: "scan-chip" },
+      { text: "ما الفرق بين الاستطلاع النشط والاستطلاع السلبي (OSINT) في المنصة؟", cls: "scan-chip" },
+      { text: "كيف أختبر مقاومة كلمات المرور لهجمات التخمين (Brute-Force)؟", cls: "scan-chip" },
+      { text: "كيف أولد مفتاح تشفير محصن وقوي محلياً؟", cls: "scan-chip" }
+    ],
+
+    soc: [
+      { text: "كيف أقرأ بيانات الـ Telemetry الحية في لوحة Mini-SOC؟", cls: "soc-chip" },
+      { text: "كيف أرصد الاتصالات العكسية (Reverse Connections)؟", cls: "soc-chip" },
+      { text: "ما هو الـ Endpoint Agent وكيف أقوم بنشره على الأجهزة؟", cls: "soc-chip" },
+      { text: "لماذا يظهر الجهاز بحالة Offline في Device Center؟", cls: "soc-chip" },
+      { text: "كيف أقرأ التنبيهات الأمنية (Live Alerts) داخل Mini-EDR؟", cls: "soc-chip" },
+      { text: "كيف أفسر العمليات المريبة واستهلاك الـ CPU العالي؟", cls: "soc-chip" }
+    ],
+
+    files: [
+      { text: "كيف أستخدم Malware Forensics Sandbox لهندسة الملفات؟", cls: "" },
+      { text: "ما معنى قيمة Entropy المرتفعة (Packed Malware)؟", cls: "" },
+      { text: "كيف أستخرج البصمات (Hashes) من ملف مشبوه محلياً؟", cls: "" },
+      { text: "كيف أكشف الـ Metadata المخفية في الصور (EXIF)؟", cls: "" },
+      { text: "ما هي المؤشرات الخبيثة المحتملة داخل ملفات PDF و ZIP؟", cls: "" }
+    ],
+
+    extensions: [
+      { text: "كيف توفر إضافات المتصفح حماية استباقية للمستخدم؟", cls: "" },
+      { text: "كيف يحظر WebShield النطاقات الخبيثة ومسارات التصيد؟", cls: "" },
+      { text: "كيف يفحص CookieShield الجلسات ويكشف ضعف تأمينها؟", cls: "" },
+      { text: "كيف يقوم AdShield بعرقلة التتبع وحقن الإعلانات الخبيثة؟", cls: "" },
+      { text: "كيف أثبت الإضافات في وضع المطور (Developer Mode)؟", cls: "" }
+    ],
+
+    awareness: [
+      { text: "كيف أستخدم قاعدة الاستخبارات (Threat Library) لفهم التهديدات؟", cls: "" },
+      { text: "كيف أبدأ اختبار الجاهزية (Readiness Quiz) لتقييم الوعي؟", cls: "" },
+      { text: "أين أجد التقارير (Executive Summary) وملخص العمليات؟", cls: "" },
+      { text: "كيف أستعرض نقاط التمركز النشطة (Active Clones) في لوحة C2؟", cls: "" }
+    ],
+
+    reports: [
+      { text: "كيف يتم تسجيل أوامر العمليات (Op Logs) في المنصة؟", cls: "" },
+      { text: "ما هي المقاييس المتاحة في مركز التقارير (Reports Center)؟", cls: "" },
+      { text: "كيف أصل لسجلات الفحص والتدريب في ملفي الشخصي؟", cls: "" }
+    ]
+  };
+
+  let currentSuggestionCategory = "all";
+
   function setStatus(text, mode) {
     if (!statusBox) return;
-
     statusBox.classList.remove("offline");
-
     if (mode === "offline") {
       statusBox.classList.add("offline");
     }
-
-    const label = statusBox.querySelector("span:last-child");
+    const label = statusBox.querySelector(".setcdp-chatbot-status-left span:last-child");
+    const right = statusBox.querySelector(".setcdp-chatbot-status-right");
     if (label) {
       label.textContent = text;
+    }
+    if (right) {
+      right.textContent = mode === "offline" ? "OFFLINE • CHECK CONNECTION" : "AI MODE • ACTIVE";
     }
   }
 
@@ -522,10 +951,16 @@
 
     if (shouldOpen) {
       chatWindow.classList.add("show");
+      toggleBtn.setAttribute("aria-expanded", "true");
+      // إخفاء النقطة الخضراء عند فتح المحادثة
+      if (notificationDot) notificationDot.style.display = "none";
       setTimeout(() => input.focus(), 120);
       scrollToBottom();
     } else {
       chatWindow.classList.remove("show");
+      toggleBtn.setAttribute("aria-expanded", "false");
+      // إعادة عرض النقطة الخضراء عند إغلاق المحادثة لتبقى دالة على الاتصال
+      if (notificationDot) notificationDot.style.display = "block";
     }
   }
 
@@ -540,11 +975,11 @@
 
   function safeUrl(url) {
     const clean = String(url || "").trim();
-
-    if (clean.startsWith("/")) return clean;
-    if (clean.startsWith("http://")) return clean;
-    if (clean.startsWith("https://")) return clean;
-
+    if (clean.startsWith("/") && !clean.startsWith("//")) return clean;
+    try {
+      const parsed = new URL(clean, window.location.origin);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.href;
+    } catch (e) {}
     return "#";
   }
 
@@ -554,10 +989,16 @@
 
   function getTimeLabel() {
     const now = new Date();
-    return now.toLocaleTimeString("ar", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+    return now.toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function shuffleArray(items) {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
   }
 
   function addMessage(sender, text, options = {}) {
@@ -571,33 +1012,26 @@
 
     if (sender === "bot" && options.quickLinks && options.quickLinks.length) {
       html += `<div class="setcdp-chatbot-links">`;
-
       options.quickLinks.forEach(function (link) {
         html += `
-          <a href="${escapeHtml(safeUrl(link.url))}" class="setcdp-chatbot-link-btn">
-            ${escapeHtml(link.title || "فتح")}
+          <a href="${escapeHtml(safeUrl(link.url))}" class="setcdp-chatbot-link-btn" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-link me-1" aria-hidden="true"></i>${escapeHtml(link.title || "ACCESS")}
           </a>
         `;
       });
-
       html += `</div>`;
     }
 
     if (sender === "bot" && options.suggestions && options.suggestions.length) {
       html += `<div class="setcdp-chatbot-inline-suggestions">`;
-
       options.suggestions.forEach(function (item) {
-        html += `
-          <button type="button" data-suggestion="${escapeHtml(item)}">
-            ${escapeHtml(item)}
-          </button>
-        `;
+        html += `<button type="button" data-suggestion="${escapeHtml(item)}">${escapeHtml(item)}</button>`;
       });
-
       html += `</div>`;
     }
 
-    html += `<span class="setcdp-chatbot-meta">${sender === "user" ? "أنت" : "SET-CDP Assistant"} • ${getTimeLabel()}</span>`;
+    const senderName = sender === "user" ? "أنت (OPERATOR)" : "OPS AI";
+    html += `<span class="setcdp-chatbot-meta">${senderName} • ${getTimeLabel()}</span>`;
 
     bubble.innerHTML = html;
     message.appendChild(bubble);
@@ -605,24 +1039,18 @@
 
     bindSuggestionButtons(message);
     scrollToBottom();
-    saveHistory();
+
+    if (!options.silent) saveHistory();
   }
 
   function addTypingMessage() {
     removeTypingMessage();
-
     const message = document.createElement("div");
     message.className = "setcdp-chatbot-message bot";
     message.id = "setcdpTypingMessage";
-
     const bubble = document.createElement("div");
     bubble.className = "setcdp-chatbot-bubble";
-    bubble.innerHTML = `
-      <span class="setcdp-typing-dots">
-        <span></span><span></span><span></span>
-      </span>
-    `;
-
+    bubble.innerHTML = `<span class="setcdp-typing-dots"><span></span><span></span><span></span></span>`;
     message.appendChild(bubble);
     messagesBox.appendChild(message);
     scrollToBottom();
@@ -636,28 +1064,57 @@
   function setLoading(isLoading) {
     sendBtn.disabled = isLoading;
     input.disabled = isLoading;
-
     if (isLoading) {
-      sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-      setStatus("جاري معالجة السؤال...", "online");
+      sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>';
+      setStatus("[PROCESSING] جاري تحليل الأمر...", "online");
     } else {
-      sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-      setStatus("المساعد جاهز للإجابة", "online");
+      sendBtn.innerHTML = '<i class="fas fa-terminal" aria-hidden="true"></i>';
+      setStatus("[SYS_ONLINE] المساعد جاهز لتلقي الأوامر", "online");
     }
   }
 
   function bindSuggestionButtons(root) {
     const scope = root || document;
-
     scope.querySelectorAll("[data-suggestion]").forEach(function (btn) {
       if (btn.dataset.bound === "1") return;
-
       btn.dataset.bound = "1";
       btn.addEventListener("click", function () {
         const text = btn.getAttribute("data-suggestion") || "";
         sendSuggestion(text);
       });
     });
+  }
+
+  function renderSuggestionCategory(category = "all", randomize = false) {
+    if (!suggestionsBox) return;
+    currentSuggestionCategory = category;
+    let items = SETCDP_SUGGESTION_CATALOG[category] || SETCDP_SUGGESTION_CATALOG.all;
+    if (randomize) items = shuffleArray(items);
+    items = items.slice(0, 10);
+    
+    suggestionsBox.innerHTML = items.map(function (item) {
+      return `<button type="button" class="setcdp-suggestion-chip ${escapeHtml(item.cls || "")}" data-suggestion="${escapeHtml(item.text)}">${escapeHtml(item.text)}</button>`;
+    }).join("");
+    bindSuggestionButtons(suggestionsBox);
+  }
+
+  function setupSuggestionCenter() {
+    document.querySelectorAll("[data-chat-category]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("[data-chat-category]").forEach(function (b) {
+          b.classList.remove("active");
+        });
+        btn.classList.add("active");
+        renderSuggestionCategory(btn.getAttribute("data-chat-category") || "all");
+      });
+    });
+    const shuffleBtn = document.getElementById("setcdpShuffleSuggestions");
+    if (shuffleBtn) {
+      shuffleBtn.addEventListener("click", function () {
+        renderSuggestionCategory(currentSuggestionCategory, true);
+      });
+    }
+    renderSuggestionCategory("all");
   }
 
   function sendSuggestion(text) {
@@ -668,172 +1125,129 @@
 
   async function sendMessage() {
     const message = input.value.trim();
-
     if (!message) return;
-
-    if (message.length > 500) {
-      addMessage("bot", "السؤال طويل جداً. اختصره قليلاً وسأساعدك.");
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      addMessage("bot", `[SYS_ERROR] الحد الأقصى للرسالة هو ${MAX_MESSAGE_LENGTH} حرفاً. يرجى اختصار الأمر.`);
       return;
     }
 
     addMessage("user", message);
     input.value = "";
-
     setLoading(true);
     addTypingMessage();
 
-    try {
-      const response = await fetch(API_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: message
-        })
-      });
+    // طي القائمة تلقائياً عند إرسال رسالة لتوسيع مساحة الشات
+    if (suggestionDock && !suggestionDock.classList.contains("collapsed")) {
+        suggestionDock.classList.add("collapsed");
+    }
 
-      let data = {};
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      let response;
 
       try {
-        data = await response.json();
-      } catch (jsonError) {
-        data = {};
+        response = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ message: message }),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      let data = {};
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        try { data = await response.json(); } catch (jsonError) { data = {}; }
       }
 
       removeTypingMessage();
 
       if (!response.ok) {
-        addMessage(
-          "bot",
-          data.reply || "حدث خطأ أثناء الرد. حاول مرة أخرى.",
-          {
-            suggestions: data.suggestions || [],
-            quickLinks: data.quick_links || []
-          }
-        );
-
-        if (response.status === 429) {
-          setStatus("تم تقييد الطلبات مؤقتاً", "offline");
-        }
-
+        addMessage("bot", data.reply || "[SYS_CRITICAL] فشل في معالجة الأمر. أعد المحاولة.", {
+          suggestions: data.suggestions || [],
+          quickLinks: data.quick_links || []
+        });
+        if (response.status === 429) setStatus("[WARN] تم تقييد الطلبات مؤقتاً", "offline");
         return;
       }
 
-      addMessage(
-        "bot",
-        data.reply || "لم أتمكن من توليد رد مناسب.",
-        {
-          suggestions: data.suggestions || [],
-          quickLinks: data.quick_links || []
-        }
-      );
+      addMessage("bot", data.reply || "[SYS_ERROR] لم تصل استجابة واضحة من الخادم.", {
+        suggestions: data.suggestions || [],
+        quickLinks: data.quick_links || []
+      });
 
     } catch (error) {
       removeTypingMessage();
-
-      addMessage(
-        "bot",
-        "تعذر الاتصال بالمساعد حالياً. تأكد أن السيرفر يعمل وأن مسار /api/chatbot موجود في app.py."
-      );
-
-      setStatus("تعذر الاتصال بالسيرفر", "offline");
+      if (error && error.name === "AbortError") {
+        addMessage("bot", "[TIMEOUT] انتهت مهلة انتظار الرد. حاول مرة أخرى.");
+        setStatus("[TIMEOUT] السيرفر لم يستجب في الوقت المحدد", "offline");
+      } else {
+        addMessage("bot", "[OFFLINE] فقدان الاتصال بقاعدة البيانات الاستخباراتية.");
+        setStatus("[OFFLINE] تعذر الاتصال بالسيرفر", "offline");
+      }
     } finally {
       setLoading(false);
+      input.focus();
     }
   }
 
   function saveHistory() {
     try {
       const items = [];
-
       messagesBox.querySelectorAll(".setcdp-chatbot-message").forEach(function (node) {
         if (node.id === "setcdpTypingMessage") return;
-
         const isUser = node.classList.contains("user");
         const bubble = node.querySelector(".setcdp-chatbot-bubble");
-
         if (!bubble) return;
-
         const clone = bubble.cloneNode(true);
-
-        clone.querySelectorAll(".setcdp-chatbot-meta, .setcdp-chatbot-links, .setcdp-chatbot-inline-suggestions").forEach(function (el) {
-          el.remove();
-        });
-
+        clone.querySelectorAll(".setcdp-chatbot-meta, .setcdp-chatbot-links, .setcdp-chatbot-inline-suggestions").forEach(el => el.remove());
         const text = clone.innerText.trim();
-
-        if (text) {
-          items.push({
-            sender: isUser ? "user" : "bot",
-            text: text
-          });
-        }
+        if (text) { items.push({ sender: isUser ? "user" : "bot", text: text }); }
       });
-
       const limited = items.slice(-MAX_HISTORY_MESSAGES);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(limited));
-    } catch (e) {
-      // Ignore localStorage errors
-    }
+    } catch (e) {}
   }
 
   function loadHistory() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-
       const history = JSON.parse(raw);
-
       if (!Array.isArray(history) || !history.length) return;
-
       messagesBox.innerHTML = "";
-
       history.forEach(function (item) {
-        addMessage(item.sender === "user" ? "user" : "bot", item.text || "");
+        addMessage(item.sender === "user" ? "user" : "bot", item.text || "", { silent: true });
       });
-    } catch (e) {
-      // Ignore loading errors
-    }
+    } catch (e) {}
   }
 
   function clearHistory() {
-    if (!confirm("هل تريد مسح محادثة المساعد؟")) return;
-
+    if (!confirm("هل أنت متأكد من مسح سجلات العمليات (Wipe Logs)؟")) return;
     localStorage.removeItem(STORAGE_KEY);
-
     messagesBox.innerHTML = `
       <div class="setcdp-chatbot-message bot">
         <div class="setcdp-chatbot-bubble">
-          تم مسح المحادثة. كيف يمكنني مساعدتك الآن؟
-          <span class="setcdp-chatbot-meta">SET-CDP Assistant • ${getTimeLabel()}</span>
+          [LOGS_WIPED] تم مسح سجل المحادثة. بانتظار أوامر جديدة.
+          <span class="setcdp-chatbot-meta">OPS AI • ${getTimeLabel()}</span>
         </div>
       </div>
     `;
-
     scrollToBottom();
   }
 
-  toggleBtn.addEventListener("click", function () {
-    toggleChatbot();
-  });
-
-  closeBtn.addEventListener("click", function () {
-    toggleChatbot(false);
-  });
-
+  toggleBtn.addEventListener("click", () => toggleChatbot());
+  closeBtn.addEventListener("click", () => toggleChatbot(false));
   clearBtn.addEventListener("click", clearHistory);
-
   sendBtn.addEventListener("click", sendMessage);
 
   input.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
       event.preventDefault();
       sendMessage();
-    }
-
-    if (event.key === "Escape") {
-      toggleChatbot(false);
     }
   });
 
@@ -843,13 +1257,22 @@
     }
   });
 
-  bindSuggestionButtons(suggestionsBox);
+  document.addEventListener("click", function (event) {
+    if (!chatWindow.classList.contains("show")) return;
+    const clickedInsideWindow = chatWindow.contains(event.target);
+    const clickedToggleButton = toggleBtn.contains(event.target);
+    if (!clickedInsideWindow && !clickedToggleButton) {
+      toggleChatbot(false);
+    }
+  });
+
+  setupSuggestionCenter();
   loadHistory();
 
-  window.SetCDPChatbot = {
+  window.SetCDPOpsChat = {
     open: function () { toggleChatbot(true); },
     close: function () { toggleChatbot(false); },
-    sendSuggestion: sendSuggestion
+    executeCommand: sendSuggestion
   };
 })();
 </script>

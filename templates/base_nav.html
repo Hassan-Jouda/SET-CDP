@@ -1,4 +1,3 @@
-<!-- SET-CDP Theme Preload: يمنع الوميض ويطبق الثيم قبل ظهور الصفحة -->
 <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=-uGfSeawYCquP5eXpLWi0NocAZbrziiht1MKivoTW8eEWqNB-ZQKc1tyB3wATylnLssumEPXtTRyjBCsZJ98bxIoR1ThKX3MClv9hLaPvdgPOZ5Mi8q_5kjz_sEJhXRGORy7Nm8L5X8IMdS2Lhg2LySi_1BFjwl0UXUGHryI94F-1HkxFUAN6BckKaOE0xdgF0WZDH9Hobk193hkmpwz47bKi8GE5uL5aAObet5sg6bTZcv3eYOUqkwvxwnmZdonQwxRNficHMVsFDggQB6WD6Mhr3spwyXjKZ6DLnt6-FuNhmPdHtcRAetLGCeeehEEUEgUY_nWTy4kFBk-POnSIA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGNkNDQ4MWY0OGZiOTc4MzA1ODFlNzYwYSZmbj1iYXNlX25hdl90aGVtZV9maW5hbC5odG1sJmNkPWF0dGFjaG1lbnQmdHM9NDk1OTIwJnA9ZnMmY2lkPTEmc2lnPTc2ODY1YzkyNzdlZmM2MDNmZjk1ZWE1NWI3YWNlYjgyYmUwODFkOWM4NzA3ZjVlMTcyODk1NGI1YzY4ZjIzOGImdj0w"/><script>
 (function () {
   const KEY = "setcdp-theme";
@@ -16,9 +15,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-  /* =========================================
-     SET-CDP Global Theme Variables
-     ========================================= */
 
   :root,
   html[data-theme="light"] {
@@ -660,11 +656,7 @@
     }
   }
 
-  /* =====================================================
-     SET-CDP FINAL THEME FIX
-     يحل مشكلة اختفاء النصوص والكروت البيضاء عند تبديل Dark/Light
-     ضعه دائماً في آخر style داخل base_nav.html
-     ===================================================== */
+
 
   html[data-theme] {
     color-scheme: light dark;
@@ -676,7 +668,6 @@
     color: var(--set-text) !important;
   }
 
-  /* يغطي أسماء الكروت الشائعة في صفحات المشروع */
   html[data-theme] main :is(
     .card,
     .card-body,
@@ -1211,7 +1202,7 @@
           <div class="dropdown-menu-custom" id="toolsDropdown">
             <a href="/attack">
               <i class="fas fa-bug"></i>
-اخبار الاختراق            
+اختبار الاختراق            
 </a>
 
             <a href="/ready_templates">

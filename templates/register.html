@@ -1,75 +1,652 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <title>إنشاء حساب | SET-CDP</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="/static/style.css">
+  <title>إنشاء حساب | SET-CDP</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
+    :root {
+      --bg-main: #020617;
+      --bg-card: rgba(15, 23, 42, 0.92);
+      --bg-input: #0b1220;
+      --border: rgba(148, 163, 184, 0.25);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --cyan: #22d3ee;
+      --blue: #2563eb;
+      --red: #ef4444;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
       min-height: 100vh;
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(239, 68, 68, 0.16), transparent 32%),
+        radial-gradient(circle at 90% 20%, rgba(34, 211, 238, 0.14), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(37, 99, 235, 0.14), transparent 35%),
+        var(--bg-main);
+      color: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 28px 14px;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(239, 68, 68, 0.035) 1px, transparent 1px);
+      background-size: 38px 38px;
+      pointer-events: none;
+      opacity: 0.75;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    .auth-shell {
+      width: 100%;
+      max-width: 1080px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 22px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-panel,
+    .register-card {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      border-radius: 28px;
+      overflow: hidden;
+    }
+
+    .brand-panel {
+      position: relative;
+      padding: 38px;
+      min-height: 640px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .brand-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(239, 68, 68, 0.16), transparent 35%),
+        linear-gradient(315deg, rgba(34, 211, 238, 0.14), transparent 35%);
+      pointer-events: none;
+    }
+
+    .brand-panel > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.32);
+      color: #fca5a5;
+      font-family: "Courier New", monospace;
+      font-weight: 900;
+      font-size: 13px;
+      direction: ltr;
+    }
+
+    .brand-title {
+      margin-top: 40px;
+      font-size: 44px;
+      font-weight: 950;
+      line-height: 1.25;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .brand-title span {
+      color: var(--cyan);
+      text-shadow: 0 0 26px rgba(34, 211, 238, 0.4);
+    }
+
+    .brand-desc {
+      margin-top: 18px;
+      color: #cbd5e1;
+      line-height: 2;
+      font-size: 15px;
+      max-width: 540px;
+    }
+
+    .ops-list {
+      margin-top: 28px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .ops-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 15px;
+      border-radius: 16px;
+      background: rgba(2, 6, 23, 0.42);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .ops-item i {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(34, 211, 238, 0.10);
+      color: var(--cyan);
+      border: 1px solid rgba(34, 211, 238, 0.20);
+    }
+
+    .bottom-note {
+      margin-top: 28px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px dashed rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fde68a;
+      line-height: 1.8;
+      font-size: 13px;
     }
 
     .register-card {
-      width: 100%;
-      max-width: 430px;
-      background: white;
-      border-radius: 18px;
-      padding: 30px;
-      box-shadow: 0 20px 45px rgba(0,0,0,0.25);
+      padding: 34px;
     }
 
-    .register-title {
+    .logo-box {
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 24px;
     }
 
-    .register-title h1 {
-      font-weight: 900;
-      color: #0f172a;
+    .logo-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 24px;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(37, 99, 235, 0.16));
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      box-shadow: 0 0 35px rgba(34, 211, 238, 0.18);
+      color: var(--cyan);
+      font-size: 30px;
     }
 
-    .register-title p {
-      color: #64748b;
+    .logo-title {
+      font-weight: 950;
+      font-size: 30px;
       margin: 0;
+      letter-spacing: 1px;
+      direction: ltr;
+      color: #fff;
+    }
+
+    .logo-subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .form-label {
+      font-weight: 800;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-icon {
+      position: absolute;
+      top: 50%;
+      right: 14px;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      z-index: 2;
+    }
+
+    .form-control {
+      background: var(--bg-input) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text-main) !important;
+      border-radius: 16px;
+      min-height: 52px;
+      padding-right: 45px;
+      padding-left: 45px;
+      box-shadow: none !important;
+      transition: 0.25s ease;
+    }
+
+    .form-control::placeholder {
+      color: #64748b;
+    }
+
+    .form-control:focus {
+      border-color: rgba(34, 211, 238, 0.75) !important;
+      box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.10) !important;
+    }
+
+    .toggle-pass {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      z-index: 3;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+    }
+
+    .toggle-pass:hover {
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.08);
+    }
+
+    .security-hint {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 8px 0 18px;
+    }
+
+    .hint-item {
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .hint-item.active {
+      color: #86efac;
+      border-color: rgba(34, 197, 94, 0.32);
+      background: rgba(34, 197, 94, 0.09);
+    }
+
+    .btn-create {
+      min-height: 52px;
+      border-radius: 16px;
+      font-weight: 950;
+      color: #021014;
+      border: 0;
+      background: linear-gradient(135deg, #22d3ee, #22c55e);
+      box-shadow: 0 14px 30px rgba(34, 211, 238, 0.18);
+      transition: 0.25s ease;
+    }
+
+    .btn-create:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.07);
+    }
+
+    .btn-outline-custom {
+      min-height: 48px;
+      border-radius: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      background: rgba(15, 23, 42, 0.45);
+      text-decoration: none;
+      transition: 0.25s ease;
+    }
+
+    .btn-outline-custom:hover {
+      color: #fff;
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(34, 211, 238, 0.10);
+      transform: translateY(-1px);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 13px;
+      margin: 20px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: var(--border);
+    }
+
+    .alert {
+      border-radius: 16px;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.12);
+      color: #fecaca;
+      font-weight: 700;
+    }
+
+    .match-msg {
+      font-size: 12px;
+      margin-top: -8px;
+      margin-bottom: 14px;
+      min-height: 18px;
+      color: var(--text-muted);
+    }
+
+    .match-msg.ok {
+      color: #86efac;
+    }
+
+    .match-msg.bad {
+      color: #fca5a5;
+    }
+
+    @media (max-width: 900px) {
+      .auth-shell {
+        grid-template-columns: 1fr;
+        max-width: 560px;
+      }
+
+      .brand-panel {
+        min-height: auto;
+        padding: 28px;
+      }
+
+      .brand-title {
+        font-size: 32px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .register-card,
+      .brand-panel {
+        padding: 22px;
+        border-radius: 22px;
+      }
+
+      .security-hint {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-title {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<div class="register-card">
-  <div class="register-title">
-    <h1>🛡️ SET-CDP</h1>
-    <p>إنشاء حساب مستخدم جديد</p>
+  <div class="auth-shell">
+
+    <section class="brand-panel">
+      <div>
+        <div class="brand-badge">
+          <i class="fas fa-terminal"></i>
+          SET-CDP ACCESS NODE
+        </div>
+
+        <h1 class="brand-title">
+          انضم إلى <span>منصة الاختبار والدفاع السيبراني</span>
+        </h1>
+
+        <p class="brand-desc">
+          أنشئ حسابك للوصول إلى أدوات الفحص والتحقق، مختبر Red Team، وحدات Blue Team،
+          مكتبة التهديدات، نظام الامتحانات، التقارير، و Mini-SOC داخل بيئة تدريبية منظمة.
+        </p>
+
+        <div class="ops-list">
+          <div class="ops-item">
+            <i class="fas fa-shield-halved"></i>
+            أدوات فحص وتحليل للمواقع والروابط والملفات
+          </div>
+
+          <div class="ops-item">
+            <i class="fas fa-user-secret"></i>
+            Red Team Lab لمحاكاة السيناريوهات داخل نطاق التدريب
+          </div>
+
+          <div class="ops-item">
+            <i class="fas fa-satellite-dish"></i>
+            Mini-SOC و Endpoint Agent لمراقبة الأجهزة المصرح بها
+          </div>
+
+          <div class="ops-item">
+            <i class="fas fa-certificate"></i>
+            اختبارات توعوية وشهادات وتقارير أداء
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-note">
+        <i class="fas fa-circle-info"></i>
+        استخدم بيانات تدريبية فقط. المنصة مخصصة للفحص والتدريب داخل بيئات مصرح بها.
+      </div>
+    </section>
+
+    <section class="register-card">
+
+      <div class="logo-box">
+        <div class="logo-icon">
+          <i class="fas fa-user-shield"></i>
+        </div>
+
+        <h2 class="logo-title">SET-CDP</h2>
+        <div class="logo-subtitle">إنشاء حساب مستخدم جديد</div>
+      </div>
+
+      {% if error %}
+        <div class="alert text-center mb-3">
+          <i class="fas fa-triangle-exclamation"></i>
+          {{ error }}
+        </div>
+      {% endif %}
+
+      <form method="POST" action="/register" id="registerForm">
+
+        <label class="form-label">اسم المستخدم</label>
+        <div class="input-wrap">
+          <i class="fas fa-user input-icon"></i>
+          <input
+            name="username"
+            type="text"
+            class="form-control"
+            placeholder="مثال: hassan"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <label class="form-label">كلمة المرور</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock input-icon"></i>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            class="form-control"
+            placeholder="أدخل كلمة مرور قوية"
+            autocomplete="new-password"
+            required
+          >
+          <button type="button" class="toggle-pass" onclick="togglePassword('password', this)">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+
+        <div class="security-hint">
+          <div class="hint-item" id="hintLength">
+            <i class="fas fa-check-circle"></i>
+            8 أحرف على الأقل
+          </div>
+
+          <div class="hint-item" id="hintNumber">
+            <i class="fas fa-check-circle"></i>
+            تحتوي رقم
+          </div>
+
+          <div class="hint-item" id="hintUpper">
+            <i class="fas fa-check-circle"></i>
+            حرف كبير
+          </div>
+
+          <div class="hint-item" id="hintSpecial">
+            <i class="fas fa-check-circle"></i>
+            رمز خاص
+          </div>
+        </div>
+
+        <label class="form-label">تأكيد كلمة المرور</label>
+        <div class="input-wrap">
+          <i class="fas fa-key input-icon"></i>
+          <input
+            id="confirmPassword"
+            name="confirm_password"
+            type="password"
+            class="form-control"
+            placeholder="أعد إدخال كلمة المرور"
+            autocomplete="new-password"
+            required
+          >
+          <button type="button" class="toggle-pass" onclick="togglePassword('confirmPassword', this)">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+
+        <div id="matchMsg" class="match-msg"></div>
+
+        <button type="submit" class="btn btn-create w-100 mb-2">
+          <i class="fas fa-user-plus"></i>
+          إنشاء الحساب
+        </button>
+
+        <div class="divider">أو</div>
+
+        <a class="btn-outline-custom w-100 mb-2" href="/login">
+          <i class="fas fa-right-to-bracket"></i>
+          لدي حساب بالفعل
+        </a>
+
+        <a class="btn-outline-custom w-100" href="/">
+          <i class="fas fa-house"></i>
+          العودة للصفحة الرئيسية
+        </a>
+
+      </form>
+
+    </section>
+
   </div>
 
-  {% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
+  <script>
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector("i");
 
-  <form method="post">
-    <label class="form-label">اسم المستخدم</label>
-    <input name="username" class="form-control mb-3" required>
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
+    }
 
-    <label class="form-label">كلمة المرور</label>
-    <input name="password" type="password" class="form-control mb-3" required>
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+    const matchMsg = document.getElementById("matchMsg");
 
-    <label class="form-label">تأكيد كلمة المرور</label>
-    <input name="confirm_password" type="password" class="form-control mb-3" required>
+    const hintLength = document.getElementById("hintLength");
+    const hintNumber = document.getElementById("hintNumber");
+    const hintUpper = document.getElementById("hintUpper");
+    const hintSpecial = document.getElementById("hintSpecial");
 
-    <button class="btn btn-success w-100 mb-2">إنشاء الحساب</button>
-    <a class="btn btn-outline-primary w-100 mb-2" href="/login">لدي حساب بالفعل</a>
-    <a class="btn btn-outline-secondary w-100" href="/">العودة للصفحة الرئيسية</a>
-  </form>
-</div>
+    function updatePasswordHints() {
+      const value = password.value;
+
+      hintLength.classList.toggle("active", value.length >= 8);
+      hintNumber.classList.toggle("active", /\d/.test(value));
+      hintUpper.classList.toggle("active", /[A-Z]/.test(value));
+      hintSpecial.classList.toggle("active", /[^A-Za-z0-9]/.test(value));
+
+      updateMatchMessage();
+    }
+
+    function updateMatchMessage() {
+      if (!confirmPassword.value) {
+        matchMsg.textContent = "";
+        matchMsg.className = "match-msg";
+        return;
+      }
+
+      if (password.value === confirmPassword.value) {
+        matchMsg.textContent = "كلمتا المرور متطابقتان";
+        matchMsg.className = "match-msg ok";
+      } else {
+        matchMsg.textContent = "كلمتا المرور غير متطابقتين";
+        matchMsg.className = "match-msg bad";
+      }
+    }
+
+    password.addEventListener("input", updatePasswordHints);
+    confirmPassword.addEventListener("input", updateMatchMessage);
+
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+      if (password.value !== confirmPassword.value) {
+        e.preventDefault();
+        matchMsg.textContent = "يرجى التأكد من تطابق كلمة المرور قبل إنشاء الحساب";
+        matchMsg.className = "match-msg bad";
+        confirmPassword.focus();
+      }
+    });
+  </script>
 
 </body>
 </html>
